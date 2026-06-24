@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5005';
+export const API_URL = import.meta.env.VITE_API_URL;
 
 const api = axios.create({
   baseURL: `${API_URL}/api`,
@@ -25,10 +25,10 @@ api.interceptors.response.use(
       try {
         const refreshToken = localStorage.getItem('refreshToken');
         if (!refreshToken) throw new Error('No refresh token');
-        
+
         const res = await axios.post(`${API_URL}/api/auth/refresh`, { refreshToken });
         localStorage.setItem('token', res.data.token);
-        
+
         // Cập nhật lại header và gửi lại request gốc
         originalRequest.headers.Authorization = `Bearer ${res.data.token}`;
         return api(originalRequest);
