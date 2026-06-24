@@ -31,7 +31,7 @@ const Login = ({ onSwitch, onSuccess }) => {
   };
 
   return (
-    <div className="auth-page-v2">
+    <div className="auth-page-v2" onClick={(e) => { if ((e.target.classList.contains('auth-page-v2') || e.target.classList.contains('auth-center-wrapper')) && onSuccess) onSuccess(); }}>
       {/* Animated background */}
       <div className="auth-bg-gradient" />
       <div className="auth-bg-orbs">

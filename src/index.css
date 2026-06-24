@@ -437,7 +437,8 @@ button,input,textarea,select { font-family:inherit; }
   z-index: 2;
   width: 100%;
   max-width: 480px;
-  padding: 40px 24px;
+  max-height: 96vh;
+  padding: 10px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -448,7 +449,8 @@ button,input,textarea,select { font-family:inherit; }
   display: flex;
   align-items: center;
   gap: 14px;
-  margin-bottom: 32px;
+  margin-bottom: 20px;
+  flex-shrink: 0;
 }
 .auth-top-logo {
   width: 48px;
@@ -475,7 +477,9 @@ button,input,textarea,select { font-family:inherit; }
   width: 100%;
   background: rgba(255,255,255,0.97);
   border-radius: 24px;
-  padding: 36px 32px;
+  padding: 24px;
+  overflow-y: auto;
+  max-height: 100%;
   box-shadow:
     0 20px 60px rgba(0,0,0,0.3),
     0 0 0 1px rgba(255,255,255,0.08);
@@ -599,11 +603,23 @@ button,input,textarea,select { font-family:inherit; }
 }
 .auth-input-wrap input:focus ~ .auth-input-icon { color: var(--primary); }
 
+/* Card scrollbar styling */
+.auth-card::-webkit-scrollbar { width: 6px; }
+.auth-card::-webkit-scrollbar-track { background: transparent; }
+.auth-card::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+.auth-card::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
 /* Fields grid (2 col on wide) */
 .auth-fields-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0 16px;
+}
+@media (max-width: 600px) {
+  .auth-fields-grid {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
 }
 
 /* eKYC Box */

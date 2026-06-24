@@ -1,23 +1,48 @@
 import React, { useState } from 'react';
 import api from '../lib/api';
 import { useNavigate, Link } from 'react-router-dom';
-import { AlertCircle, CheckCircle, User, Mail, Lock, ArrowRight, Camera, Shield, MapPin, Fingerprint, Sparkles, Globe } from 'lucide-react';
+import { AlertCircle, CheckCircle, User, Mail, Lock, ArrowRight, Camera, Shield, MapPin, Fingerprint, Sparkles, Globe, Phone, ShieldCheck } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { DAKLAK_COMMUNES } from '../lib/communes';
 
 const Register = ({ onSwitch, onSuccess }) => {
   const [tab, setTab] = useState('CITIZEN');
-  const [form, setForm] = useState({ username: '', email: '', password: '', confirm: '', commune: '' });
+  const [form, setForm] = useState({ username: '', email: '', phone: '', password: '', confirm: '', commune: '', otp: '' });
   
   const [frontImage, setFrontImage] = useState('');
   const [ekycData, setEkycData] = useState(null);
   const [scanning, setScanning] = useState(false);
   const [theNganhImage, setTheNganhImage] = useState('');
 
+  const [otpSent, setOtpSent] = useState(false);
+  const [sendingOtp, setSendingOtp] = useState(false);
+  const [otpTimer, setOtpTimer] = useState(0);
+
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  React.useEffect(() => {
+    let interval;
+    if (otpTimer > 0) interval = setInterval(() => setOtpTimer(t => t - 1), 1000);
+    return () => clearInterval(interval);
+  }, [otpTimer]);
+
+  const sendOtp = async () => {
+    if (!form.email) return toast.error('Vui lòng nhập email trước!');
+    setSendingOtp(true);
+    setError('');
+    try {
+      await api.post('/auth/send-otp', { email: form.email });
+      setOtpSent(true);
+      setOtpTimer(60);
+      toast.success('Đã gửi mã xác thực đến Email!');
+    } catch (err) {
+      setError(err.response?.data?.message || 'Lỗi gửi OTP');
+    }
+    setSendingOtp(false);
+  };
 
   const toBase64 = file => new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -74,6 +99,8 @@ const Register = ({ onSwitch, onSuccess }) => {
       const payload = {
         username: form.username,
         email: form.email,
+        phone: form.phone,
+        otp: form.otp,
         password: form.password,
         role: tab === 'ADMIN' ? 'COMMUNE_ADMIN' : 'CITIZEN'
       };
@@ -100,7 +127,7 @@ const Register = ({ onSwitch, onSuccess }) => {
   };
 
   return (
-    <div className="auth-page-v2">
+    <div className="auth-page-v2" onClick={(e) => { if ((e.target.classList.contains('auth-page-v2') || e.target.classList.contains('auth-center-wrapper')) && onSuccess) onSuccess(); }}>
       <div className="auth-bg-gradient" />
       <div className="auth-bg-orbs">
         <div className="auth-orb auth-orb-1" />
@@ -247,6 +274,29 @@ const Register = ({ onSwitch, onSuccess }) => {
                   </div>
                 </div>
 
+                <div className="auth-field">
+                  <label>Số điện thoại</label>
+                  <div className="auth-input-wrap">
+                    <Phone className="auth-input-icon" size={18} />
+                    <input type="tel" required placeholder="0912345678" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} />
+                  </div>
+                </div>
+              </div>
+
+              <div className="auth-field">
+                <label>Mã xác thực OTP (Gửi về Email)</label>
+                <div style={{ display: 'flex', gap: 10 }}>
+                  <div className="auth-input-wrap" style={{ flex: 1 }}>
+                    <ShieldCheck className="auth-input-icon" size={18} />
+                    <input type="text" required placeholder="Nhập mã 6 số" value={form.otp} onChange={e => setForm({ ...form, otp: e.target.value })} maxLength={6} style={{ letterSpacing: 2, fontWeight: 'bold' }} />
+                  </div>
+                  <button type="button" onClick={sendOtp} disabled={sendingOtp || otpTimer > 0} className="btn btn-outline" style={{ whiteSpace: 'nowrap', borderRadius: 10 }}>
+                    {sendingOtp ? 'Đang gửi...' : otpTimer > 0 ? `Thử lại (${otpTimer}s)` : 'Gửi mã OTP'}
+                  </button>
+                </div>
+              </div>
+
+              <div className="auth-fields-grid">
                 <div className="auth-field">
                   <label>Mật khẩu</label>
                   <div className="auth-input-wrap">
