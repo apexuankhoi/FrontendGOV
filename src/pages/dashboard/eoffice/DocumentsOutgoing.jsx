@@ -28,7 +28,7 @@ const DocumentsOutgoing = () => {
   const [showAiDraft, setShowAiDraft] = useState(false);
   const [aiPrompt, setAiPrompt] = useState('');
   const [aiDrafting, setAiDrafting] = useState(false);
-  
+
   const [form, setForm] = useState({ ...emptyForm });
   const [files, setFiles] = useState([]);
   const [submitting, setSubmitting] = useState(false);
@@ -86,11 +86,11 @@ const DocumentsOutgoing = () => {
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
           <button className="btn btn-ghost btn-sm" onClick={fetchDocs}><RefreshCw size={15} /> Tải lại</button>
           {canCreate && (
-            <button className="btn btn-outline" style={{ display: 'flex', alignItems: 'center', gap: 6, borderColor: 'var(--brand-blue)', color: 'var(--brand-blue)' }} onClick={() => { setForm({...emptyForm}); setAiPrompt(''); setShowAiDraft(true); }}>
+            <button className="btn btn-outline" style={{ display: 'flex', alignItems: 'center', gap: 6, borderColor: 'var(--brand-blue)', color: 'var(--brand-blue)' }} onClick={() => { setForm({ ...emptyForm }); setAiPrompt(''); setShowAiDraft(true); }}>
               <Sparkles size={15} /> AI Soạn thảo
             </button>
           )}
-          {canCreate && <button className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: 6 }} onClick={() => { setForm({...emptyForm}); setShowForm(true); }}>
+          {canCreate && <button className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: 6 }} onClick={() => { setForm({ ...emptyForm }); setShowForm(true); }}>
             <Plus size={15} /> Tạo văn bản đi
           </button>}
         </div>
@@ -223,7 +223,7 @@ const DocumentsOutgoing = () => {
                   <div style={{ fontSize: '.85rem', fontWeight: 600, marginBottom: 8 }}>📎 File đính kèm</div>
                   <div style={{ display: 'flex', gap: 8 }}>
                     {showDetail.attachments.map((att, i) => (
-                      <a key={i} href={`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/${att.filePath.replace(/\\/g, '/')}`} target="_blank" rel="noopener noreferrer" className="badge badge-info" style={{ textDecoration: 'none' }}>
+                      <a key={i} href={`${import.meta.env.VITE_API_URL}/${att.filePath.replace(/\\/g, '/')}`} target="_blank" rel="noopener noreferrer" className="badge badge-info" style={{ textDecoration: 'none' }}>
                         📄 {att.originalName}
                       </a>
                     ))}
@@ -253,9 +253,9 @@ const DocumentsOutgoing = () => {
               </div>
               <div className="form-group">
                 <label>Yêu cầu soạn thảo:</label>
-                <textarea 
-                  className="form-input" 
-                  rows={4} 
+                <textarea
+                  className="form-input"
+                  rows={4}
                   placeholder="VD: Viết công văn gửi các Tỉnh đoàn yêu cầu chuẩn bị chiến dịch Mùa Hè Xanh năm 2026..."
                   value={aiPrompt}
                   onChange={e => setAiPrompt(e.target.value)}
@@ -282,7 +282,7 @@ const DocumentsOutgoing = () => {
                   setShowForm(true); // Mở form văn bản với dữ liệu đã điền
                 }, 1500);
               }}>
-                {aiDrafting ? <><span className="dot-typing">...</span> Đang xử lý</> : <><Sparkles size={16}/> Tạo bản nháp</>}
+                {aiDrafting ? <><span className="dot-typing">...</span> Đang xử lý</> : <><Sparkles size={16} /> Tạo bản nháp</>}
               </button>
             </div>
           </div>
