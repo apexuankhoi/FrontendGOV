@@ -10,11 +10,11 @@ const MainLayout = () => (
     {/* ══════════════════════════════════════════════════════
         FOOTER CHUNG CHO MỌI TRANG PUBLIC
     ══════════════════════════════════════════════════════ */}
-    <footer className="ctz-footer">
+    <footer className="pub-footer">
       <div className="container">
         <div className="footer-grid">
           <div className="footer-brand">
-            <span className="name">Webgov Đắk Lắk</span>
+            <img src="/logo.png" alt="Webgov Logo" style={{ height: 40, width: 'auto', marginBottom: 12, display: 'block' }} />
             <p style={{ marginBottom: 16 }}>Hệ thống Chính quyền số khu vực Tây Nguyên. Phát triển bởi Tỉnh Đoàn Đắk Lắk.</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               <a href="tel:02623800000" style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'rgba(255,255,255,.65)', fontSize: '.85rem' }}>

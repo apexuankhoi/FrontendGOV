@@ -90,12 +90,9 @@ const DashboardLayout = () => {
 
       {/* Sidebar */}
       <aside className={`sidebar ${open ? 'open' : ''}`}>
-        <div className="sidebar-logo">
-          <div className="sidebar-logo-mark">W</div>
-          <div>
-            <span className="t1">Webgov</span>
-            <span className="t2">Quản trị nội bộ</span>
-          </div>
+        <div className="sidebar-logo" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '20px 0' }}>
+          <img src="/logo.png" alt="Webgov Logo" style={{ height: 60, width: 'auto', marginBottom: 8 }} />
+          <span className="t2" style={{ opacity: 0.7 }}>Quản trị nội bộ</span>
         </div>
 
         <nav className="sidebar-body">
@@ -122,7 +119,6 @@ const DashboardLayout = () => {
           {can('SENIOR_ADMIN') && (<>
             <div className="sidebar-sec">Hệ thống</div>
             <SLink to="/dashboard/users"  icon={Users}    label="Quản lý Tài khoản"/>
-            <SLink to="/dashboard/config" icon={Settings}  label="Cấu hình hệ thống"/>
           </>)}
 
           <div className="sidebar-sec">Cá nhân</div>

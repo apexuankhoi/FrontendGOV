@@ -40,11 +40,10 @@ const Navbar = () => {
     <header className="pub-nav" style={{ position: 'relative' }}>
       <div className="pub-nav-inner">
         {/* Logo */}
-        <Link to="/" className="nav-logo">
-          <div className="nav-logo-mark">W</div>
+        <Link to="/" className="nav-logo" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <img src="/logo.png" alt="Webgov Logo" style={{ height: 40, width: 'auto' }} />
           <div className="nav-logo-text">
-            <span className="t1">Webgov</span>
-            <span className="t2">Tỉnh Đắk Lắk</span>
+            <span className="t2" style={{ marginTop: 2, fontSize: '0.85rem' }}>Tỉnh Đắk Lắk</span>
           </div>
         </Link>
 

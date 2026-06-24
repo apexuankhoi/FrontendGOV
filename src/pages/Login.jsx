@@ -37,12 +37,8 @@ const Login = () => {
     <div className="auth-split-page">
       {/* LEFT: BRANDING & GLASSMORPHISM */}
       <div className="auth-split-left">
-        <div className="auth-brand">
-          <div className="auth-logo-mark">W</div>
-          <div className="auth-brand-text">
-            <h1>Webgov</h1>
-            <p>Tỉnh Đắk Lắk</p>
-          </div>
+        <div className="auth-brand" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <img src="/logo.png" alt="Webgov Logo" style={{ height: 80, width: 'auto', marginBottom: 16 }} />
         </div>
 
         <div className="auth-hero-content animate-up">

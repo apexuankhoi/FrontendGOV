@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import api from '../../../lib/api';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
-import { FileInput, FileOutput, AlertTriangle, CheckCircle, Clock, Zap, TrendingUp } from 'lucide-react';
+import { FileInput, FileOutput, AlertTriangle, CheckCircle, Clock, Zap, TrendingUp, Bot } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 const COLORS = ['#0056D6', '#00A86B', '#DD6B20', '#E53E3E', '#9333EA', '#0891B2'];
 const URGENCY_COLORS = { 'Thường': 'badge-info', 'Khẩn': 'badge-warning', 'Thượng khẩn': 'badge-danger', 'Hỏa tốc': 'badge-danger' };
@@ -12,6 +13,9 @@ const EofficeDashboard = () => {
   const [taskStats, setTaskStats] = useState(null);
   const [overdueTasks, setOverdueTasks] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const [generatingReport, setGeneratingReport] = useState(false);
+  const [aiReportContent, setAiReportContent] = useState('');
 
   useEffect(() => {
     Promise.all([
@@ -25,6 +29,18 @@ const EofficeDashboard = () => {
       setLoading(false);
     }).catch(() => setLoading(false));
   }, []);
+
+  const generateAiReport = async () => {
+    setGeneratingReport(true);
+    try {
+      const res = await api.get('/documents/ai-report');
+      setAiReportContent(res.data.report);
+      toast.success('AI đã viết xong báo cáo!');
+    } catch (err) {
+      toast.error('Lỗi khi tạo báo cáo: ' + (err.response?.data?.message || err.message));
+    }
+    setGeneratingReport(false);
+  };
 
   if (loading) {
     return <div className="empty-state"><div className="empty-state-icon">⏳</div><h4>Đang tải dữ liệu...</h4></div>;
@@ -51,10 +67,39 @@ const EofficeDashboard = () => {
 
   return (
     <div className="animate-up">
-      <div className="page-header">
-        <h2>📊 eOffice Dashboard</h2>
-        <p>Tổng quan điều hành văn bản & công việc</p>
+      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <h2>📊 eOffice Dashboard</h2>
+          <p>Tổng quan điều hành văn bản & công việc</p>
+        </div>
+        <button 
+          onClick={generateAiReport} 
+          disabled={generatingReport}
+          className="premium-btn" 
+          style={{ width: 'auto', padding: '10px 20px', background: 'var(--brand-blue)', borderRadius: 8, display: 'flex', alignItems: 'center', gap: 8, border: 'none', color: '#fff', cursor: 'pointer' }}
+        >
+          {generatingReport ? 'Đang viết báo cáo...' : <><Bot size={18} /> AI Viết Báo Cáo Tháng</>}
+        </button>
       </div>
+
+      {/* AI Report Modal */}
+      {aiReportContent && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+          <div style={{ background: '#fff', borderRadius: 12, width: '100%', maxWidth: 800, maxHeight: '90vh', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)' }}>
+            <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--surface-2)', borderRadius: '12px 12px 0 0' }}>
+              <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: 8, color: 'var(--brand-blue)' }}><Bot size={22}/> AI Báo Cáo Tháng</h3>
+              <button onClick={() => setAiReportContent('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--tx-3)' }}>Đóng</button>
+            </div>
+            <div style={{ padding: 24, overflowY: 'auto', whiteSpace: 'pre-wrap', lineHeight: 1.6, fontSize: '0.95rem', color: 'var(--tx-1)' }}>
+              {aiReportContent}
+            </div>
+            <div style={{ padding: '16px 24px', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
+              <button onClick={() => { navigator.clipboard.writeText(aiReportContent); toast.success('Đã copy!'); }} className="btn btn-outline">Copy Text</button>
+              <button onClick={() => setAiReportContent('')} className="btn btn-primary">Xong</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── KPI Cards ── */}
       <div className="overview-grid" style={{ marginBottom: 28 }}>
