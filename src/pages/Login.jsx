@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import api from '../lib/api';
 import { useNavigate, Link } from 'react-router-dom';
+import { Mail, Lock, Fingerprint, ShieldCheck, ArrowRight, AlertCircle } from 'lucide-react';
 
 const ADMIN_ROLES = ['COMMUNE_ADMIN', 'PROVINCE_ADMIN', 'ADMIN', 'SENIOR_ADMIN'];
 
@@ -33,77 +34,100 @@ const Login = () => {
   };
 
   return (
-    <div className="fb-auth-page">
-      <div className="fb-auth-container">
-        {/* Left Branding */}
-        <div className="fb-auth-brand">
-          <img src="/logo.png" alt="Logo" className="fb-auth-logo" />
-          <h2 className="fb-auth-tagline">
-            Chính quyền số giúp bạn kết nối và giải quyết thủ tục hành chính nhanh chóng hơn.
-          </h2>
+    <div className="gov-split-page">
+      {/* LEFT SCENE */}
+      <div className="gov-split-left">
+        <div className="gov-split-left-content">
+          <img src="/logo.png" alt="Logo" className="gov-split-logo" />
+          <h1 className="gov-split-title">Chính quyền số Tỉnh Đắk Lắk</h1>
+          <p className="gov-split-desc">
+            Nền tảng kết nối người dân, doanh nghiệp và các cấp chính quyền. 
+            Cung cấp dịch vụ công trực tuyến nhanh chóng, minh bạch và an toàn.
+          </p>
         </div>
+      </div>
 
-        {/* Right Card */}
-        <div className="fb-auth-card-wrap">
-          <div className="fb-auth-card">
-            {error && <div className="fb-alert">{error}</div>}
-            <form onSubmit={submit}>
+      {/* RIGHT FORM */}
+      <div className="gov-split-right">
+        <h2 className="gov-form-title">Đăng nhập</h2>
+        <p className="gov-form-subtitle">Truy cập vào hệ thống Cổng Dịch Vụ Công</p>
+
+        {error && (
+          <div className="gov-alert">
+            <AlertCircle size={18} />
+            <span>{error}</span>
+          </div>
+        )}
+
+        <form onSubmit={submit}>
+          <div className="gov-input-group">
+            <label>Email hoặc Tên đăng nhập</label>
+            <div className="gov-input-wrap">
+              <Mail size={18} />
               <input
-                type="email"
-                className="fb-input"
-                placeholder="Email hoặc số điện thoại"
+                type="text"
+                placeholder="Nhập email của bạn"
                 value={form.email}
-                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                onChange={e => setForm({...form, email: e.target.value})}
                 required
               />
+            </div>
+          </div>
+
+          <div className="gov-input-group">
+            <label>Mật khẩu truy cập</label>
+            <div className="gov-input-wrap">
+              <Lock size={18} />
               <input
                 type="password"
-                className="fb-input"
-                placeholder="Mật khẩu"
+                placeholder="••••••••"
                 value={form.password}
-                onChange={(e) => setForm({ ...form, password: e.target.value })}
+                onChange={e => setForm({...form, password: e.target.value})}
                 required
               />
-              <button type="submit" className="fb-btn-primary" disabled={loading}>
-                {loading ? 'Đang xử lý...' : 'Đăng nhập'}
-              </button>
-            </form>
-
-            <a href="#" className="fb-forgot">Quên mật khẩu?</a>
-
-            <div className="fb-divider"></div>
-
-            <Link to="/register" className="fb-btn-success">
-              Tạo tài khoản mới
-            </Link>
+            </div>
+            <div style={{ textAlign: 'right', marginTop: 8 }}>
+              <Link to="/forgot-password" className="gov-link" style={{ fontSize: '0.85rem' }}>Quên mật khẩu?</Link>
+            </div>
           </div>
 
-          {/* Quick Demo Logins */}
-          <div className="fb-demo-section">
-            <div className="fb-demo-title">Truy cập nhanh (Demo)</div>
-            <button className="fb-demo-btn" onClick={() => { setForm({ email: 'admin@daklak.gov.vn', password: 'password123' }); }}>
-              <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#e41e3f', marginRight: 10, flexShrink: 0 }}></div>
-              <div>
-                <strong>Super Admin</strong>
-                <span>admin@daklak.gov.vn</span>
-              </div>
-            </button>
-            <button className="fb-demo-btn" onClick={() => { setForm({ email: 'tinh@daklak.gov.vn', password: 'password123' }); }}>
-              <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#8b5cf6', marginRight: 10, flexShrink: 0 }}></div>
-              <div>
-                <strong>Cán bộ Tỉnh</strong>
-                <span>tinh@daklak.gov.vn</span>
-              </div>
-            </button>
-            <button className="fb-demo-btn" onClick={() => { setForm({ email: 'nguoidan@gmail.com', password: 'password123' }); }}>
-              <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#10b981', marginRight: 10, flexShrink: 0 }}></div>
-              <div>
-                <strong>Người dân</strong>
-                <span>nguoidan@gmail.com</span>
-              </div>
-            </button>
-          </div>
+          <button type="submit" className="gov-btn-primary" disabled={loading}>
+            {loading ? 'Đang xác thực...' : (
+              <>
+                <Fingerprint size={20} />
+                Đăng nhập hệ thống
+              </>
+            )}
+          </button>
+        </form>
+
+        <div style={{ textAlign: 'center', marginTop: 24, fontSize: '0.95rem' }}>
+          Chưa có tài khoản?{' '}
+          <Link to="/register" className="gov-link">Đăng ký ngay</Link>
         </div>
+
+        {/* DEMO LOGINS */}
+        <div className="gov-demo-section">
+          <div className="gov-demo-title">Tài khoản trải nghiệm (Demo)</div>
+          {[
+            { label: 'Super Admin', email: 'admin@daklak.gov.vn', pw: '123456', color: '#e11d48' },
+            { label: 'Cán bộ Tỉnh', email: 'tinh@daklak.gov.vn', pw: '123456', color: '#7c3aed' },
+            { label: 'Người dân', email: 'nguoidan@gmail.com', pw: '123456', color: '#059669' },
+          ].map(d => (
+            <button key={d.email} type="button" className="gov-demo-btn" onClick={() => setForm({email: d.email, password: d.pw})}>
+              <div style={{ width: 12, height: 12, borderRadius: '50%', background: d.color, marginRight: 15 }}></div>
+              <div className="gov-demo-btn-text">
+                <strong>{d.label}</strong>
+                <span>{d.email}</span>
+              </div>
+              <ArrowRight size={16} color="#94a3b8" />
+            </button>
+          ))}
+        </div>
+
+        <p style={{ marginTop: 'auto', paddingTop: 40, textAlign: 'center', fontSize: '0.8rem', color: '#94a3b8' }}>
+          © 2026 UBND Tỉnh Đắk Lắk. Phát triển bởi VNPT.
+        </p>
       </div>
     </div>
   );
