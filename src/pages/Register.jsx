@@ -210,6 +210,7 @@ const Register = () => {
               </div>
             </div>
 
+            {/* OTP tạm thời bị vô hiệu hoá
             <div className="auth-mxh-input-group">
               <label>Mã OTP (Xác thực Email)</label>
               <div style={{ display: 'flex', gap: 10 }}>
@@ -222,6 +223,7 @@ const Register = () => {
                 </button>
               </div>
             </div>
+            */}
 
             <div style={{ display: 'flex', gap: 15 }}>
               <div className="auth-mxh-input-group" style={{ flex: 1 }}>
