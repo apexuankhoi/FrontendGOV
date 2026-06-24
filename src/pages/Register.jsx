@@ -5,7 +5,7 @@ import { AlertCircle, CheckCircle, User, Mail, Lock, ArrowRight, Camera, Shield,
 import { toast } from 'react-toastify';
 import { DAKLAK_COMMUNES } from '../lib/communes';
 
-const Register = ({ onSwitch, onSuccess }) => {
+const Register = () => {
   const [tab, setTab] = useState('CITIZEN');
   const [form, setForm] = useState({ username: '', email: '', phone: '', password: '', confirm: '', commune: '', otp: '' });
   
@@ -117,8 +117,7 @@ const Register = ({ onSwitch, onSuccess }) => {
       await api.post('/auth/register', payload);
       setSuccess(true);
       setTimeout(() => {
-        if (onSwitch) onSwitch();
-        else navigate('/login');
+        navigate('/login');
       }, 2500);
     } catch (err) {
       setError(err.response?.data?.message || 'Lỗi đăng ký, vui lòng thử lại.');
@@ -127,7 +126,7 @@ const Register = ({ onSwitch, onSuccess }) => {
   };
 
   return (
-    <div className="auth-page-v2" onClick={(e) => { if ((e.target.classList.contains('auth-page-v2') || e.target.classList.contains('auth-center-wrapper')) && onSuccess) onSuccess(); }}>
+    <div className="auth-page-v2">
       <div className="auth-bg-gradient" />
       <div className="auth-bg-orbs">
         <div className="auth-orb auth-orb-1" />
@@ -135,13 +134,7 @@ const Register = ({ onSwitch, onSuccess }) => {
         <div className="auth-orb auth-orb-3" />
       </div>
 
-      <div className="auth-center-wrapper" style={{ position: 'relative' }}>
-        {onSuccess && (
-          <button onClick={onSuccess} style={{ position: 'absolute', top: 20, right: 20, background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff', width: 36, height: 36, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 10 }}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-          </button>
-        )}
-
+      <div className="auth-center-wrapper">
         <div className="auth-top-brand animate-up">
           <img src="/logo.png" alt="Logo" className="auth-top-logo" />
           <div>
@@ -329,12 +322,7 @@ const Register = ({ onSwitch, onSuccess }) => {
           )}
 
           <div className="auth-card-footer">
-            Bạn đã có tài khoản?{' '}
-            {onSwitch ? (
-              <button type="button" onClick={onSwitch} className="auth-link-btn">Đăng nhập ngay</button>
-            ) : (
-              <Link to="/login">Đăng nhập ngay</Link>
-            )}
+            Bạn đã có tài khoản? <Link to="/login">Đăng nhập ngay</Link>
           </div>
         </div>
 

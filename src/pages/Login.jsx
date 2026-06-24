@@ -5,7 +5,7 @@ import { AlertCircle, Lock, Mail, ArrowRight, ShieldCheck, Sparkles, Globe, Fing
 
 const ADMIN_ROLES = ['COMMUNE_ADMIN', 'PROVINCE_ADMIN', 'ADMIN', 'SENIOR_ADMIN'];
 
-const Login = ({ onSwitch, onSuccess }) => {
+const Login = () => {
   const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -22,8 +22,11 @@ const Login = ({ onSwitch, onSuccess }) => {
       localStorage.setItem('role',         r.data.role);
       localStorage.setItem('username',     r.data.username);
 
-      if (onSuccess) onSuccess();
-      window.location.reload();
+      if (ADMIN_ROLES.includes(r.data.role)) {
+        navigate('/dashboard');
+      } else {
+        navigate('/');
+      }
     } catch (err) {
       setError(err.response?.data?.message || 'Sai email hoặc mật khẩu.');
     }
@@ -31,7 +34,7 @@ const Login = ({ onSwitch, onSuccess }) => {
   };
 
   return (
-    <div className="auth-page-v2" onClick={(e) => { if ((e.target.classList.contains('auth-page-v2') || e.target.classList.contains('auth-center-wrapper')) && onSuccess) onSuccess(); }}>
+    <div className="auth-page-v2">
       {/* Animated background */}
       <div className="auth-bg-gradient" />
       <div className="auth-bg-orbs">
@@ -40,13 +43,7 @@ const Login = ({ onSwitch, onSuccess }) => {
         <div className="auth-orb auth-orb-3" />
       </div>
 
-      <div className="auth-center-wrapper" style={{ position: 'relative' }}>
-        {onSuccess && (
-          <button onClick={onSuccess} style={{ position: 'absolute', top: 20, right: 20, background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff', width: 36, height: 36, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 10 }}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-          </button>
-        )}
-        
+      <div className="auth-center-wrapper">
         {/* Branding top */}
         <div className="auth-top-brand animate-up">
           <img src="/logo.png" alt="Logo" className="auth-top-logo" />
@@ -154,13 +151,7 @@ const Login = ({ onSwitch, onSuccess }) => {
 
           <p className="auth-bottom-text">
             Chưa có tài khoản?{' '}
-            {onSwitch ? (
-              <button type="button" onClick={onSwitch} className="auth-link-btn">
-                Đăng ký ngay
-              </button>
-            ) : (
-              <Link to="/register">Đăng ký ngay</Link>
-            )}
+            <Link to="/register">Đăng ký ngay</Link>
           </p>
         </div>
 

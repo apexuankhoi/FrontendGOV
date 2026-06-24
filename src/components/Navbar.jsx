@@ -60,8 +60,8 @@ const Navbar = () => {
           {!token ? (
             /* Chưa đăng nhập */
             <>
-              <button onClick={() => window.dispatchEvent(new CustomEvent('openAuth', { detail: 'login' }))} className="btn btn-outline btn-sm">Đăng nhập</button>
-              <button onClick={() => window.dispatchEvent(new CustomEvent('openAuth', { detail: 'register' }))} className="btn btn-primary btn-sm">Đăng ký</button>
+              <Link to="/login"    className="btn btn-outline btn-sm">Đăng nhập</Link>
+              <Link to="/register" className="btn btn-primary btn-sm">Đăng ký</Link>
             </>
           ) : isAdmin ? (
             /* Cán bộ → vào Dashboard */

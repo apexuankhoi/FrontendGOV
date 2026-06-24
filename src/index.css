@@ -380,20 +380,21 @@ button,input,textarea,select { font-family:inherit; }
    AUTH V2 — CENTERED CARD + ANIMATED BG
 ============================================================ */
 .auth-page-v2 {
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
+  min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow-y: auto;
-  background: rgba(11, 17, 32, 0.7);
-  backdrop-filter: blur(10px);
+  position: relative;
+  overflow: hidden;
+  background: #0B1120;
 }
 
 /* Animated gradient background */
 .auth-bg-gradient {
-  display: none;
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #0D1B2A 0%, #1B2838 30%, #0A192F 60%, #112240 100%);
+  z-index: 0;
 }
 
 /* Floating orbs */
