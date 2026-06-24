@@ -380,21 +380,20 @@ button,input,textarea,select { font-family:inherit; }
    AUTH V2 — CENTERED CARD + ANIMATED BG
 ============================================================ */
 .auth-page-v2 {
-  min-height: 100vh;
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
   display: flex;
   align-items: center;
   justify-content: center;
-  position: relative;
-  overflow: hidden;
-  background: #0B1120;
+  overflow-y: auto;
+  background: rgba(11, 17, 32, 0.7);
+  backdrop-filter: blur(10px);
 }
 
 /* Animated gradient background */
 .auth-bg-gradient {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, #0D1B2A 0%, #1B2838 30%, #0A192F 60%, #112240 100%);
-  z-index: 0;
+  display: none;
 }
 
 /* Floating orbs */
@@ -777,11 +776,19 @@ button,input,textarea,select { font-family:inherit; }
 }
 .auth-card-footer a {
   color: var(--primary);
-  font-weight: 600;
+  font-weight: 700;
+  text-decoration: none;
 }
 .auth-card-footer a:hover {
   text-decoration: underline;
 }
+
+.auth-link-btn {
+  background: none; border: none; padding: 0;
+  color: var(--primary); font-weight: 700;
+  cursor: pointer; font-family: inherit; font-size: inherit;
+}
+.auth-link-btn:hover { text-decoration: underline; }
 
 .auth-bottom-text {
   margin-top: 24px;

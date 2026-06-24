@@ -37,13 +37,13 @@ const MainLayout = () => (
               <li><Link to="/">Trang chủ</Link></li>
               <li><Link to="/doi-hinh">Đội hình tình nguyện</Link></li>
               <li><Link to="/tin-tuc">Tin tức chiến dịch</Link></li>
-              <li><Link to="/register">Đăng ký tài khoản</Link></li>
+              <li><button onClick={() => window.dispatchEvent(new CustomEvent('openAuth', { detail: 'register' }))} className="auth-link-btn" style={{ fontWeight: 'normal', color: 'inherit' }}>Đăng ký tài khoản</button></li>
             </ul>
           </div>
           <div className="footer-col">
             <h5>Hệ thống</h5>
             <ul>
-              <li><Link to="/login">Đăng nhập nội bộ</Link></li>
+              <li><button onClick={() => window.dispatchEvent(new CustomEvent('openAuth', { detail: 'login' }))} className="auth-link-btn" style={{ fontWeight: 'normal', color: 'inherit' }}>Đăng nhập nội bộ</button></li>
               <li><a href="#">Chính sách bảo mật</a></li>
               <li><a href="#">Điều khoản sử dụng</a></li>
               <li><a href="#">Liên hệ hỗ trợ</a></li>

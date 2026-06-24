@@ -5,7 +5,7 @@ import { AlertCircle, Lock, Mail, ArrowRight, ShieldCheck, Sparkles, Globe, Fing
 
 const ADMIN_ROLES = ['COMMUNE_ADMIN', 'PROVINCE_ADMIN', 'ADMIN', 'SENIOR_ADMIN'];
 
-const Login = () => {
+const Login = ({ onSwitch, onSuccess }) => {
   const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -22,11 +22,8 @@ const Login = () => {
       localStorage.setItem('role',         r.data.role);
       localStorage.setItem('username',     r.data.username);
 
-      if (ADMIN_ROLES.includes(r.data.role)) {
-        navigate('/dashboard');
-      } else {
-        navigate('/');
-      }
+      if (onSuccess) onSuccess();
+      window.location.reload();
     } catch (err) {
       setError(err.response?.data?.message || 'Sai email hoặc mật khẩu.');
     }
@@ -43,7 +40,13 @@ const Login = () => {
         <div className="auth-orb auth-orb-3" />
       </div>
 
-      <div className="auth-center-wrapper">
+      <div className="auth-center-wrapper" style={{ position: 'relative' }}>
+        {onSuccess && (
+          <button onClick={onSuccess} style={{ position: 'absolute', top: 20, right: 20, background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff', width: 36, height: 36, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 10 }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+        )}
+        
         {/* Branding top */}
         <div className="auth-top-brand animate-up">
           <img src="/logo.png" alt="Logo" className="auth-top-logo" />
@@ -149,9 +152,16 @@ const Login = () => {
             </div>
           </div>
 
-          <div className="auth-card-footer">
-            Bạn chưa có tài khoản? <Link to="/register">Đăng ký ngay</Link>
-          </div>
+          <p className="auth-bottom-text">
+            Chưa có tài khoản?{' '}
+            {onSwitch ? (
+              <button type="button" onClick={onSwitch} className="auth-link-btn">
+                Đăng ký ngay
+              </button>
+            ) : (
+              <Link to="/register">Đăng ký ngay</Link>
+            )}
+          </p>
         </div>
 
         <p className="auth-bottom-text">

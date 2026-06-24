@@ -39,7 +39,15 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   const token = localStorage.getItem('token');
   const role  = localStorage.getItem('role');
 
-  if (!token) return <Navigate to="/login" replace />;
+  React.useEffect(() => {
+    if (!token) {
+      window.dispatchEvent(new CustomEvent('openAuth', { detail: 'login' }));
+    }
+  }, [token]);
+
+  if (!token) {
+    return <Navigate to="/" replace />;
+  }
   if (allowedRoles && !allowedRoles.includes(role)) return <Navigate to="/dashboard" replace />;
   if (!allowedRoles && !ADMIN_ROLES.includes(role)) return <Navigate to="/" replace />;
 
@@ -56,6 +64,14 @@ const PageLoader = () => (
 );
 
 function App() {
+  const [authView, setAuthView] = React.useState(null);
+
+  React.useEffect(() => {
+    const handler = (e) => setAuthView(e.detail);
+    window.addEventListener('openAuth', handler);
+    return () => window.removeEventListener('openAuth', handler);
+  }, []);
+
   return (
     <>
       <Suspense fallback={<PageLoader />}>
@@ -69,10 +85,6 @@ function App() {
             <Route path="/tin-tuc" element={<PublicNews />} />
             <Route path="/profile" element={<PublicProfile />} />
           </Route>
-
-          {/* Full-screen auth pages */}
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
 
           {/* Dashboard (staff/admin only) */}
           <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
@@ -98,6 +110,12 @@ function App() {
       </Suspense>
       <ChatbotWidget />
       <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} pauseOnHover theme="light" />
+      
+      {/* Auth Modals */}
+      <Suspense fallback={null}>
+        {authView === 'login' && <Login onSwitch={() => setAuthView('register')} onSuccess={() => setAuthView(null)} />}
+        {authView === 'register' && <Register onSwitch={() => setAuthView('login')} onSuccess={() => setAuthView(null)} />}
+      </Suspense>
     </>
   );
 }
