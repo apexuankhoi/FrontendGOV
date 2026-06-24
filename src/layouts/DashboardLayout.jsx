@@ -90,9 +90,10 @@ const DashboardLayout = () => {
 
       {/* Sidebar */}
       <aside className={`sidebar ${open ? 'open' : ''}`}>
-        <div className="sidebar-logo" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '20px 0' }}>
-          <img src="/logo.png" alt="Webgov Logo" style={{ height: 60, width: 'auto', marginBottom: 8 }} />
-          <span className="t2" style={{ opacity: 0.7 }}>Quản trị nội bộ</span>
+        <div className="sidebar-logo" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '24px 0 16px' }}>
+          <img src="/logo.png" alt="Webgov Logo" style={{ height: 50, width: 50, objectFit: 'contain', marginBottom: 8 }} />
+          <span className="t1" style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--primary-dark)' }}>Webgov</span>
+          <span className="t2" style={{ opacity: 0.7, fontSize: '0.8rem', fontWeight: 600 }}>Tỉnh Đắk Lắk</span>
         </div>
 
         <nav className="sidebar-body">

@@ -3,6 +3,7 @@ import api from '../lib/api';
 import { useNavigate, Link } from 'react-router-dom';
 import { AlertCircle, CheckCircle, User, Mail, Lock, ArrowRight, Bot, Camera, Shield, MapPin } from 'lucide-react';
 import { toast } from 'react-toastify';
+import { DAKLAK_COMMUNES } from '../lib/communes';
 
 const Register = () => {
   const [tab, setTab] = useState('CITIZEN'); // 'CITIZEN' | 'ADMIN'
@@ -102,8 +103,12 @@ const Register = () => {
   return (
     <div className="auth-split-page">
       <div className="auth-split-left" style={{ background: 'linear-gradient(145deg, #094b3f 0%, #16a34a 50%, #0d3b6e 100%)' }}>
-        <div className="auth-brand" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <img src="/logo.png" alt="Webgov Logo" style={{ height: 80, width: 'auto', marginBottom: 16 }} />
+        <div className="auth-brand" style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
+          <img src="/logo.png" alt="Webgov Logo" style={{ height: 50, width: 50, objectFit: 'contain' }} />
+          <div className="auth-brand-text" style={{ textAlign: 'left' }}>
+            <h1 style={{ fontSize: '1.6rem', marginBottom: 2, lineHeight: 1 }}>Webgov</h1>
+            <p style={{ fontSize: '0.9rem', opacity: 0.8, margin: 0 }}>Tỉnh Đắk Lắk</p>
+          </div>
         </div>
         <div className="auth-hero-content animate-up">
           <h2>Tạo tài khoản <br /><span>Công dân số</span></h2>
@@ -161,10 +166,9 @@ const Register = () => {
                       <MapPin className="premium-input-icon" size={18} />
                       <select className="premium-input" required value={form.commune} onChange={e => setForm({...form, commune: e.target.value})}>
                         <option value="">-- Chọn Đơn vị --</option>
-                        <option value="Xã Ea Kao">Xã Ea Kao</option>
-                        <option value="Phường Tân Lợi">Phường Tân Lợi</option>
-                        <option value="Phường Thắng Lợi">Phường Thắng Lợi</option>
-                        <option value="Phường Tân Thành">Phường Tân Thành</option>
+                        {DAKLAK_COMMUNES.map(c => (
+                          <option key={c} value={c}>{c}</option>
+                        ))}
                         <option value="Khác">Khác (Cần duyệt thủ công)</option>
                       </select>
                     </div>

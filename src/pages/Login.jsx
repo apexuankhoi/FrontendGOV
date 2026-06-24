@@ -37,8 +37,12 @@ const Login = () => {
     <div className="auth-split-page">
       {/* LEFT: BRANDING & GLASSMORPHISM */}
       <div className="auth-split-left">
-        <div className="auth-brand" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <img src="/logo.png" alt="Webgov Logo" style={{ height: 80, width: 'auto', marginBottom: 16 }} />
+        <div className="auth-brand" style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
+          <img src="/logo.png" alt="Webgov Logo" style={{ height: 50, width: 50, objectFit: 'contain' }} />
+          <div className="auth-brand-text" style={{ textAlign: 'left' }}>
+            <h1 style={{ fontSize: '1.6rem', marginBottom: 2, lineHeight: 1 }}>Webgov</h1>
+            <p style={{ fontSize: '0.9rem', opacity: 0.8, margin: 0 }}>Tỉnh Đắk Lắk</p>
+          </div>
         </div>
 
         <div className="auth-hero-content animate-up">

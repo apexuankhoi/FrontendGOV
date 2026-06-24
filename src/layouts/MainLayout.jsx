@@ -14,7 +14,10 @@ const MainLayout = () => (
       <div className="container">
         <div className="footer-grid">
           <div className="footer-brand">
-            <img src="/logo.png" alt="Webgov Logo" style={{ height: 40, width: 'auto', marginBottom: 12, display: 'block' }} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+              <img src="/logo.png" alt="Webgov Logo" style={{ height: 35, width: 35, objectFit: 'contain' }} />
+              <span className="name" style={{ margin: 0, fontSize: '1.25rem', lineHeight: 1 }}>Webgov Đắk Lắk</span>
+            </div>
             <p style={{ marginBottom: 16 }}>Hệ thống Chính quyền số khu vực Tây Nguyên. Phát triển bởi Tỉnh Đoàn Đắk Lắk.</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               <a href="tel:02623800000" style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'rgba(255,255,255,.65)', fontSize: '.85rem' }}>
