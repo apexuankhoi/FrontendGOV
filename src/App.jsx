@@ -29,6 +29,7 @@ const DocumentsIncoming = lazy(() => import('./pages/dashboard/eoffice/Documents
 const DocumentsOutgoing = lazy(() => import('./pages/dashboard/eoffice/DocumentsOutgoing'));
 const TasksManager      = lazy(() => import('./pages/dashboard/eoffice/TasksManager'));
 const ActivityLog       = lazy(() => import('./pages/dashboard/eoffice/ActivityLog'));
+const AiReport          = lazy(() => import('./pages/dashboard/eoffice/AiReport'));
 
 import ChatbotWidget from './components/ChatbotWidget';
 
@@ -87,6 +88,7 @@ function App() {
             <Route path="eoffice/incoming" element={<DocumentsIncoming />} />
             <Route path="eoffice/outgoing" element={<DocumentsOutgoing />} />
             <Route path="eoffice/tasks" element={<TasksManager />} />
+            <Route path="eoffice/report" element={<ProtectedRoute allowedRoles={['COMMUNE_ADMIN', 'PROVINCE_ADMIN', 'ADMIN', 'SENIOR_ADMIN']}><AiReport /></ProtectedRoute>} />
             <Route path="eoffice/activity" element={<ProtectedRoute allowedRoles={['ADMIN', 'SENIOR_ADMIN']}><ActivityLog /></ProtectedRoute>} />
           </Route>
 

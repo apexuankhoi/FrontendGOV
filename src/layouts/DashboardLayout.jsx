@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, Map, FileText, Users, LogOut,
-  Globe, Menu, X, ChevronRight, UserCircle, Settings,
+  Globe, Menu, X, ChevronRight, UserCircle, Settings, Bot,
   FileInput, FileOutput, CheckSquare, Activity, Briefcase, Bell
 } from 'lucide-react';
 import api, { API_URL } from '../lib/api';
@@ -113,6 +113,7 @@ const DashboardLayout = () => {
           <SLink to="/dashboard/eoffice/incoming" icon={FileInput} label="Văn bản đến"/>
           <SLink to="/dashboard/eoffice/outgoing" icon={FileOutput} label="Văn bản đi"/>
           <SLink to="/dashboard/eoffice/tasks" icon={CheckSquare} label="Quản lý Công việc"/>
+          <SLink to="/dashboard/eoffice/report" icon={Bot} label="Báo cáo AI"/>
           {can('ADMIN', 'SENIOR_ADMIN') && (
             <SLink to="/dashboard/eoffice/activity" icon={Activity} label="Nhật ký hoạt động"/>
           )}
