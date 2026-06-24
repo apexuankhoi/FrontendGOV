@@ -64,17 +64,17 @@ const PublicProfile = () => {
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               color: '#fff', fontSize: '2rem', fontWeight: 800, fontFamily: "'Lexend Deca', sans-serif",
             }}>
-              {username.charAt(0).toUpperCase()}
+              {username ? username.charAt(0).toUpperCase() : 'U'}
             </div>
             <div style={{ flex: 1 }}>
-              <h2 style={{ fontSize: '1.5rem', marginBottom: 6 }}>{username}</h2>
+              <h2 style={{ fontSize: '1.5rem', marginBottom: 6 }}>{username || 'Người dùng'}</h2>
               <span style={{
                 display: 'inline-flex', alignItems: 'center', gap: 6,
                 padding: '4px 12px', borderRadius: 'var(--r-pill)',
-                background: roleInfo.bg, color: roleInfo.color,
+                background: roleInfo?.bg || 'var(--surface-2)', color: roleInfo?.color || 'var(--tx-3)',
                 fontSize: '.78rem', fontWeight: 700,
               }}>
-                <Shield size={12}/> {roleInfo.label}
+                <Shield size={12}/> {roleInfo?.label || 'Người dân'}
               </span>
             </div>
             <button onClick={logout}

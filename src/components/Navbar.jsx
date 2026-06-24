@@ -81,9 +81,9 @@ const Navbar = () => {
                 }}
               >
                 <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: '.85rem' }}>
-                  {username.charAt(0).toUpperCase()}
+                  {username ? username.charAt(0).toUpperCase() : 'U'}
                 </div>
-                <span style={{ fontWeight: 600, fontSize: '.875rem', color: 'var(--primary-dark)' }}>{username.split(' ').slice(-1)[0]}</span>
+                <span style={{ fontWeight: 600, fontSize: '.875rem', color: 'var(--primary-dark)' }}>{username ? username.split(' ').slice(-1)[0] : 'Người dùng'}</span>
                 <ChevronDown size={14} color="var(--primary)" style={{ transition: 'transform .2s', transform: dropdownOpen ? 'rotate(180deg)' : 'none' }} />
               </button>
 
@@ -96,7 +96,7 @@ const Navbar = () => {
                   animation: 'fadeUp .2s ease',
                 }}>
                   <div style={{ padding: '10px 14px 12px', borderBottom: '1px solid var(--border)' }}>
-                    <div style={{ fontWeight: 700, fontSize: '.9rem' }}>{username}</div>
+                    <div style={{ fontWeight: 700, fontSize: '.9rem' }}>{username || 'Người dùng'}</div>
                     <div style={{ fontSize: '.75rem', color: 'var(--tx-3)', marginTop: 2 }}>Người dân · Đắk Lắk</div>
                   </div>
                   <Link to="/profile" onClick={() => setDropdownOpen(false)}
@@ -141,8 +141,8 @@ const Navbar = () => {
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             <div style={{ padding: '10px 14px', background: 'var(--primary-bg)', borderRadius: 'var(--r-md)', display: 'flex', alignItems: 'center', gap: 10 }}>
-              <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700 }}>{username.charAt(0).toUpperCase()}</div>
-              <div><div style={{ fontWeight: 700, fontSize: '.875rem' }}>{username}</div><div style={{ fontSize: '.72rem', color: 'var(--tx-3)' }}>Người dân</div></div>
+              <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700 }}>{username ? username.charAt(0).toUpperCase() : 'U'}</div>
+              <div><div style={{ fontWeight: 700, fontSize: '.875rem' }}>{username || 'Người dùng'}</div><div style={{ fontSize: '.72rem', color: 'var(--tx-3)' }}>Người dân</div></div>
             </div>
             <Link to="/profile" className="btn btn-outline w-full" onClick={() => setMobileOpen(false)}>Hồ sơ cá nhân</Link>
             <button className="btn btn-outline w-full" style={{ color: 'var(--danger)', borderColor: 'var(--danger)' }} onClick={() => { logout(); setMobileOpen(false); }}>Đăng xuất</button>

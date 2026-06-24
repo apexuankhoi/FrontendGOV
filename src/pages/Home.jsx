@@ -37,9 +37,9 @@ const QUICK_SERVICES = [
 ];
 
 const Home = () => {
-  const [teams, setTeams]   = useState([]);
-  const [news, setNews]     = useState([]);
-  const [stats, setStats]   = useState({ total: 0, volunteers: 0, projects: 0, value: 0, beneficiaries: 0 });
+  const [teams, setTeams] = useState([]);
+  const [news, setNews] = useState([]);
+  const [stats, setStats] = useState({ total: 0, volunteers: 0, projects: 0, value: 0, beneficiaries: 0 });
   const [search, setSearch] = useState('');
   const mapRef = useRef(null);
 
@@ -47,15 +47,15 @@ const Home = () => {
     api.get('/teams?status=APPROVED').then(r => {
       setTeams(r.data);
       const s = r.data.reduce((acc, t) => ({
-        total:        acc.total + 1,
-        volunteers:   acc.volunteers   + (t.statistics?.volunteersCount || 0),
-        projects:     acc.projects     + (t.statistics?.projectsCount   || 0),
-        value:        acc.value        + (t.statistics?.estimatedValue  || 0),
-        beneficiaries:acc.beneficiaries+ (t.statistics?.beneficiaries   || 0),
+        total: acc.total + 1,
+        volunteers: acc.volunteers + (t.statistics?.volunteersCount || 0),
+        projects: acc.projects + (t.statistics?.projectsCount || 0),
+        value: acc.value + (t.statistics?.estimatedValue || 0),
+        beneficiaries: acc.beneficiaries + (t.statistics?.beneficiaries || 0),
       }), { total: 0, volunteers: 0, projects: 0, value: 0, beneficiaries: 0 });
       setStats(s);
-    }).catch(() => {});
-    api.get('/news').then(r => setNews(r.data.slice(0, 3))).catch(() => {});
+    }).catch(() => { });
+    api.get('/news').then(r => setNews(r.data.slice(0, 3))).catch(() => { });
   }, []);
 
   const handleQuickService = (query) => {
@@ -89,7 +89,7 @@ const Home = () => {
                 <span className="ctz-hero-accent">phục vụ người dân</span>
               </h1>
               <p className="ctz-hero-sub">
-                Theo dõi chiến dịch tình nguyện, tra cứu thủ tục hành chính và kết nối với AI Trợ lý 24/7 — mọi thứ bạn cần đều ở đây.
+                Chiến dịch chuyển đổi số, sổ tay quản lý văn bản, tra cứu ...., tra cứu thủ tục hành chính và kết nối với AI Trợ lý 24/7 — mọi thứ bạn cần đều ở đây.
               </p>
               <div className="ctz-hero-actions">
                 <button onClick={() => handleQuickService('Xin chào, tôi cần hỗ trợ!')} className="btn btn-white btn-lg">
@@ -105,10 +105,10 @@ const Home = () => {
             <div className="ctz-hero-right">
               <div className="ctz-stat-grid">
                 {[
-                  { val: stats.total,         suf: '',  lbl: 'Đội hình hoạt động', icon: Map },
-                  { val: stats.volunteers,    suf: '+', lbl: 'Tình nguyện viên',   icon: Users },
-                  { val: stats.projects,      suf: '',  lbl: 'Công trình đã hoàn thành', icon: Hammer },
-                  { val: stats.beneficiaries, suf: '+', lbl: 'Người được hỗ trợ',  icon: Heart },
+                  { val: stats.total, suf: '', lbl: 'Đội hình hoạt động', icon: Map },
+                  { val: stats.volunteers, suf: '+', lbl: 'Tình nguyện viên', icon: Users },
+                  { val: stats.projects, suf: '', lbl: 'Công trình đã hoàn thành', icon: Hammer },
+                  { val: stats.beneficiaries, suf: '+', lbl: 'Người được hỗ trợ', icon: Heart },
                 ].map((s, i) => (
                   <div key={i} className="ctz-stat-box">
                     <s.icon size={22} className="ctz-stat-icon" />
@@ -253,7 +253,7 @@ const Home = () => {
                 <span className="section-label">Cập nhật mới nhất</span>
                 <h2 className="section-title" style={{ marginTop: 8 }}>Tin tức Chiến dịch</h2>
               </div>
-              <Link to="/tin-tuc" className="btn btn-ghost">Tất cả tin tức <ArrowRight size={15}/></Link>
+              <Link to="/tin-tuc" className="btn btn-ghost">Tất cả tin tức <ArrowRight size={15} /></Link>
             </div>
             <div className="grid-3">
               {news.map((n, i) => (
@@ -284,7 +284,7 @@ const Home = () => {
               </div>
               <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
                 <Link to="/register" className="btn btn-primary btn-lg">Đăng ký miễn phí</Link>
-                <Link to="/login"    className="btn btn-outline btn-lg">Đăng nhập</Link>
+                <Link to="/login" className="btn btn-outline btn-lg">Đăng nhập</Link>
               </div>
             </div>
           </div>

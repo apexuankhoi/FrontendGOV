@@ -49,11 +49,11 @@ const Profile = () => {
       <div className="card" style={{ marginBottom: 20 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
           <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'linear-gradient(135deg, var(--primary), var(--green-500))', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '1.6rem', fontWeight: 800, fontFamily: "'Lexend Deca', sans-serif" }}>
-            {username.charAt(0).toUpperCase()}
+            {username ? username.charAt(0).toUpperCase() : 'U'}
           </div>
           <div>
-            <h3 style={{ fontSize: '1.4rem' }}>{username}</h3>
-            <span className={`badge badge-dot ${roleInfo.badge}`} style={{ marginTop: 6 }}>{roleInfo.label}</span>
+            <h3 style={{ fontSize: '1.4rem' }}>{username || 'Người dùng'}</h3>
+            <span className={`badge badge-dot ${roleInfo?.badge || 'badge-gray'}`} style={{ marginTop: 6 }}>{roleInfo?.label || 'Người dân'}</span>
           </div>
         </div>
       </div>
