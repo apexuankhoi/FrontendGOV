@@ -89,7 +89,7 @@ const Home = () => {
                 <span className="ctz-hero-accent">phục vụ người dân</span>
               </h1>
               <p className="ctz-hero-sub">
-                Chiến dịch chuyển đổi số, sổ tay quản lý văn bản, tra cứu ...., tra cứu thủ tục hành chính và kết nối với AI Trợ lý 24/7 — mọi thứ bạn cần đều ở đây.
+                Chiến dịch chuyển đổi số, sổ tay quản lý văn bản, tra cứu thủ tục hành chính và kết nối với AI Trợ lý 24/7 — mọi thứ bạn cần đều ở đây.
               </p>
               <div className="ctz-hero-actions">
                 <button onClick={() => handleQuickService('Xin chào, tôi cần hỗ trợ!')} className="btn btn-white btn-lg">
