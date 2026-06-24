@@ -120,6 +120,14 @@ const DocumentsIncoming = () => {
       // Auto-fill form
       const ai = res.data.aiResult;
       if (ai) {
+        const parseDate = (dStr) => {
+          if (!dStr || dStr.toLowerCase().includes('null')) return '';
+          if (/^\d{4}-\d{2}-\d{2}$/.test(dStr)) return dStr;
+          const match = dStr.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+          if (match) return `${match[3]}-${match[2].padStart(2, '0')}-${match[1].padStart(2, '0')}`;
+          return '';
+        };
+
         setForm(prev => ({
           ...prev,
           documentNumber: ai.soVanBan || prev.documentNumber,
@@ -130,6 +138,8 @@ const DocumentsIncoming = () => {
           category: CATEGORIES.includes(ai.loaiVanBan) ? ai.loaiVanBan : prev.category,
           field: ai.linhVuc || prev.field,
           urgency: URGENCIES.includes(ai.doKhan) ? ai.doKhan : prev.urgency,
+          issuedDate: parseDate(ai.ngayBanHanh) || prev.issuedDate,
+          deadline: parseDate(ai.hanXuLy) || prev.deadline,
         }));
         // Add file to form
         setFiles([fileInputRef.current.files[0]]);
