@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import api from '../lib/api';
 import { useNavigate, Link } from 'react-router-dom';
-import { AlertCircle, Lock, Mail, ArrowRight, ShieldCheck, Sparkles, Globe, Fingerprint } from 'lucide-react';
 
 const ADMIN_ROLES = ['COMMUNE_ADMIN', 'PROVINCE_ADMIN', 'ADMIN', 'SENIOR_ADMIN'];
 
@@ -34,130 +33,77 @@ const Login = () => {
   };
 
   return (
-    <div className="auth-page-v2">
-      {/* Animated background */}
-      <div className="auth-bg-gradient" />
-      <div className="auth-bg-orbs">
-        <div className="auth-orb auth-orb-1" />
-        <div className="auth-orb auth-orb-2" />
-        <div className="auth-orb auth-orb-3" />
-      </div>
-
-      <div className="auth-center-wrapper">
-        {/* Branding top */}
-        <div className="auth-top-brand animate-up">
-          <img src="/logo.png" alt="Logo" className="auth-top-logo" />
-          <div>
-            <h1 className="auth-top-name">Webgov</h1>
-            <p className="auth-top-sub">Chính quyền số Đắk Lắk</p>
-          </div>
+    <div className="fb-auth-page">
+      <div className="fb-auth-container">
+        {/* Left Branding */}
+        <div className="fb-auth-brand">
+          <img src="/logo.png" alt="Logo" className="fb-auth-logo" />
+          <h2 className="fb-auth-tagline">
+            Chính quyền số giúp bạn kết nối và giải quyết thủ tục hành chính nhanh chóng hơn.
+          </h2>
         </div>
 
-        {/* Main Card */}
-        <div className="auth-card animate-up delay-1">
-          {/* Feature pills */}
-          <div className="auth-feature-row">
-            <div className="auth-feature-pill">
-              <ShieldCheck size={14} />
-              <span>Bảo mật cao</span>
-            </div>
-            <div className="auth-feature-pill">
-              <Sparkles size={14} />
-              <span>AI Tích hợp</span>
-            </div>
-            <div className="auth-feature-pill">
-              <Globe size={14} />
-              <span>eOffice</span>
-            </div>
+        {/* Right Card */}
+        <div className="fb-auth-card-wrap">
+          <div className="fb-auth-card">
+            {error && <div className="fb-alert">{error}</div>}
+            <form onSubmit={submit}>
+              <input
+                type="email"
+                className="fb-input"
+                placeholder="Email hoặc số điện thoại"
+                value={form.email}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                required
+              />
+              <input
+                type="password"
+                className="fb-input"
+                placeholder="Mật khẩu"
+                value={form.password}
+                onChange={(e) => setForm({ ...form, password: e.target.value })}
+                required
+              />
+              <button type="submit" className="fb-btn-primary" disabled={loading}>
+                {loading ? 'Đang xử lý...' : 'Đăng nhập'}
+              </button>
+            </form>
+
+            <a href="#" className="fb-forgot">Quên mật khẩu?</a>
+
+            <div className="fb-divider"></div>
+
+            <Link to="/register" className="fb-btn-success">
+              Tạo tài khoản mới
+            </Link>
           </div>
 
-          <div className="auth-card-header">
-            <h2>Đăng nhập</h2>
-            <p>Chào mừng bạn quay trở lại hệ thống</p>
-          </div>
-
-          {error && (
-            <div className="auth-alert">
-              <AlertCircle size={18} /> {error}
-            </div>
-          )}
-
-          <form onSubmit={submit}>
-            <div className="auth-field">
-              <label>Địa chỉ Email</label>
-              <div className="auth-input-wrap">
-                <Mail className="auth-input-icon" size={18} />
-                <input
-                  type="email"
-                  required
-                  placeholder="admin@daklak.gov.vn"
-                  value={form.email}
-                  onChange={e => setForm({ ...form, email: e.target.value })}
-                />
+          {/* Quick Demo Logins */}
+          <div className="fb-demo-section">
+            <div className="fb-demo-title">Truy cập nhanh (Demo)</div>
+            <button className="fb-demo-btn" onClick={() => { setForm({ email: 'admin@daklak.gov.vn', password: 'password123' }); }}>
+              <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#e41e3f', marginRight: 10, flexShrink: 0 }}></div>
+              <div>
+                <strong>Super Admin</strong>
+                <span>admin@daklak.gov.vn</span>
               </div>
-            </div>
-
-            <div className="auth-field">
-              <label>Mật khẩu truy cập</label>
-              <div className="auth-input-wrap">
-                <Lock className="auth-input-icon" size={18} />
-                <input
-                  type="password"
-                  required
-                  placeholder="••••••••"
-                  value={form.password}
-                  onChange={e => setForm({ ...form, password: e.target.value })}
-                />
-              </div>
-            </div>
-
-            <button type="submit" className="auth-submit-btn" disabled={loading}>
-              {loading ? (
-                <span className="auth-spinner" />
-              ) : (
-                <>
-                  <Fingerprint size={18} />
-                  Đăng nhập vào hệ thống
-                  <ArrowRight size={16} />
-                </>
-              )}
             </button>
-          </form>
-
-          {/* Quick Test */}
-          <div className="auth-quick-section">
-            <div className="auth-quick-title">Truy cập nhanh (Demo)</div>
-            <div className="auth-quick-grid">
-              {[
-                { role: 'Super Admin', email: 'admin@daklak.gov.vn', pw: '123456', color: '#E11D48' },
-                { role: 'Cán bộ Tỉnh', email: 'tinh@daklak.gov.vn', pw: '123456', color: '#7C3AED' },
-                { role: 'Người dân', email: 'nguoidan@gmail.com', pw: '123456', color: '#0D9488' },
-              ].map(t => (
-                <button
-                  key={t.email}
-                  className="auth-quick-btn"
-                  onClick={() => setForm({ email: t.email, password: t.pw })}
-                  type="button"
-                >
-                  <span className="auth-quick-dot" style={{ background: t.color }} />
-                  <div>
-                    <span className="auth-quick-role">{t.role}</span>
-                    <span className="auth-quick-email">{t.email}</span>
-                  </div>
-                </button>
-              ))}
-            </div>
+            <button className="fb-demo-btn" onClick={() => { setForm({ email: 'tinh@daklak.gov.vn', password: 'password123' }); }}>
+              <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#8b5cf6', marginRight: 10, flexShrink: 0 }}></div>
+              <div>
+                <strong>Cán bộ Tỉnh</strong>
+                <span>tinh@daklak.gov.vn</span>
+              </div>
+            </button>
+            <button className="fb-demo-btn" onClick={() => { setForm({ email: 'nguoidan@gmail.com', password: 'password123' }); }}>
+              <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#10b981', marginRight: 10, flexShrink: 0 }}></div>
+              <div>
+                <strong>Người dân</strong>
+                <span>nguoidan@gmail.com</span>
+              </div>
+            </button>
           </div>
-
-          <p className="auth-bottom-text">
-            Chưa có tài khoản?{' '}
-            <Link to="/register">Đăng ký ngay</Link>
-          </p>
         </div>
-
-        <p className="auth-bottom-text">
-          © 2026 Webgov Đắk Lắk · Chính quyền số thông minh
-        </p>
       </div>
     </div>
   );

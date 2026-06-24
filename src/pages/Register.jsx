@@ -126,94 +126,64 @@ const Register = () => {
   };
 
   return (
-    <div className="auth-page-v2">
-      <div className="auth-bg-gradient" />
-      <div className="auth-bg-orbs">
-        <div className="auth-orb auth-orb-1" />
-        <div className="auth-orb auth-orb-2" />
-        <div className="auth-orb auth-orb-3" />
-      </div>
-
-      <div className="auth-center-wrapper">
-        <div className="auth-top-brand animate-up">
-          <img src="/logo.png" alt="Logo" className="auth-top-logo" />
-          <div>
-            <h1 className="auth-top-name">Webgov</h1>
-            <p className="auth-top-sub">Chính quyền số Đắk Lắk</p>
+    <div className="fb-auth-page">
+      <div className="fb-auth-container" style={{ justifyContent: 'center' }}>
+        <div className="fb-auth-card" style={{ maxWidth: 600, width: '100%', padding: '30px' }}>
+          <div style={{ textAlign: 'center', marginBottom: 20 }}>
+            <h2 style={{ fontSize: '2rem', margin: 0 }}>Đăng ký</h2>
+            <p style={{ color: '#606770', margin: '5px 0 0' }}>Nhanh chóng và dễ dàng.</p>
           </div>
-        </div>
-
-        <div className="auth-card auth-card-wide animate-up delay-1">
-          <div className="auth-feature-row">
-            <div className="auth-feature-pill">
-              <Shield size={14} />
-              <span>AI eKYC</span>
-            </div>
-            <div className="auth-feature-pill">
-              <Sparkles size={14} />
-              <span>Xác thực CCCD</span>
-            </div>
-            <div className="auth-feature-pill">
-              <Globe size={14} />
-              <span>Công dân số</span>
-            </div>
-          </div>
-
-          <div className="auth-card-header">
-            <h2>Đăng ký tài khoản</h2>
-            <p>Chọn đối tượng đăng ký phù hợp với bạn</p>
-          </div>
+          <div className="fb-divider"></div>
 
           {/* Tab Switcher */}
-          <div className="auth-tab-switcher">
+          <div className="auth-tab-switcher" style={{ marginBottom: 20 }}>
             <button
               type="button"
               className={`auth-tab ${tab === 'CITIZEN' ? 'active' : ''}`}
               onClick={() => { setTab('CITIZEN'); setError(''); }}
+              style={{ flex: 1 }}
             >
-              <User size={16} />
-              Người dân
+              <User size={16} /> Người dân
             </button>
             <button
               type="button"
               className={`auth-tab ${tab === 'ADMIN' ? 'active' : ''}`}
               onClick={() => { setTab('ADMIN'); setError(''); }}
+              style={{ flex: 1 }}
             >
-              <Shield size={16} />
-              Cán bộ / Đoàn viên
+              <Shield size={16} /> Cán bộ / Đoàn viên
             </button>
           </div>
 
-          {error && <div className="auth-alert"><AlertCircle size={18} /> {error}</div>}
+          {error && <div className="fb-alert"><AlertCircle size={18} style={{ verticalAlign: 'middle', marginRight: 5 }} /> {error}</div>}
           {success && (
-            <div className="auth-success">
-              <CheckCircle size={22} /> Đăng ký thành công! Đang chuyển hướng...
+            <div className="auth-success" style={{ background: '#e7f3ff', border: '1px solid #1877f2', color: '#1877f2', padding: 15, borderRadius: 6, marginBottom: 15 }}>
+              <CheckCircle size={22} style={{ verticalAlign: 'middle', marginRight: 5 }} /> Đăng ký thành công! Đang chuyển hướng...
             </div>
           )}
 
           {!success && (
-            <form onSubmit={submit}>
+            <form onSubmit={submit} style={{ textAlign: 'left' }}>
               {/* CITIZEN: eKYC */}
               {tab === 'CITIZEN' && (
-                <div className="auth-ekyc-box">
-                  <div className="auth-ekyc-header">
-                    <Camera size={18} />
+                <div className="auth-ekyc-box" style={{ background: '#f5f6f7', border: '1px solid #ccd0d5', borderRadius: 8, padding: 15, marginBottom: 15 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+                    <Camera size={18} color="#1877f2" />
                     <div>
-                      <strong>Xác thực eKYC</strong>
-                      <span>Chụp mặt trước CCCD để AI tự động nhận diện</span>
+                      <strong style={{ display: 'block', color: '#1c1e21' }}>Xác thực eKYC</strong>
+                      <span style={{ fontSize: '0.85rem', color: '#606770' }}>Chụp mặt trước CCCD để tự động điền thông tin</span>
                     </div>
                   </div>
-                  <input type="file" accept="image/*" onChange={handleFrontImage} className="auth-file-input" />
-                  {frontImage && <img src={frontImage} alt="CCCD" className="auth-preview-img" />}
-                  <button type="button" onClick={scanCCCD} disabled={scanning || !frontImage} className="auth-scan-btn">
-                    {scanning ? 'AI Đang quét...' : '🤖 Bắt đầu quét CCCD'}
+                  <input type="file" accept="image/*" onChange={handleFrontImage} style={{ marginBottom: 10, width: '100%' }} />
+                  {frontImage && <img src={frontImage} alt="CCCD" style={{ width: '100%', maxHeight: 200, objectFit: 'contain', borderRadius: 6, marginBottom: 10 }} />}
+                  <button type="button" onClick={scanCCCD} disabled={scanning || !frontImage} className="fb-btn-success" style={{ width: '100%', padding: '8px 16px', fontSize: '1rem', background: '#1877f2' }}>
+                    {scanning ? 'AI Đang quét...' : 'Bắt đầu quét CCCD'}
                   </button>
                   {ekycData && (
-                    <div className="auth-ekyc-result">
+                    <div style={{ marginTop: 15, padding: 10, background: '#e7f3ff', borderRadius: 6, fontSize: '0.9rem' }}>
+                      <div style={{ color: '#1877f2', fontWeight: 'bold', marginBottom: 5 }}>✅ Đã xác thực</div>
                       <div><strong>CCCD:</strong> {ekycData.cccd}</div>
                       <div><strong>Họ tên:</strong> {ekycData.fullName}</div>
-                      <div><strong>Ngày sinh:</strong> {ekycData.dob}</div>
-                      <div className="auth-ekyc-verified">✅ Đã xác thực thành công</div>
                     </div>
                   )}
                 </div>
@@ -222,112 +192,60 @@ const Register = () => {
               {/* ADMIN: Commune + The Nganh */}
               {tab === 'ADMIN' && (
                 <>
-                  <div className="auth-field">
-                    <label>Đơn vị công tác (Xã/Phường)</label>
-                    <div className="auth-input-wrap">
-                      <MapPin className="auth-input-icon" size={18} />
-                      <select required value={form.commune} onChange={e => setForm({...form, commune: e.target.value})}>
-                        <option value="">-- Chọn Đơn vị --</option>
-                        {DAKLAK_COMMUNES.map(c => (
-                          <option key={c} value={c}>{c}</option>
-                        ))}
-                        <option value="Khác">Khác (Cần duyệt thủ công)</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div className="auth-ekyc-box auth-ekyc-box-warning">
-                    <div className="auth-ekyc-header">
-                      <Shield size={18} />
-                      <div>
-                        <strong>Tải lên Thẻ ngành / QĐ Bổ nhiệm</strong>
-                        <span>AI sẽ tự động đối chiếu thông tin trên thẻ</span>
-                      </div>
-                    </div>
-                    <input type="file" accept="image/*" onChange={handleTheNganhImage} className="auth-file-input" required />
-                    {theNganhImage && <img src={theNganhImage} alt="Thẻ ngành" className="auth-preview-img" />}
+                  <select className="fb-input" required value={form.commune} onChange={e => setForm({...form, commune: e.target.value})}>
+                    <option value="">-- Đơn vị công tác (Xã/Phường) --</option>
+                    {DAKLAK_COMMUNES.map(c => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                    <option value="Khác">Khác</option>
+                  </select>
+                  <div className="auth-ekyc-box" style={{ background: '#fef2f2', border: '1px solid #fca5a5', borderRadius: 8, padding: 15, marginBottom: 15 }}>
+                    <strong style={{ display: 'block', color: '#991b1b', marginBottom: 5 }}>Tải lên Thẻ ngành / QĐ Bổ nhiệm</strong>
+                    <input type="file" accept="image/*" onChange={handleTheNganhImage} required style={{ width: '100%' }} />
+                    {theNganhImage && <img src={theNganhImage} alt="Thẻ ngành" style={{ width: '100%', maxHeight: 200, objectFit: 'contain', borderRadius: 6, marginTop: 10 }} />}
                   </div>
                 </>
               )}
 
-              {/* Common fields */}
-              <div className="auth-fields-grid">
-                <div className="auth-field">
-                  <label>Họ và tên</label>
-                  <div className="auth-input-wrap">
-                    <User className="auth-input-icon" size={18} />
-                    <input type="text" required placeholder="Nguyễn Văn A" value={form.username} onChange={e => setForm({ ...form, username: e.target.value })} disabled={tab === 'CITIZEN' && ekycData} />
-                  </div>
-                </div>
-
-                <div className="auth-field">
-                  <label>Địa chỉ Email</label>
-                  <div className="auth-input-wrap">
-                    <Mail className="auth-input-icon" size={18} />
-                    <input type="email" required placeholder="email@example.com" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
-                  </div>
-                </div>
-
-                <div className="auth-field">
-                  <label>Số điện thoại</label>
-                  <div className="auth-input-wrap">
-                    <Phone className="auth-input-icon" size={18} />
-                    <input type="tel" required placeholder="0912345678" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} />
-                  </div>
-                </div>
+              <div style={{ display: 'flex', gap: 10 }}>
+                <input type="text" className="fb-input" required placeholder="Họ và tên" value={form.username} onChange={e => setForm({ ...form, username: e.target.value })} disabled={tab === 'CITIZEN' && ekycData} style={{ flex: 1 }} />
+                <input type="tel" className="fb-input" required placeholder="Số điện thoại" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} style={{ flex: 1 }} />
               </div>
 
-              <div className="auth-field">
-                <label>Mã xác thực OTP (Gửi về Email)</label>
-                <div style={{ display: 'flex', gap: 10 }}>
-                  <div className="auth-input-wrap" style={{ flex: 1 }}>
-                    <ShieldCheck className="auth-input-icon" size={18} />
-                    <input type="text" required placeholder="Nhập mã 6 số" value={form.otp} onChange={e => setForm({ ...form, otp: e.target.value })} maxLength={6} style={{ letterSpacing: 2, fontWeight: 'bold' }} />
-                  </div>
-                  <button type="button" onClick={sendOtp} disabled={sendingOtp || otpTimer > 0} className="btn btn-outline" style={{ whiteSpace: 'nowrap', borderRadius: 10 }}>
-                    {sendingOtp ? 'Đang gửi...' : otpTimer > 0 ? `Thử lại (${otpTimer}s)` : 'Gửi mã OTP'}
-                  </button>
-                </div>
+              <input type="email" className="fb-input" required placeholder="Địa chỉ Email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
+
+              <div style={{ display: 'flex', gap: 10, marginBottom: 12 }}>
+                <input type="text" className="fb-input" required placeholder="Mã OTP 6 số" value={form.otp} onChange={e => setForm({ ...form, otp: e.target.value })} maxLength={6} style={{ flex: 1, marginBottom: 0 }} />
+                <button type="button" onClick={sendOtp} disabled={sendingOtp || otpTimer > 0} className="fb-btn-success" style={{ background: '#e4e6eb', color: '#1c1e21', whiteSpace: 'nowrap', padding: '0 20px', fontSize: '1rem' }}>
+                  {sendingOtp ? 'Đang gửi...' : otpTimer > 0 ? `Thử lại (${otpTimer}s)` : 'Gửi mã OTP'}
+                </button>
               </div>
 
-              <div className="auth-fields-grid">
-                <div className="auth-field">
-                  <label>Mật khẩu</label>
-                  <div className="auth-input-wrap">
-                    <Lock className="auth-input-icon" size={18} />
-                    <input type="password" required placeholder="Tối thiểu 6 ký tự" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} />
-                  </div>
-                </div>
-
-                <div className="auth-field">
-                  <label>Xác nhận mật khẩu</label>
-                  <div className="auth-input-wrap">
-                    <Lock className="auth-input-icon" size={18} />
-                    <input type="password" required placeholder="Nhập lại mật khẩu" value={form.confirm} onChange={e => setForm({ ...form, confirm: e.target.value })} />
-                  </div>
-                </div>
+              <div style={{ display: 'flex', gap: 10 }}>
+                <input type="password" className="fb-input" required placeholder="Mật khẩu mới" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} style={{ flex: 1 }} />
+                <input type="password" className="fb-input" required placeholder="Xác nhận mật khẩu" value={form.confirm} onChange={e => setForm({ ...form, confirm: e.target.value })} style={{ flex: 1 }} />
               </div>
 
-              <button type="submit" className="auth-submit-btn" disabled={loading || (tab === 'CITIZEN' && !ekycData)}>
-                {loading ? (
-                  <span className="auth-spinner" />
-                ) : (
-                  <>
-                    <Fingerprint size={18} />
-                    {tab === 'ADMIN' ? 'AI Xét duyệt & Đăng ký' : 'Hoàn tất đăng ký'}
-                    <ArrowRight size={16} />
-                  </>
-                )}
-              </button>
+              <p style={{ fontSize: '0.75rem', color: '#606770', margin: '10px 0 20px' }}>
+                Bằng cách nhấp vào Đăng ký, bạn đồng ý với Điều khoản và Chính sách dữ liệu của chúng tôi.
+              </p>
+
+              <div style={{ textAlign: 'center' }}>
+                <button type="submit" className="fb-btn-success" disabled={loading} style={{ width: '200px' }}>
+                  {loading ? 'Đang đăng ký...' : 'Đăng ký'}
+                </button>
+              </div>
             </form>
           )}
 
-          <div className="auth-card-footer">
-            Bạn đã có tài khoản? <Link to="/login">Đăng nhập ngay</Link>
+          <div className="fb-divider" style={{ marginTop: 20 }}></div>
+          <div style={{ textAlign: 'center' }}>
+            <Link to="/login" className="fb-forgot" style={{ fontSize: '1.05rem' }}>Đã có tài khoản?</Link>
           </div>
         </div>
 
-        <p className="auth-bottom-text">
-          © 2026 Webgov Đắk Lắk · Chính quyền số thông minh
+        <p style={{ marginTop: 30, color: '#606770', fontSize: '0.9rem' }}>
+          © 2026 Webgov Đắk Lắk · Chính quyền số
         </p>
       </div>
     </div>
