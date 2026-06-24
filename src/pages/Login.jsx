@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import api from '../lib/api';
 import { useNavigate, Link } from 'react-router-dom';
-import { AlertCircle, Lock, Mail, ArrowRight, ShieldCheck } from 'lucide-react';
+import { AlertCircle, Lock, Mail, ArrowRight, ShieldCheck, Sparkles, Globe, Fingerprint } from 'lucide-react';
 
 const ADMIN_ROLES = ['COMMUNE_ADMIN', 'PROVINCE_ADMIN', 'ADMIN', 'SENIOR_ADMIN'];
 
@@ -34,42 +34,45 @@ const Login = () => {
   };
 
   return (
-    <div className="auth-split-page">
-      {/* LEFT: BRANDING & GLASSMORPHISM */}
-      <div className="auth-split-left">
-        <div className="auth-brand" style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
-          <img src="/logo.png" alt="Webgov Logo" style={{ height: 50, width: 50, objectFit: 'contain' }} />
-          <div className="auth-brand-text" style={{ textAlign: 'left' }}>
-            <h1 style={{ fontSize: '1.6rem', marginBottom: 2, lineHeight: 1 }}>Webgov</h1>
-            <p style={{ fontSize: '0.9rem', opacity: 0.8, margin: 0 }}>Tỉnh Đắk Lắk</p>
-          </div>
-        </div>
-
-        <div className="auth-hero-content animate-up">
-          <h2>Chính quyền số <br /><span>thông minh 2026</span></h2>
-          <p>
-            Đăng nhập để truy cập vào hệ thống quản lý tập trung, eOffice, và trải nghiệm AI Trợ lý thông minh độc quyền dành riêng cho người dân và cán bộ tỉnh Đắk Lắk.
-          </p>
-
-          <div className="auth-glass-card">
-            <div className="auth-glass-icon">
-              <ShieldCheck size={28} />
-            </div>
-            <div>
-              <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 700 }}>Hệ thống bảo mật cấp cao</h4>
-              <p style={{ margin: 0, fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)', marginTop: 4 }}>
-                Mọi dữ liệu được mã hóa và bảo vệ an toàn.
-              </p>
-            </div>
-          </div>
-        </div>
+    <div className="auth-page-v2">
+      {/* Animated background */}
+      <div className="auth-bg-gradient" />
+      <div className="auth-bg-orbs">
+        <div className="auth-orb auth-orb-1" />
+        <div className="auth-orb auth-orb-2" />
+        <div className="auth-orb auth-orb-3" />
       </div>
 
-      {/* RIGHT: LOGIN FORM */}
-      <div className="auth-split-right">
-        <div className="auth-form-container animate-up delay-1">
-          <div className="auth-form-header">
-            <h3>Đăng nhập</h3>
+      <div className="auth-center-wrapper">
+        {/* Branding top */}
+        <div className="auth-top-brand animate-up">
+          <img src="/logo.png" alt="Logo" className="auth-top-logo" />
+          <div>
+            <h1 className="auth-top-name">Webgov</h1>
+            <p className="auth-top-sub">Chính quyền số Đắk Lắk</p>
+          </div>
+        </div>
+
+        {/* Main Card */}
+        <div className="auth-card animate-up delay-1">
+          {/* Feature pills */}
+          <div className="auth-feature-row">
+            <div className="auth-feature-pill">
+              <ShieldCheck size={14} />
+              <span>Bảo mật cao</span>
+            </div>
+            <div className="auth-feature-pill">
+              <Sparkles size={14} />
+              <span>AI Tích hợp</span>
+            </div>
+            <div className="auth-feature-pill">
+              <Globe size={14} />
+              <span>eOffice</span>
+            </div>
+          </div>
+
+          <div className="auth-card-header">
+            <h2>Đăng nhập</h2>
             <p>Chào mừng bạn quay trở lại hệ thống</p>
           </div>
 
@@ -80,13 +83,12 @@ const Login = () => {
           )}
 
           <form onSubmit={submit}>
-            <div className="premium-input-group">
-              <label className="premium-label">Địa chỉ Email</label>
-              <div className="premium-input-wrap">
-                <Mail className="premium-input-icon" size={18} />
+            <div className="auth-field">
+              <label>Địa chỉ Email</label>
+              <div className="auth-input-wrap">
+                <Mail className="auth-input-icon" size={18} />
                 <input
                   type="email"
-                  className="premium-input"
                   required
                   placeholder="admin@daklak.gov.vn"
                   value={form.email}
@@ -95,13 +97,12 @@ const Login = () => {
               </div>
             </div>
 
-            <div className="premium-input-group">
-              <label className="premium-label">Mật khẩu truy cập</label>
-              <div className="premium-input-wrap">
-                <Lock className="premium-input-icon" size={18} />
+            <div className="auth-field">
+              <label>Mật khẩu truy cập</label>
+              <div className="auth-input-wrap">
+                <Lock className="auth-input-icon" size={18} />
                 <input
                   type="password"
-                  className="premium-input"
                   required
                   placeholder="••••••••"
                   value={form.password}
@@ -110,36 +111,52 @@ const Login = () => {
               </div>
             </div>
 
-            <button type="submit" className="premium-btn" disabled={loading}>
-              {loading ? 'Đang xác thực hệ thống...' : 'Đăng nhập vào hệ thống'}
-              {!loading && <ArrowRight size={18} />}
+            <button type="submit" className="auth-submit-btn" disabled={loading}>
+              {loading ? (
+                <span className="auth-spinner" />
+              ) : (
+                <>
+                  <Fingerprint size={18} />
+                  Đăng nhập vào hệ thống
+                  <ArrowRight size={16} />
+                </>
+              )}
             </button>
           </form>
 
-          {/* Quick Test Accounts for Developers/Demo */}
-          <div className="quick-test-accounts animate-up delay-2">
-            <div className="quick-test-title">Truy cập nhanh (Dành cho Demo)</div>
-            {[
-              { role: 'Super Admin', email: 'admin@daklak.gov.vn', pw: '123456' },
-              { role: 'Cán bộ Tỉnh', email: 'tinh@daklak.gov.vn', pw: '123456' },
-              { role: 'Người dân', email: 'nguoidan@gmail.com', pw: '123456' },
-            ].map(t => (
-              <button
-                key={t.email}
-                className="quick-btn"
-                onClick={() => setForm({ email: t.email, password: t.pw })}
-                type="button"
-              >
-                <span><span className="quick-role">{t.role}</span></span>
-                <span style={{ fontSize: '0.75rem' }}>{t.email}</span>
-              </button>
-            ))}
+          {/* Quick Test */}
+          <div className="auth-quick-section">
+            <div className="auth-quick-title">Truy cập nhanh (Demo)</div>
+            <div className="auth-quick-grid">
+              {[
+                { role: 'Super Admin', email: 'admin@daklak.gov.vn', pw: '123456', color: '#E11D48' },
+                { role: 'Cán bộ Tỉnh', email: 'tinh@daklak.gov.vn', pw: '123456', color: '#7C3AED' },
+                { role: 'Người dân', email: 'nguoidan@gmail.com', pw: '123456', color: '#0D9488' },
+              ].map(t => (
+                <button
+                  key={t.email}
+                  className="auth-quick-btn"
+                  onClick={() => setForm({ email: t.email, password: t.pw })}
+                  type="button"
+                >
+                  <span className="auth-quick-dot" style={{ background: t.color }} />
+                  <div>
+                    <span className="auth-quick-role">{t.role}</span>
+                    <span className="auth-quick-email">{t.email}</span>
+                  </div>
+                </button>
+              ))}
+            </div>
           </div>
 
-          <div className="auth-footer">
+          <div className="auth-card-footer">
             Bạn chưa có tài khoản? <Link to="/register">Đăng ký ngay</Link>
           </div>
         </div>
+
+        <p className="auth-bottom-text">
+          © 2026 Webgov Đắk Lắk · Chính quyền số thông minh
+        </p>
       </div>
     </div>
   );
