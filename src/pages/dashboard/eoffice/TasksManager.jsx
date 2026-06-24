@@ -3,6 +3,26 @@ import api from '../../../lib/api';
 import { toast } from 'react-toastify';
 import { CheckSquare, Plus, RefreshCw, Trash2, Calendar, User, Search, Clock, CheckCircle } from 'lucide-react';
 
+const MarkdownRender = ({ text }) => {
+  if (!text) return null;
+  const lines = text.split('\n');
+  return (
+    <div style={{ lineHeight: 1.8, color: 'var(--tx-1)' }}>
+      {lines.map((line, i) => {
+        if (line.startsWith('# '))   return <h1 key={i} style={{ fontSize: '1.3rem', fontWeight: 800, margin: '20px 0 10px', color: 'var(--primary-dark)' }}>{line.slice(2)}</h1>;
+        if (line.startsWith('## '))  return <h2 key={i} style={{ fontSize: '1.1rem', fontWeight: 700, margin: '16px 0 8px', color: 'var(--primary)' }}>{line.slice(3)}</h2>;
+        if (line.startsWith('### ')) return <h3 key={i} style={{ fontSize: '1rem', fontWeight: 700, margin: '12px 0 6px' }}>{line.slice(4)}</h3>;
+        if (/^\*\*.*\*\*$/.test(line.trim())) return <p key={i} style={{ fontWeight: 700, margin: '10px 0 4px', color: 'var(--primary-dark)' }}>{line.trim().slice(2,-2)}</p>;
+        if (line.startsWith('- ') || line.startsWith('* ')) return <li key={i} style={{ marginLeft: 20, marginBottom: 4 }}>{line.slice(2)}</li>;
+        if (/^\d+\.\s/.test(line)) return <li key={i} style={{ marginLeft: 20, marginBottom: 4 }}>{line.replace(/^\d+\.\s/, '')}</li>;
+        if (!line.trim()) return <br key={i} />;
+        const parts = line.split(/\*\*(.*?)\*\*/g);
+        return <p key={i} style={{ margin: '3px 0' }}>{parts.map((p,j) => j%2===1 ? <strong key={j}>{p}</strong> : p)}</p>;
+      })}
+    </div>
+  );
+};
+
 const STATUSES = ['Chưa thực hiện', 'Đang thực hiện', 'Hoàn thành', 'Quá hạn', 'Hủy'];
 const PRIORITIES = ['Thấp', 'Trung bình', 'Cao', 'Rất cao'];
 const STATUS_BADGE = { 'Chưa thực hiện': 'badge-warning', 'Đang thực hiện': 'badge-info', 'Hoàn thành': 'badge-success', 'Quá hạn': 'badge-danger', 'Hủy': '' };
@@ -16,6 +36,8 @@ const TasksManager = () => {
   
   const [form, setForm] = useState({ title: '', description: '', assignedTo: '', deadline: '', priority: 'Trung bình' });
   const [submitting, setSubmitting] = useState(false);
+  const [aiSolving, setAiSolving] = useState(false);
+  const [showAiSolution, setShowAiSolution] = useState(null);
 
   const role = localStorage.getItem('role') || '';
   const isAdmin = ['ADMIN', 'SENIOR_ADMIN', 'PROVINCE_ADMIN'].includes(role);
@@ -75,6 +97,18 @@ const TasksManager = () => {
     } catch { toast.error('Lỗi xóa'); }
   };
 
+  const handleAiSolve = async (id) => {
+    setAiSolving(true);
+    try {
+      const res = await api.post(`/tasks/${id}/ai-solve`);
+      toast.success('🤖 AI đã giải quyết công việc xong!');
+      fetchTasks();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Lỗi AI giải quyết');
+    }
+    setAiSolving(false);
+  };
+
   return (
     <div className="animate-up">
       <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -127,7 +161,7 @@ const TasksManager = () => {
               </div>
 
               {/* Actions */}
-              <div style={{ display: 'flex', gap: 8, borderTop: '1px solid var(--border)', paddingTop: 16 }}>
+              <div style={{ display: 'flex', gap: 8, borderTop: '1px solid var(--border)', paddingTop: 16, flexWrap: 'wrap' }}>
                 {t.status !== 'Hoàn thành' && (
                   <button className="btn btn-success btn-sm" style={{ flex: 1 }} onClick={() => handleUpdateStatus(t._id, 'Hoàn thành')}>
                     <CheckCircle size={14}/> Hoàn thành
@@ -136,6 +170,16 @@ const TasksManager = () => {
                 {t.status === 'Chưa thực hiện' && (
                   <button className="btn btn-outline btn-sm" style={{ flex: 1 }} onClick={() => handleUpdateStatus(t._id, 'Đang thực hiện')}>
                     <Clock size={14}/> Thực hiện
+                  </button>
+                )}
+                {!t.aiSolution && t.sourceDocument && (
+                  <button className="btn btn-primary btn-sm" style={{ flex: 1 }} onClick={() => handleAiSolve(t._id)} disabled={aiSolving}>
+                    🤖 {aiSolving ? 'Đang...' : 'AI làm hộ'}
+                  </button>
+                )}
+                {t.aiSolution && (
+                  <button className="btn btn-info btn-sm" style={{ flex: 1, background: '#EFF6FF', color: 'var(--brand-blue)', borderColor: '#BFDBFE' }} onClick={() => setShowAiSolution(t)}>
+                    🤖 Xem KQ AI
                   </button>
                 )}
                 {['ADMIN', 'SENIOR_ADMIN'].includes(role) && (
@@ -190,6 +234,29 @@ const TasksManager = () => {
                 <button type="submit" className="btn btn-primary" disabled={submitting}>Lưu công việc</button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL XEM KẾT QUẢ AI */}
+      {showAiSolution && (
+        <div className="modal-overlay" onClick={() => setShowAiSolution(null)}>
+          <div className="modal-content modal-xl" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>🤖 AI Đã Giải Quyết: {showAiSolution.title}</h3>
+              <button className="btn btn-ghost btn-sm" onClick={() => setShowAiSolution(null)}>✕</button>
+            </div>
+            <div style={{ padding: 24 }}>
+              <div className="markdown-body" style={{ background: '#f8fafc', padding: 20, borderRadius: 'var(--r-md)', border: '1px solid var(--border)' }}>
+                <MarkdownRender text={showAiSolution.aiSolution} />
+              </div>
+              <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end', marginTop: 20 }}>
+                <button className="btn btn-outline" onClick={() => { navigator.clipboard.writeText(showAiSolution.aiSolution); toast.success('Đã copy!'); }}>
+                  📋 Copy
+                </button>
+                <button className="btn btn-primary" onClick={() => setShowAiSolution(null)}>Đóng</button>
+              </div>
+            </div>
           </div>
         </div>
       )}
