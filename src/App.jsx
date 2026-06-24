@@ -68,11 +68,9 @@ function App() {
             <Route path="/news" element={<PublicNews />} />
             <Route path="/tin-tuc" element={<PublicNews />} />
             <Route path="/profile" element={<PublicProfile />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
           </Route>
-
-          {/* Full-screen auth pages */}
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
 
           {/* Dashboard (staff/admin only) */}
           <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>

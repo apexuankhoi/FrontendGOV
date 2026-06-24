@@ -818,216 +818,207 @@ button,input,textarea,select { font-family:inherit; }
 }
 
 /* ============================================================
-   GOVERNMENT ENTERPRISE SPLIT-SCREEN AUTHENTICATION
+   MXH STYLE AUTHENTICATION
 ============================================================ */
-.gov-split-page {
+.auth-mxh-page {
+  min-height: calc(100vh - 80px);
+  background: linear-gradient(135deg, #e0f2fe 0%, #f8fafc 100%);
   display: flex;
-  min-height: 100vh;
-  width: 100%;
-  background: #f8fafc;
-  font-family: 'Inter', 'Be Vietnam Pro', sans-serif;
-}
-.gov-split-left {
-  flex: 1;
-  /* An image that represents Dak Lak/Vietnam - like coffee hills or nature */
-  background: linear-gradient(135deg, rgba(15,23,42,0.85) 0%, rgba(30,58,138,0.7) 100%), url('https://images.unsplash.com/photo-1596711910626-d62fdb0b9eb0?auto=format&fit=crop&q=80&w=2000') center/cover;
-  display: flex;
-  flex-direction: column;
+  align-items: center;
   justify-content: center;
-  padding: 80px;
-  color: white;
-  position: relative;
+  padding: 40px 20px;
+}
+.auth-mxh-card {
+  display: flex;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+  width: 100%;
+  max-width: 900px;
   overflow: hidden;
 }
-.gov-split-left::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: url('/logo.png') center/contain no-repeat;
-  opacity: 0.05;
-  transform: scale(1.5);
-  pointer-events: none;
-}
-.gov-split-left-content {
-  position: relative;
-  z-index: 2;
-  max-width: 600px;
-}
-.gov-split-logo {
-  width: 80px;
-  margin-bottom: 30px;
-  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
-}
-.gov-split-title {
-  font-size: 3rem;
-  font-weight: 800;
-  line-height: 1.2;
-  margin-bottom: 20px;
-  letter-spacing: -1px;
-}
-.gov-split-desc {
-  font-size: 1.2rem;
-  color: #cbd5e1;
-  line-height: 1.6;
-}
-@media (max-width: 960px) {
-  .gov-split-left { display: none; }
+@media (max-width: 800px) {
+  .auth-mxh-card { flex-direction: column; }
 }
 
-.gov-split-right {
-  width: 550px;
+/* Left panel */
+.auth-mxh-left {
+  flex: 1;
+  background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%);
+  padding: 40px;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+.auth-mxh-pill {
+  background: rgba(255,255,255,0.2);
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  display: inline-block;
+  margin-bottom: 20px;
+  width: max-content;
+}
+.auth-mxh-left h2 {
+  font-size: 2.2rem;
+  font-weight: 700;
+  margin-bottom: 15px;
+  line-height: 1.2;
+}
+.auth-mxh-left p {
+  color: rgba(255,255,255,0.9);
+  line-height: 1.6;
+  font-size: 1.05rem;
+}
+.auth-mxh-stats {
+  margin-top: auto;
+  display: flex;
+  gap: 15px;
+}
+.auth-mxh-stat-box {
+  background: rgba(255,255,255,0.15);
+  padding: 15px;
+  border-radius: 12px;
+  flex: 1;
+  backdrop-filter: blur(5px);
+}
+.auth-mxh-stat-box h3 {
+  font-size: 1.5rem;
+  margin: 0 0 5px 0;
+  font-weight: 800;
+}
+.auth-mxh-stat-box span {
+  font-size: 0.85rem;
+  opacity: 0.9;
+}
+
+/* Right panel */
+.auth-mxh-right {
+  width: 450px;
+  padding: 40px;
   background: white;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 60px;
-  box-shadow: -10px 0 40px rgba(0,0,0,0.08);
-  overflow-y: auto;
-  position: relative;
-  z-index: 10;
 }
-@media (max-width: 960px) {
-  .gov-split-right { width: 100%; padding: 40px 20px; }
+@media (max-width: 800px) {
+  .auth-mxh-right { width: 100%; }
 }
-
-/* Form Styling */
-.gov-form-title {
-  font-size: 2rem;
+.auth-mxh-right-header {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 30px;
+}
+.auth-mxh-right-header svg {
+  color: #10b981;
+}
+.auth-mxh-right-header h2 {
+  margin: 0;
+  font-size: 1.6rem;
   font-weight: 800;
   color: #0f172a;
-  margin: 0 0 8px 0;
-  letter-spacing: -0.5px;
 }
-.gov-form-subtitle {
-  color: #64748b;
-  margin: 0 0 32px 0;
-  font-size: 1.05rem;
-}
-.gov-input-group {
-  margin-bottom: 20px;
-}
-.gov-input-group label {
-  display: block;
-  font-weight: 600;
+.auth-mxh-right-header p {
+  margin: 5px 0 0 0;
   font-size: 0.9rem;
-  color: #334155;
-  margin-bottom: 8px;
+  color: #64748b;
 }
-.gov-input-wrap {
+
+.auth-mxh-input-group {
+  margin-bottom: 15px;
+}
+.auth-mxh-input-group label {
+  display: block;
+  font-weight: 700;
+  font-size: 0.85rem;
+  margin-bottom: 6px;
+  color: #334155;
+}
+.auth-mxh-input {
   position: relative;
 }
-.gov-input-wrap svg {
+.auth-mxh-input svg {
   position: absolute;
   left: 14px;
   top: 50%;
   transform: translateY(-50%);
-  color: #94a3b8;
-  transition: color 0.2s;
+  color: #3b82f6;
 }
-.gov-input-wrap input, .gov-input-wrap select {
+.auth-mxh-input input, .auth-mxh-input select {
   width: 100%;
-  padding: 14px 14px 14px 44px;
-  border: 1px solid #cbd5e1;
-  border-radius: 10px;
-  font-size: 1.05rem;
-  transition: all 0.2s;
-  background: #f8fafc;
-  color: #0f172a;
+  padding: 12px 12px 12px 42px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.95rem;
   outline: none;
-}
-.gov-input-wrap input:focus, .gov-input-wrap select:focus {
+  transition: all 0.2s;
   background: #fff;
-  border-color: #2563eb;
-  box-shadow: 0 0 0 4px rgba(37,99,235,0.1);
+  color: #0f172a;
 }
-.gov-input-wrap input:focus + svg, .gov-input-wrap select:focus + svg,
-.gov-input-wrap input:focus ~ svg {
-  color: #2563eb;
+.auth-mxh-input input:focus, .auth-mxh-input select:focus {
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
 }
 
-.gov-btn-primary {
-  width: 100%;
-  background: linear-gradient(135deg, #1d4ed8, #2563eb);
+.auth-mxh-btn {
+  background: #059669;
   color: white;
+  width: 100%;
+  padding: 14px;
   border: none;
-  border-radius: 10px;
-  padding: 16px;
-  font-size: 1.1rem;
+  border-radius: 8px;
   font-weight: 700;
+  font-size: 1.05rem;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 8px;
+  margin-top: 15px;
   transition: all 0.2s;
-  box-shadow: 0 4px 14px rgba(37,99,235,0.25);
-  margin-top: 10px;
 }
-.gov-btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(37,99,235,0.35);
+.auth-mxh-btn:hover {
+  background: #047857;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(4, 120, 87, 0.2);
 }
-.gov-btn-primary:active {
-  transform: translateY(0);
-}
-
-.gov-link {
-  color: #2563eb;
-  text-decoration: none;
-  font-weight: 600;
-  transition: 0.2s;
-}
-.gov-link:hover { text-decoration: underline; color: #1d4ed8; }
-
-.gov-alert {
-  background: #fef2f2;
-  border: 1px solid #fecaca;
-  color: #991b1b;
-  padding: 12px 16px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 0.95rem;
+.auth-mxh-btn:disabled {
+  background: #94a3b8;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
-.gov-demo-section {
-  margin-top: 40px;
-  border-top: 1px dashed #cbd5e1;
-  padding-top: 30px;
-}
-.gov-demo-title {
-  font-size: 0.85rem;
-  text-transform: uppercase;
+.auth-mxh-footer {
+  text-align: center;
+  margin-top: 25px;
+  font-size: 0.9rem;
   color: #64748b;
-  font-weight: 700;
-  margin-bottom: 16px;
-  letter-spacing: 0.5px;
 }
-.gov-demo-btn {
+.auth-mxh-footer a {
+  color: #059669;
+  font-weight: 700;
+  text-decoration: none;
+}
+.auth-mxh-footer a:hover {
+  text-decoration: underline;
+}
+
+/* For demo logins */
+.auth-mxh-demo-box {
+  margin-top: 20px;
+  background: #1e293b;
+  color: white;
+  padding: 12px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
-  padding: 12px;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  background: #fff;
-  margin-bottom: 10px;
-  cursor: pointer;
-  width: 100%;
-  text-align: left;
-  transition: all 0.2s;
+  gap: 10px;
+  justify-content: space-between;
 }
-.gov-demo-btn:hover {
-  border-color: #cbd5e1;
-  background: #f8fafc;
-  transform: translateX(4px);
-}
-.gov-demo-btn-text {
-  flex: 1;
-}
-.gov-demo-btn-text strong { display: block; color: #0f172a; font-size: 0.95rem; }
-.gov-demo-btn-text span { color: #64748b; font-size: 0.85rem; }
 
 /* ── AUTH V2 RESPONSIVE ────────────────────── */
 @media (max-width: 600px) {

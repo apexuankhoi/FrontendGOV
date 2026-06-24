@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import api from '../lib/api';
 import { useNavigate, Link } from 'react-router-dom';
-import { User, Shield, Camera, AlertCircle, CheckCircle, MapPin, Mail, Phone, Lock, ShieldCheck, ArrowRight } from 'lucide-react';
+import { User, Shield, Camera, AlertCircle, CheckCircle, MapPin, Mail, Phone, Lock, ShieldCheck, UserPlus } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { DAKLAK_COMMUNES } from '../lib/communes';
 
@@ -18,8 +18,6 @@ const Register = () => {
   const [sendingOtp, setSendingOtp] = useState(false);
   const [otpTimer, setOtpTimer] = useState(0);
 
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -32,14 +30,13 @@ const Register = () => {
   const sendOtp = async () => {
     if (!form.email) return toast.error('Vui lòng nhập email trước!');
     setSendingOtp(true);
-    setError('');
     try {
       await api.post('/auth/send-otp', { email: form.email });
       setOtpSent(true);
       setOtpTimer(60);
       toast.success('Đã gửi mã xác thực đến Email!');
     } catch (err) {
-      setError(err.response?.data?.message || 'Lỗi gửi OTP');
+      toast.error(err.response?.data?.message || 'Lỗi gửi OTP');
     }
     setSendingOtp(false);
   };
@@ -61,14 +58,13 @@ const Register = () => {
   const scanCCCD = async () => {
     if (!frontImage) return toast.error('Vui lòng upload ảnh CCCD mặt trước!');
     setScanning(true);
-    setError('');
     try {
       const res = await api.post('/auth/ekyc-citizen', { frontImage });
       setEkycData(res.data);
       setForm({ ...form, username: res.data.fullName || '' });
       toast.success('Quét CCCD thành công!');
     } catch (err) {
-      setError(err.response?.data?.message || 'Lỗi đọc ảnh CCCD');
+      toast.error(err.response?.data?.message || 'Lỗi đọc ảnh CCCD');
     }
     setScanning(false);
   };
@@ -82,16 +78,13 @@ const Register = () => {
 
   const submit = async (e) => {
     e.preventDefault();
-    setError('');
-    if (form.password !== form.confirm) { setError('Mật khẩu xác nhận không khớp.'); return; }
-    if (form.password.length < 6) { setError('Mật khẩu phải chứa ít nhất 6 ký tự.'); return; }
+    if (form.password !== form.confirm) return toast.error('Mật khẩu xác nhận không khớp.');
+    if (form.password.length < 6) return toast.error('Mật khẩu phải chứa ít nhất 6 ký tự.');
     
-    if (tab === 'CITIZEN' && !ekycData) {
-      setError('Bạn phải hoàn thành quét CCCD eKYC trước khi đăng ký.'); return;
-    }
+    if (tab === 'CITIZEN' && !ekycData) return toast.error('Bạn phải hoàn thành eKYC trước khi đăng ký.');
     if (tab === 'ADMIN') {
-      if (!form.commune) { setError('Bạn phải chọn đơn vị công tác (Xã/Phường).'); return; }
-      if (!theNganhImage) { setError('Bạn phải upload Thẻ Cán Bộ / Thẻ Ngành.'); return; }
+      if (!form.commune) return toast.error('Bạn phải chọn đơn vị công tác.');
+      if (!theNganhImage) return toast.error('Bạn phải upload Thẻ Cán Bộ.');
     }
 
     setLoading(true);
@@ -115,177 +108,146 @@ const Register = () => {
       }
 
       await api.post('/auth/register', payload);
-      setSuccess(true);
-      setTimeout(() => {
-        navigate('/login');
-      }, 2500);
+      toast.success('Đăng ký thành công! Chuyển hướng...');
+      setTimeout(() => navigate('/login'), 2500);
     } catch (err) {
-      setError(err.response?.data?.message || 'Lỗi đăng ký, vui lòng thử lại.');
+      toast.error(err.response?.data?.message || 'Lỗi đăng ký, vui lòng thử lại.');
     }
     setLoading(false);
   };
 
   return (
-    <div className="gov-split-page">
-      {/* LEFT SCENE (hidden on mobile) */}
-      <div className="gov-split-left" style={{ flex: 1.2 }}>
-        <div className="gov-split-left-content">
-          <img src="/logo.png" alt="Logo" className="gov-split-logo" />
-          <h1 className="gov-split-title">Đăng ký Định danh Điện tử</h1>
-          <p className="gov-split-desc">
-            Xác thực danh tính bằng AI (eKYC) giúp việc đăng ký tài khoản
-            trở nên nhanh chóng, an toàn và hoàn toàn tự động.
-          </p>
-        </div>
-      </div>
-
-      {/* RIGHT FORM */}
-      <div className="gov-split-right" style={{ width: '600px' }}>
-        <h2 className="gov-form-title">Tạo tài khoản</h2>
-        <p className="gov-form-subtitle">Điền thông tin hoặc quét thẻ CCCD</p>
-
-        {/* Tabs */}
-        <div className="auth-tab-switcher" style={{ marginBottom: '24px', background: '#f1f5f9', padding: '6px', borderRadius: '12px', display: 'flex', gap: '8px' }}>
-          <button
-            type="button"
-            onClick={() => { setTab('CITIZEN'); setError(''); }}
-            style={{ flex: 1, padding: '12px', borderRadius: '8px', border: 'none', background: tab === 'CITIZEN' ? '#fff' : 'transparent', color: tab === 'CITIZEN' ? '#0f172a' : '#64748b', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: tab === 'CITIZEN' ? '0 2px 8px rgba(0,0,0,0.05)' : 'none', cursor: 'pointer', transition: 'all 0.2s' }}
-          >
-            <User size={18} /> Công dân
-          </button>
-          <button
-            type="button"
-            onClick={() => { setTab('ADMIN'); setError(''); }}
-            style={{ flex: 1, padding: '12px', borderRadius: '8px', border: 'none', background: tab === 'ADMIN' ? '#fff' : 'transparent', color: tab === 'ADMIN' ? '#0f172a' : '#64748b', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: tab === 'ADMIN' ? '0 2px 8px rgba(0,0,0,0.05)' : 'none', cursor: 'pointer', transition: 'all 0.2s' }}
-          >
-            <Shield size={18} /> Cán bộ
-          </button>
+    <div className="auth-mxh-page">
+      <div className="auth-mxh-card" style={{ maxWidth: 1000 }}>
+        {/* LEFT */}
+        <div className="auth-mxh-left">
+          <div className="auth-mxh-pill">Cổng thông tin 2026</div>
+          <h2>Tham gia bản đồ số chiến dịch</h2>
+          <p>Tạo tài khoản để quản lý đội hình, cập nhật hoạt động, công trình và dữ liệu chiến dịch toàn quốc.</p>
+          
+          <div className="auth-mxh-stats">
+            <div className="auth-mxh-stat-box">
+              <h3>34+</h3>
+              <span>Tỉnh thành</span>
+            </div>
+            <div className="auth-mxh-stat-box">
+              <h3>Live</h3>
+              <span>Cập nhật</span>
+            </div>
+          </div>
         </div>
 
-        {error && (
-          <div className="gov-alert">
-            <AlertCircle size={18} />
-            <span>{error}</span>
+        {/* RIGHT */}
+        <div className="auth-mxh-right" style={{ width: 600 }}>
+          <div className="auth-mxh-right-header" style={{ marginBottom: 20 }}>
+            <UserPlus size={36} />
+            <div>
+              <h2>Đăng ký tài khoản</h2>
+              <p>Điền thông tin bên dưới để bắt đầu sử dụng hệ thống</p>
+            </div>
           </div>
-        )}
 
-        {success ? (
-          <div style={{ background: '#ecfdf5', border: '1px solid #10b981', color: '#047857', padding: '20px', borderRadius: '10px', textAlign: 'center' }}>
-            <CheckCircle size={40} style={{ margin: '0 auto 15px' }} />
-            <h3 style={{ margin: '0 0 10px 0' }}>Đăng ký thành công!</h3>
-            <p style={{ margin: 0 }}>Hệ thống đang tự động chuyển hướng về trang Đăng nhập...</p>
+          <div style={{ display: 'flex', gap: 10, marginBottom: 15, background: '#f1f5f9', padding: 5, borderRadius: 8 }}>
+            <button type="button" onClick={() => setTab('CITIZEN')} style={{flex: 1, padding: 10, border: 'none', borderRadius: 6, fontWeight: 600, background: tab === 'CITIZEN' ? '#fff' : 'transparent', color: tab === 'CITIZEN' ? '#0f172a' : '#64748b', boxShadow: tab === 'CITIZEN' ? '0 2px 4px rgba(0,0,0,0.05)' : 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5}}><User size={16}/> Công dân</button>
+            <button type="button" onClick={() => setTab('ADMIN')} style={{flex: 1, padding: 10, border: 'none', borderRadius: 6, fontWeight: 600, background: tab === 'ADMIN' ? '#fff' : 'transparent', color: tab === 'ADMIN' ? '#0f172a' : '#64748b', boxShadow: tab === 'ADMIN' ? '0 2px 4px rgba(0,0,0,0.05)' : 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5}}><Shield size={16}/> Cán bộ</button>
           </div>
-        ) : (
+
           <form onSubmit={submit}>
             {tab === 'CITIZEN' && (
-              <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '20px', marginBottom: '24px' }}>
-                <div style={{ display: 'flex', gap: '12px', marginBottom: '16px', alignItems: 'center' }}>
-                  <div style={{ width: '40px', height: '40px', background: '#dbeafe', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#2563eb' }}><Camera size={20} /></div>
-                  <div>
-                    <h4 style={{ margin: '0 0 4px 0', fontSize: '1.05rem', color: '#0f172a' }}>Xác thực eKYC</h4>
-                    <p style={{ margin: 0, fontSize: '0.85rem', color: '#64748b' }}>Tải lên mặt trước CCCD để nhận diện AI</p>
-                  </div>
-                </div>
-                <input type="file" accept="image/*" onChange={handleFrontImage} style={{ marginBottom: '12px', width: '100%', fontSize: '0.9rem' }} />
-                {frontImage && <img src={frontImage} alt="CCCD" style={{ width: '100%', maxHeight: '180px', objectFit: 'contain', borderRadius: '8px', marginBottom: '12px', border: '1px solid #e2e8f0' }} />}
-                <button type="button" onClick={scanCCCD} disabled={scanning || !frontImage} style={{ width: '100%', padding: '12px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 600, cursor: (scanning || !frontImage) ? 'not-allowed' : 'pointer', opacity: (scanning || !frontImage) ? 0.7 : 1 }}>
-                  {scanning ? 'AI Đang quét...' : 'Bắt đầu quét dữ liệu'}
+              <div style={{ background: '#f8fafc', border: '1px dashed #cbd5e1', borderRadius: 8, padding: 15, marginBottom: 15 }}>
+                <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#0f172a', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 5 }}><Camera size={16} color="#3b82f6"/> Tải lên CCCD mặt trước (eKYC)</div>
+                <input type="file" accept="image/*" onChange={handleFrontImage} style={{ fontSize: '0.85rem', marginBottom: 10, width: '100%' }} />
+                {frontImage && <img src={frontImage} alt="CCCD" style={{ width: '100%', maxHeight: 150, objectFit: 'contain', borderRadius: 6, marginBottom: 10 }} />}
+                <button type="button" onClick={scanCCCD} disabled={scanning || !frontImage} style={{ width: '100%', padding: 10, background: '#e0f2fe', color: '#0369a1', border: 'none', borderRadius: 6, fontWeight: 600, cursor: 'pointer' }}>
+                  {scanning ? 'Đang nhận diện...' : 'Bắt đầu nhận diện AI'}
                 </button>
-                {ekycData && (
-                  <div style={{ marginTop: '16px', padding: '16px', background: '#ecfdf5', borderRadius: '8px', border: '1px solid #a7f3d0' }}>
-                    <div style={{ color: '#059669', fontWeight: '700', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}><CheckCircle size={16} /> Đã xác thực CCCD</div>
-                    <div style={{ fontSize: '0.9rem', color: '#0f172a' }}><strong>Họ tên:</strong> {ekycData.fullName}</div>
-                    <div style={{ fontSize: '0.9rem', color: '#0f172a' }}><strong>CCCD:</strong> {ekycData.cccd}</div>
-                  </div>
-                )}
+                {ekycData && <div style={{ marginTop: 10, fontSize: '0.85rem', color: '#059669', fontWeight: 600 }}><CheckCircle size={14} style={{verticalAlign:'middle', marginRight:4}}/> Nhận diện thành công: {ekycData.fullName}</div>}
               </div>
             )}
 
             {tab === 'ADMIN' && (
-              <>
-                <div className="gov-input-group">
-                  <label>Đơn vị công tác</label>
-                  <div className="gov-input-wrap">
+              <div style={{ display: 'flex', gap: 15, marginBottom: 15 }}>
+                <div className="auth-mxh-input-group" style={{ flex: 1, marginBottom: 0 }}>
+                  <label>Đơn vị</label>
+                  <div className="auth-mxh-input">
                     <MapPin size={18} />
                     <select required value={form.commune} onChange={e => setForm({...form, commune: e.target.value})}>
-                      <option value="">-- Chọn Đơn vị --</option>
+                      <option value="">-- Chọn --</option>
                       {DAKLAK_COMMUNES.map(c => <option key={c} value={c}>{c}</option>)}
                       <option value="Khác">Khác</option>
                     </select>
                   </div>
                 </div>
-                <div style={{ background: '#fff1f2', border: '1px solid #ffe4e6', borderRadius: '12px', padding: '20px', marginBottom: '24px' }}>
-                  <h4 style={{ margin: '0 0 12px 0', fontSize: '1.05rem', color: '#be123c', display: 'flex', alignItems: 'center', gap: '8px' }}><Shield size={20} /> Tải Thẻ Ngành / Quyết định</h4>
-                  <input type="file" accept="image/*" onChange={handleTheNganhImage} required style={{ width: '100%' }} />
-                  {theNganhImage && <img src={theNganhImage} alt="Thẻ ngành" style={{ width: '100%', maxHeight: '180px', objectFit: 'contain', borderRadius: '8px', marginTop: '12px', border: '1px solid #fecdd3' }} />}
+                <div className="auth-mxh-input-group" style={{ flex: 1, marginBottom: 0 }}>
+                  <label>Thẻ Ngành</label>
+                  <input type="file" accept="image/*" onChange={handleTheNganhImage} required style={{ width: '100%', fontSize: '0.85rem' }} />
                 </div>
-              </>
+              </div>
             )}
 
-            <div style={{ display: 'flex', gap: '16px' }}>
-              <div className="gov-input-group" style={{ flex: 1 }}>
-                <label>Họ và tên</label>
-                <div className="gov-input-wrap">
-                  <User size={18} />
-                  <input type="text" required placeholder="Họ tên" value={form.username} onChange={e => setForm({...form, username: e.target.value})} disabled={tab === 'CITIZEN' && ekycData} />
+            <div className="auth-mxh-input-group">
+              <label>Họ và tên</label>
+              <div className="auth-mxh-input">
+                <User size={18} />
+                <input type="text" required placeholder="Nhập họ và tên" value={form.username} onChange={e => setForm({...form, username: e.target.value})} disabled={tab === 'CITIZEN' && ekycData} />
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: 15 }}>
+              <div className="auth-mxh-input-group" style={{ flex: 1 }}>
+                <label>Email</label>
+                <div className="auth-mxh-input">
+                  <Mail size={18} />
+                  <input type="email" required placeholder="email@example.com" value={form.email} onChange={e => setForm({...form, email: e.target.value})} />
                 </div>
               </div>
-              <div className="gov-input-group" style={{ flex: 1 }}>
+              <div className="auth-mxh-input-group" style={{ flex: 1 }}>
                 <label>Số điện thoại</label>
-                <div className="gov-input-wrap">
+                <div className="auth-mxh-input">
                   <Phone size={18} />
-                  <input type="tel" required placeholder="SĐT" value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} />
+                  <input type="tel" required placeholder="Nhập số điện thoại" value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} />
                 </div>
               </div>
             </div>
 
-            <div className="gov-input-group">
-              <label>Email liên hệ</label>
-              <div className="gov-input-wrap">
-                <Mail size={18} />
-                <input type="email" required placeholder="name@domain.com" value={form.email} onChange={e => setForm({...form, email: e.target.value})} />
-              </div>
-            </div>
-
-            <div className="gov-input-group">
-              <label>Xác thực Email (Mã OTP)</label>
-              <div style={{ display: 'flex', gap: '12px' }}>
-                <div className="gov-input-wrap" style={{ flex: 1 }}>
+            <div className="auth-mxh-input-group">
+              <label>Mã OTP (Xác thực Email)</label>
+              <div style={{ display: 'flex', gap: 10 }}>
+                <div className="auth-mxh-input" style={{ flex: 1 }}>
                   <ShieldCheck size={18} />
-                  <input type="text" required placeholder="Nhập mã 6 số" value={form.otp} onChange={e => setForm({...form, otp: e.target.value})} maxLength={6} style={{ letterSpacing: '4px', fontWeight: 'bold' }} />
+                  <input type="text" required placeholder="Nhập 6 số" value={form.otp} onChange={e => setForm({...form, otp: e.target.value})} maxLength={6} style={{ letterSpacing: 2, fontWeight: 'bold' }} />
                 </div>
-                <button type="button" onClick={sendOtp} disabled={sendingOtp || otpTimer > 0} style={{ padding: '0 20px', background: '#f1f5f9', border: '1px solid #cbd5e1', borderRadius: '10px', color: '#0f172a', fontWeight: 600, cursor: (sendingOtp || otpTimer > 0) ? 'not-allowed' : 'pointer' }}>
-                  {sendingOtp ? 'Đang gửi...' : otpTimer > 0 ? `Thử lại (${otpTimer}s)` : 'Gửi mã OTP'}
+                <button type="button" onClick={sendOtp} disabled={sendingOtp || otpTimer > 0} style={{ padding: '0 15px', background: '#f1f5f9', border: '1px solid #cbd5e1', borderRadius: 8, color: '#0f172a', fontWeight: 600, cursor: 'pointer' }}>
+                  {sendingOtp ? 'Đang gửi...' : otpTimer > 0 ? `Chờ (${otpTimer}s)` : 'Gửi mã'}
                 </button>
               </div>
             </div>
 
-            <div style={{ display: 'flex', gap: '16px' }}>
-              <div className="gov-input-group" style={{ flex: 1 }}>
+            <div style={{ display: 'flex', gap: 15 }}>
+              <div className="auth-mxh-input-group" style={{ flex: 1 }}>
                 <label>Mật khẩu</label>
-                <div className="gov-input-wrap">
+                <div className="auth-mxh-input">
                   <Lock size={18} />
-                  <input type="password" required placeholder="Tạo mật khẩu" value={form.password} onChange={e => setForm({...form, password: e.target.value})} />
+                  <input type="password" required placeholder="Tối thiểu 6 ký tự" value={form.password} onChange={e => setForm({...form, password: e.target.value})} />
                 </div>
               </div>
-              <div className="gov-input-group" style={{ flex: 1 }}>
-                <label>Xác nhận lại</label>
-                <div className="gov-input-wrap">
-                  <Lock size={18} />
-                  <input type="password" required placeholder="Nhập lại" value={form.confirm} onChange={e => setForm({...form, confirm: e.target.value})} />
+              <div className="auth-mxh-input-group" style={{ flex: 1 }}>
+                <label>Xác nhận mật khẩu</label>
+                <div className="auth-mxh-input">
+                  <Shield size={18} />
+                  <input type="password" required placeholder="Nhập lại mật khẩu" value={form.confirm} onChange={e => setForm({...form, confirm: e.target.value})} />
                 </div>
               </div>
             </div>
 
-            <button type="submit" className="gov-btn-primary" disabled={loading} style={{ marginTop: '20px' }}>
-              {loading ? 'Đang xử lý...' : <><ShieldCheck size={20} /> Đăng ký tài khoản</>}
+            <button type="submit" className="auth-mxh-btn" disabled={loading}>
+              {loading ? 'Đang xử lý...' : <><UserPlus size={20} /> Tạo tài khoản</>}
             </button>
           </form>
-        )}
 
-        <div style={{ textAlign: 'center', marginTop: '30px', fontSize: '0.95rem' }}>
-          Đã có tài khoản?{' '}
-          <Link to="/login" className="gov-link">Đăng nhập tại đây</Link>
+          <div className="auth-mxh-footer">
+            Đã có tài khoản? <Link to="/login">Đăng nhập ngay</Link>
+          </div>
         </div>
       </div>
     </div>
