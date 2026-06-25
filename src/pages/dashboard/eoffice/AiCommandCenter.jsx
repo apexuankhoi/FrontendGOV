@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import api from '../../../lib/api';
+import api, { BASE_URL } from '../../../lib/api';
 import { toast } from 'react-toastify';
 import { Bot, Search, FileText, CheckSquare, AlertTriangle, Users, BarChart3, Send, FileDown, RefreshCw, Zap, Shield, TrendingUp, Globe, MessageSquare, Layers, BarChart2 } from 'lucide-react';
 
@@ -261,7 +261,7 @@ const AiCommandCenter = () => {
                 <FileDown size={16} color="var(--success)" />
                 <span style={{ fontWeight: 600, fontSize: '.9rem' }}>File tổng hợp đã tạo:</span>
               </div>
-              <a href={`http://localhost:5000/${synthResult.generatedFile.filePath}`} target="_blank" rel="noreferrer"
+              <a href={`${BASE_URL}/${synthResult.generatedFile.filePath}`} target="_blank" rel="noreferrer"
                 className="btn btn-outline btn-sm" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
                 <FileDown size={14} /> {synthResult.generatedFile.fileName}
               </a>

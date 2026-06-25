@@ -1,5 +1,5 @@
-﻿import React, { useState, useEffect, useRef } from 'react';
-import api from '../../../lib/api';
+import React, { useState, useEffect, useRef } from 'react';
+import api, { BASE_URL } from '../../../lib/api';
 import { toast } from 'react-toastify';
 import { Folder, File, FileText, FileSpreadsheet, FileImage, Upload, Plus, Trash2, Download, RefreshCw, FolderOpen, ArrowLeft, MoreVertical, Search, History } from 'lucide-react';
 
@@ -168,7 +168,7 @@ const SharedDrive = () => {
                   <div style={{ display: 'flex', gap: 4 }} onClick={e => e.stopPropagation()}>
                     {!f.isFolder && (
                       <>
-                        <a href={`http://localhost:5000/${f.currentFile?.filePath?.replace(/\\/g, '/')}`} target="_blank" rel="noreferrer" className="btn btn-ghost btn-sm" style={{ padding: 4, color: 'var(--primary)' }} title="Tải xuống">
+                        <a href={`${BASE_URL}/${f.currentFile?.filePath?.replace(/\\/g, '/')}`} target="_blank" rel="noreferrer" className="btn btn-ghost btn-sm" style={{ padding: 4, color: 'var(--primary)' }} title="Tải xuống">
                           <Download size={14} />
                         </a>
                         <button className="btn btn-ghost btn-sm" style={{ padding: 4, color: 'var(--warning)' }} title="Lịch sử phiên bản" onClick={() => setShowHistory(f)}>
@@ -242,7 +242,7 @@ const SharedDrive = () => {
                 <div style={{ border: '2px solid var(--primary)', borderRadius: 'var(--r-md)', padding: 12, background: '#EFF6FF' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
                     <span style={{ fontWeight: 700, color: 'var(--primary)' }}>Phiên bản hiện tại (v{showHistory.versions?.length + 1 || 1})</span>
-                    <a href={`http://localhost:5000/${showHistory.currentFile?.filePath?.replace(/\\/g, '/')}`} target="_blank" rel="noreferrer" style={{ fontSize: '.8rem', color: 'var(--primary)' }}>Tải xuống</a>
+                    <a href={`${BASE_URL}/${showHistory.currentFile?.filePath?.replace(/\\/g, '/')}`} target="_blank" rel="noreferrer" style={{ fontSize: '.8rem', color: 'var(--primary)' }}>Tải xuống</a>
                   </div>
                   <div style={{ fontSize: '.8rem', color: 'var(--tx-2)' }}>
                     Cập nhật bởi: <strong>{showHistory.uploadedBy?.username}</strong> vào lúc {new Date(showHistory.updatedAt).toLocaleString('vi-VN')}
@@ -255,7 +255,7 @@ const SharedDrive = () => {
                   <div key={i} style={{ border: '1px solid var(--border)', borderRadius: 'var(--r-md)', padding: 12 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
                       <span style={{ fontWeight: 600 }}>Phiên bản v{showHistory.versions.length - i}</span>
-                      <a href={`http://localhost:5000/${v.filePath?.replace(/\\/g, '/')}`} target="_blank" rel="noreferrer" style={{ fontSize: '.8rem', color: 'var(--brand-blue)' }}>Tải xuống</a>
+                      <a href={`${BASE_URL}/${v.filePath?.replace(/\\/g, '/')}`} target="_blank" rel="noreferrer" style={{ fontSize: '.8rem', color: 'var(--brand-blue)' }}>Tải xuống</a>
                     </div>
                     <div style={{ fontSize: '.8rem', color: 'var(--tx-3)' }}>
                       Vào lúc {new Date(v.uploadedAt).toLocaleString('vi-VN')}

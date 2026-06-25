@@ -1,5 +1,5 @@
-﻿import React, { useState, useEffect, useRef } from 'react';
-import api from '../lib/api';
+import React, { useState, useEffect, useRef } from 'react';
+import api, { BASE_URL } from '../lib/api';
 import { toast } from 'react-toastify';
 import { Bot, Send, X, Trash2, FileDown, MessageCircle } from 'lucide-react';
 
@@ -185,7 +185,7 @@ const AiChatPanel = ({ targetId, targetType, targetTitle, isOpen, onClose }) => 
                   
                   {/* File dinh kem tu AI */}
                   {msg.generatedFile && (
-                    <a href={`http://localhost:5000/${msg.generatedFile.filePath}`}
+                    <a href={`${BASE_URL}/${msg.generatedFile.filePath}`}
                        target="_blank" rel="noreferrer"
                        style={{
                          display: 'flex', alignItems: 'center', gap: 6,

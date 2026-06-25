@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import api from '../../../lib/api';
+import api, { BASE_URL } from '../../../lib/api';
 import { toast } from 'react-toastify';
-import { CheckSquare, Plus, RefreshCw, Trash2, Calendar, User, Search, Clock, CheckCircle, MessageCircle } from 'lucide-react';
+import { CheckSquare, Plus, RefreshCw, Trash2, Calendar, User, Search, Clock, CheckCircle, MessageCircle, Paperclip } from 'lucide-react';
 import AiChatPanel from '../../../components/AiChatPanel';
 
 const MarkdownRender = ({ text }) => {
@@ -178,8 +178,8 @@ const TasksManager = () => {
                   <div style={{ marginTop: 8, padding: 8, background: '#EFF6FF', borderRadius: 'var(--r-sm)', border: '1px solid #BFDBFE' }}>
                     <div style={{ fontSize: '.75rem', fontWeight: 600, color: 'var(--brand-blue)', marginBottom: 4 }}>📎 BẢN THẢO AI ĐÃ SOẠN:</div>
                     {t.aiGeneratedFiles.map((file, idx) => (
-                      <a key={idx} href={`http://localhost:5000/${file.filePath}`} target="_blank" rel="noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '.8rem', color: 'var(--tx-1)', textDecoration: 'none', marginBottom: 4 }}>
-                        <span style={{ fontSize: '1.2rem' }}>{file.fileType === 'xlsx' ? '📊' : '📝'}</span>
+                      <a key={idx} href={`${BASE_URL}/${file.filePath}`} target="_blank" rel="noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '.8rem', color: 'var(--tx-1)', textDecoration: 'none', marginBottom: 4 }}>
+                        <Paperclip size={14} color="var(--primary)" />
                         <span style={{ textDecoration: 'underline' }}>{file.fileName}</span>
                       </a>
                     ))}
