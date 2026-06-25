@@ -41,7 +41,7 @@ const Navbar = () => {
       <div className="pub-nav-inner">
         {/* Logo */}
         <Link to="/" className="nav-logo" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <img src="https://upload.wikimedia.org/wikipedia/vi/0/07/Huy_hieu_Doan.png" alt="Webgov Logo" style={{ height: 40, width: 40, objectFit: 'contain' }} />
+          <img src="/logo.png" alt="Webgov Logo" style={{ height: 40, width: 40, objectFit: 'contain' }} />
           <div className="nav-logo-text" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
             <span className="t1" style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--primary-dark)', lineHeight: 1 }}>Webgov</span>
             <span className="t2" style={{ fontSize: '0.8rem', color: 'var(--tx-2)', marginTop: 2, fontWeight: 600 }}>Tỉnh Đắk Lắk</span>

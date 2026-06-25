@@ -15,7 +15,7 @@ const MainLayout = () => (
         <div className="footer-grid">
           <div className="footer-brand">
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-              <img src="https://upload.wikimedia.org/wikipedia/vi/0/07/Huy_hieu_Doan.png" alt="Webgov Logo" style={{ height: 35, width: 35, objectFit: 'contain' }} />
+              <img src="/logo.png" alt="Webgov Logo" style={{ height: 35, width: 35, objectFit: 'contain' }} />
               <span className="name" style={{ margin: 0, fontSize: '1.25rem', lineHeight: 1 }}>Webgov Đắk Lắk</span>
             </div>
             <p style={{ marginBottom: 16 }}>Hệ thống Chính quyền số khu vực Tây Nguyên. Phát triển bởi Tỉnh Đoàn Đắk Lắk.</p>
