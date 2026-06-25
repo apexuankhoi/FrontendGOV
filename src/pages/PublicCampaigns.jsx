@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BarChart3, MapPin, Users, ClipboardCheck, CheckCircle2, Circle, Smartphone, ShieldCheck, ShoppingCart, Landmark, ArrowRight, UploadCloud, ChevronRight, Loader2 } from 'lucide-react';
-import api from '../utils/api';
+import api from '../lib/api';
 import { toast } from 'react-toastify';
-import { useAuth } from '../context/AuthContext';
 
 const TABS = [
   { id: 'report', icon: BarChart3, label: 'Báo cáo & Số liệu', color: 'var(--blue-600)' },
@@ -33,7 +32,9 @@ const PublicCampaigns = () => {
   const [activeTab, setActiveTab] = useState('report');
   const [checkedItems, setCheckedItems] = useState([]);
   
-  const { user } = useAuth();
+  // Use localStorage for auth state like in other components
+  const token = localStorage.getItem('token');
+  const agencyName = localStorage.getItem('agencyName');
   
   const [stats, setStats] = useState({
     vneid: 12450, qr: 5230, digitalSkills: 0, publicServices: 0, activeAgencies: 102, totalAgencies: 102
@@ -69,7 +70,7 @@ const PublicCampaigns = () => {
 
   const handleSubmitReport = async (e) => {
     e.preventDefault();
-    if (!user) {
+    if (!token) {
       toast.warning('Bạn cần đăng nhập bằng tài khoản Cấp Xã để báo cáo!');
       return;
     }
@@ -157,7 +158,7 @@ const PublicCampaigns = () => {
                   <p style={{ color: 'var(--tx-3)', fontSize: '.9rem', marginBottom: 20 }}>Dành cho các đội hình khai báo số liệu trực tiếp mỗi 20h00.</p>
                   
                   <form style={{ display: 'flex', flexDirection: 'column', gap: 12 }} onSubmit={handleSubmitReport}>
-                    <div className="form-group"><label className="form-label">Cơ quan / Xã Phường</label><input className="form-input" disabled value={user ? (user.agency?.name || 'Đã đăng nhập') : 'Yêu cầu đăng nhập'} /></div>
+                    <div className="form-group"><label className="form-label">Cơ quan / Xã Phường</label><input className="form-input" disabled value={token ? (agencyName || localStorage.getItem('username') || 'Đã đăng nhập') : 'Yêu cầu đăng nhập'} /></div>
                     <div className="form-group"><label className="form-label">Số lượt người dân được hỗ trợ kỹ năng số</label><input type="number" min="0" required className="form-input" placeholder="0" value={formData.digitalSkills} onChange={e => setFormData({...formData, digitalSkills: e.target.value})} /></div>
                     <div className="form-group"><label className="form-label">Số hộ kinh doanh, tiểu thương hỗ trợ QR</label><input type="number" min="0" required className="form-input" placeholder="0" value={formData.qrSupport} onChange={e => setFormData({...formData, qrSupport: e.target.value})} /></div>
                     <button type="submit" disabled={loading} className="btn btn-primary" style={{ width: '100%', marginTop: 8 }}>
