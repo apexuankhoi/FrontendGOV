@@ -11,10 +11,10 @@ const Navbar = () => {
   const navigate = useNavigate();
   const dropdownRef = useRef(null);
 
-  const token    = localStorage.getItem('token');
-  const role     = localStorage.getItem('role') || '';
+  const token = localStorage.getItem('token');
+  const role = localStorage.getItem('role') || '';
   const username = localStorage.getItem('username') || 'Người dùng';
-  const isAdmin  = ADMIN_ROLES.includes(role);
+  const isAdmin = ADMIN_ROLES.includes(role);
   const isCitizen = token && !isAdmin;
 
   const isActive = (p) => pathname === p ? 'active' : '';
@@ -50,10 +50,10 @@ const Navbar = () => {
 
         {/* Desktop nav links */}
         <nav className="nav-center">
-          <Link to="/"            className={`nav-link ${isActive('/')}`}>Trang chủ</Link>
-          <Link to="/chien-dich"  className={`nav-link ${isActive('/chien-dich')}`}>Chiến dịch</Link>
-          <Link to="/doi-hinh"    className={`nav-link ${isActive('/doi-hinh')}`}>Đội hình</Link>
-          <Link to="/tin-tuc"     className={`nav-link ${isActive('/tin-tuc')}`}>Tin tức</Link>
+          <Link to="/" className={`nav-link ${isActive('/')}`}>Trang chủ</Link>
+          <Link to="/chien-dich" className={`nav-link ${isActive('/chien-dich')}`}>Chiến dịch 44 ngày</Link>
+          <Link to="/doi-hinh" className={`nav-link ${isActive('/doi-hinh')}`}>Đội hình</Link>
+          <Link to="/tin-tuc" className={`nav-link ${isActive('/tin-tuc')}`}>Tin tức</Link>
         </nav>
 
         {/* Desktop right */}
@@ -61,7 +61,7 @@ const Navbar = () => {
           {!token ? (
             /* Chưa đăng nhập */
             <>
-              <Link to="/login"    className="btn btn-outline btn-sm">Đăng nhập</Link>
+              <Link to="/login" className="btn btn-outline btn-sm">Đăng nhập</Link>
               <Link to="/register" className="btn btn-primary btn-sm">Đăng ký</Link>
             </>
           ) : isAdmin ? (
@@ -104,13 +104,13 @@ const Navbar = () => {
                     style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', color: 'var(--tx-2)', fontWeight: 500, fontSize: '.875rem', borderRadius: 8, margin: '4px 0', transition: 'background .15s' }}
                     onMouseEnter={e => e.currentTarget.style.background = 'var(--surface-2)'}
                     onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-                    <User size={16}/> Hồ sơ cá nhân
+                    <User size={16} /> Hồ sơ cá nhân
                   </Link>
                   <button onClick={logout}
                     style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', color: 'var(--danger)', fontWeight: 500, fontSize: '.875rem', borderRadius: 8, margin: '4px 0', background: 'none', border: 'none', width: '100%', cursor: 'pointer', fontFamily: 'inherit', transition: 'background .15s' }}
                     onMouseEnter={e => e.currentTarget.style.background = 'var(--danger-bg)'}
                     onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-                    <LogOut size={16}/> Đăng xuất
+                    <LogOut size={16} /> Đăng xuất
                   </button>
                 </div>
               )}
@@ -119,26 +119,26 @@ const Navbar = () => {
 
           {/* Hamburger for mobile */}
           <button className="nav-hamburger" onClick={() => setMobileOpen(o => !o)}>
-            {mobileOpen ? <X size={22}/> : <Menu size={22}/>}
+            {mobileOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
         </div>
       </div>
 
       {/* Mobile drawer */}
       <div className={`nav-mobile-drawer ${mobileOpen ? 'open' : ''}`}>
-        <Link to="/"           className={`nav-link ${isActive('/')}`}            onClick={() => setMobileOpen(false)}>Trang chủ</Link>
+        <Link to="/" className={`nav-link ${isActive('/')}`} onClick={() => setMobileOpen(false)}>Trang chủ</Link>
         <Link to="/chien-dich" className={`nav-link ${isActive('/chien-dich')}`} onClick={() => setMobileOpen(false)}>Chiến dịch</Link>
-        <Link to="/doi-hinh"   className={`nav-link ${isActive('/doi-hinh')}`}   onClick={() => setMobileOpen(false)}>Đội hình tình nguyện</Link>
-        <Link to="/tin-tuc"    className={`nav-link ${isActive('/tin-tuc')}`}    onClick={() => setMobileOpen(false)}>Tin tức chiến dịch</Link>
-        <hr style={{ border: 'none', borderTop: '1px solid var(--border)', margin: '6px 0' }}/>
+        <Link to="/doi-hinh" className={`nav-link ${isActive('/doi-hinh')}`} onClick={() => setMobileOpen(false)}>Đội hình tình nguyện</Link>
+        <Link to="/tin-tuc" className={`nav-link ${isActive('/tin-tuc')}`} onClick={() => setMobileOpen(false)}>Tin tức chiến dịch</Link>
+        <hr style={{ border: 'none', borderTop: '1px solid var(--border)', margin: '6px 0' }} />
         {!token ? (
           <div style={{ display: 'flex', gap: 10 }}>
-            <Link to="/login"    className="btn btn-outline w-full" onClick={() => setMobileOpen(false)}>Đăng nhập</Link>
+            <Link to="/login" className="btn btn-outline w-full" onClick={() => setMobileOpen(false)}>Đăng nhập</Link>
             <Link to="/register" className="btn btn-primary w-full" onClick={() => setMobileOpen(false)}>Đăng ký</Link>
           </div>
         ) : isAdmin ? (
           <Link to="/dashboard" className="btn btn-primary w-full" onClick={() => setMobileOpen(false)}>
-            <LayoutDashboard size={15}/> Vào Quản trị
+            <LayoutDashboard size={15} /> Vào Quản trị
           </Link>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
