@@ -1,11 +1,14 @@
-import React, { useState } from 'react';
-import { BarChart3, MapPin, Users, ClipboardCheck, CheckCircle2, Circle, Smartphone, ShieldCheck, ShoppingCart, Landmark, ArrowRight, UploadCloud, ChevronRight } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { BarChart3, MapPin, Users, ClipboardCheck, CheckCircle2, Circle, Smartphone, ShieldCheck, ShoppingCart, Landmark, ArrowRight, UploadCloud, ChevronRight, Loader2 } from 'lucide-react';
+import api from '../utils/api';
+import { toast } from 'react-toastify';
+import { useAuth } from '../context/AuthContext';
 
 const TABS = [
-  { id: 'report', icon: BarChart3, label: 'Báo cáo & Số liệu', color: 'var(--brand-blue)' },
-  { id: 'targets', icon: MapPin, label: 'Phân nhóm Địa bàn', color: 'var(--brand-orange)' },
-  { id: 'teams', icon: Users, label: 'Đội hình & Nhóm việc', color: 'var(--brand-green)' },
-  { id: 'checklist', icon: ClipboardCheck, label: 'Sổ tay & Checklist', color: 'var(--brand-purple)' },
+  { id: 'report', icon: BarChart3, label: 'Báo cáo & Số liệu', color: 'var(--blue-600)' },
+  { id: 'targets', icon: MapPin, label: 'Phân nhóm Địa bàn', color: 'var(--amber-600)' },
+  { id: 'teams', icon: Users, label: 'Đội hình & Nhóm việc', color: 'var(--green-600)' },
+  { id: 'checklist', icon: ClipboardCheck, label: 'Sổ tay & Checklist', color: 'var(--purple-600)' },
 ];
 
 const CHECKLIST_ITEMS = [
@@ -29,6 +32,63 @@ const CHECKLIST_ITEMS = [
 const PublicCampaigns = () => {
   const [activeTab, setActiveTab] = useState('report');
   const [checkedItems, setCheckedItems] = useState([]);
+  
+  const { user } = useAuth();
+  
+  const [stats, setStats] = useState({
+    vneid: 12450, qr: 5230, digitalSkills: 0, publicServices: 0, activeAgencies: 102, totalAgencies: 102
+  });
+  
+  const [formData, setFormData] = useState({
+    digitalSkills: '', qrSupport: ''
+  });
+  
+  const [loading, setLoading] = useState(false);
+  
+  useEffect(() => {
+    fetchStats();
+  }, []);
+  
+  const fetchStats = async () => {
+    try {
+      const res = await api.get('/campaign/stats');
+      if (res.data) {
+        setStats({
+          vneid: res.data.vneid || 0,
+          qr: res.data.qr || 0,
+          digitalSkills: res.data.digitalSkills || 0,
+          publicServices: res.data.publicServices || 0,
+          activeAgencies: res.data.activeAgencies || 0,
+          totalAgencies: res.data.totalAgencies || 102
+        });
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleSubmitReport = async (e) => {
+    e.preventDefault();
+    if (!user) {
+      toast.warning('Bạn cần đăng nhập bằng tài khoản Cấp Xã để báo cáo!');
+      return;
+    }
+    
+    setLoading(true);
+    try {
+      await api.post('/campaign/report', {
+        digitalSkills: Number(formData.digitalSkills),
+        qrSupport: Number(formData.qrSupport)
+      });
+      toast.success('Gửi báo cáo thành công!');
+      setFormData({ digitalSkills: '', qrSupport: '' });
+      fetchStats();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Lỗi khi gửi báo cáo');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const toggleCheck = (idx) => {
     if (checkedItems.includes(idx)) {
@@ -43,13 +103,13 @@ const PublicCampaigns = () => {
   return (
     <div style={{ background: 'var(--surface-0)', minHeight: '100vh', paddingBottom: 60 }}>
       {/* HERO SECTION */}
-      <div style={{ background: 'linear-gradient(135deg, var(--brand-blue) 0%, #1E3A8A 100%)', color: 'white', padding: '60px 0 80px', position: 'relative', overflow: 'hidden' }}>
+      <div style={{ background: 'linear-gradient(135deg, var(--blue-600) 0%, var(--blue-900) 100%)', color: 'white', padding: '60px 0 80px', position: 'relative', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', top: '-10%', right: '-5%', width: 500, height: 500, background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%)', borderRadius: '50%' }} />
         <div className="container" style={{ position: 'relative', zIndex: 1, textAlign: 'center' }}>
           <span style={{ display: 'inline-block', padding: '6px 16px', background: 'rgba(255,255,255,0.2)', borderRadius: 20, fontSize: '.85rem', fontWeight: 600, marginBottom: 20, backdropFilter: 'blur(10px)' }}>
             CHIẾN DỊCH 44 NGÀY ĐÊM
           </span>
-          <h1 style={{ fontSize: '2.5rem', fontWeight: 800, marginBottom: 16, textShadow: '0 2px 10px rgba(0,0,0,0.2)' }}>
+          <h1 style={{ fontSize: '2.5rem', fontWeight: 800, marginBottom: 16, color: 'white', textShadow: '0 2px 10px rgba(0,0,0,0.2)' }}>
             THANH NIÊN ĐẮK LẮK <br/> TIÊN PHONG CHUYỂN ĐỔI SỐ
           </h1>
           <p style={{ fontSize: '1.1rem', opacity: 0.9, maxWidth: 700, margin: '0 auto', lineHeight: 1.6 }}>
@@ -92,40 +152,44 @@ const PublicCampaigns = () => {
           {activeTab === 'report' && (
             <div style={{ display: 'grid', gap: 24 }}>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 24 }}>
-                <div className="card" style={{ borderTop: '4px solid var(--brand-blue)' }}>
-                  <h3 style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}><UploadCloud size={20} color="var(--brand-blue)"/> Nhập liệu Hằng ngày (Cấp Xã)</h3>
+                <div className="card" style={{ borderTop: '4px solid var(--blue-600)' }}>
+                  <h3 style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}><UploadCloud size={20} color="var(--blue-600)"/> Nhập liệu Hằng ngày (Cấp Xã)</h3>
                   <p style={{ color: 'var(--tx-3)', fontSize: '.9rem', marginBottom: 20 }}>Dành cho các đội hình khai báo số liệu trực tiếp mỗi 20h00.</p>
                   
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                    <div className="form-group"><label className="form-label">Cơ quan / Xã Phường</label><input className="form-input" disabled value="UBND Xã (Yêu cầu đăng nhập)" /></div>
-                    <div className="form-group"><label className="form-label">Số lượt người dân được hỗ trợ kỹ năng số</label><input type="number" className="form-input" placeholder="0" /></div>
-                    <div className="form-group"><label className="form-label">Số hộ kinh doanh, tiểu thương hỗ trợ QR</label><input type="number" className="form-input" placeholder="0" /></div>
-                    <button className="btn btn-primary" style={{ width: '100%', marginTop: 8 }}>Gửi Báo Cáo Nhanh</button>
-                  </div>
+                  <form style={{ display: 'flex', flexDirection: 'column', gap: 12 }} onSubmit={handleSubmitReport}>
+                    <div className="form-group"><label className="form-label">Cơ quan / Xã Phường</label><input className="form-input" disabled value={user ? (user.agency?.name || 'Đã đăng nhập') : 'Yêu cầu đăng nhập'} /></div>
+                    <div className="form-group"><label className="form-label">Số lượt người dân được hỗ trợ kỹ năng số</label><input type="number" min="0" required className="form-input" placeholder="0" value={formData.digitalSkills} onChange={e => setFormData({...formData, digitalSkills: e.target.value})} /></div>
+                    <div className="form-group"><label className="form-label">Số hộ kinh doanh, tiểu thương hỗ trợ QR</label><input type="number" min="0" required className="form-input" placeholder="0" value={formData.qrSupport} onChange={e => setFormData({...formData, qrSupport: e.target.value})} /></div>
+                    <button type="submit" disabled={loading} className="btn btn-primary" style={{ width: '100%', marginTop: 8 }}>
+                      {loading ? <Loader2 size={16} className="spin" /> : 'Gửi Báo Cáo Nhanh'}
+                    </button>
+                  </form>
                 </div>
 
                 <div className="card">
-                  <h3 style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}><BarChart3 size={20} color="var(--brand-orange)"/> Bảng Tổng hợp Lũy kế (Toàn Tỉnh)</h3>
+                  <h3 style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}><BarChart3 size={20} color="var(--amber-600)"/> Bảng Tổng hợp Lũy kế (Toàn Tỉnh)</h3>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 20 }}>
                     <div style={{ background: '#EFF6FF', padding: 16, borderRadius: 'var(--r-md)', textAlign: 'center' }}>
-                      <div style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--brand-blue)' }}>12.450</div>
+                      <div style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--blue-600)' }}>{stats.vneid.toLocaleString('vi-VN')}</div>
                       <div style={{ fontSize: '.8rem', color: 'var(--tx-2)', fontWeight: 600 }}>Lượt hỗ trợ VNeID</div>
                     </div>
                     <div style={{ background: '#F0FDF4', padding: 16, borderRadius: 'var(--r-md)', textAlign: 'center' }}>
-                      <div style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--brand-green)' }}>5.230</div>
+                      <div style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--green-600)' }}>{stats.qr.toLocaleString('vi-VN')}</div>
                       <div style={{ fontSize: '.8rem', color: 'var(--tx-2)', fontWeight: 600 }}>Hộ kinh doanh QR</div>
                     </div>
                     <div style={{ background: '#FEF2F2', padding: 16, borderRadius: 'var(--r-md)', textAlign: 'center' }}>
-                      <div style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--danger)' }}>102/102</div>
+                      <div style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--danger)' }}>{stats.activeAgencies}/{stats.totalAgencies}</div>
                       <div style={{ fontSize: '.8rem', color: 'var(--tx-2)', fontWeight: 600 }}>Đội hình ra quân</div>
                     </div>
                     <div style={{ background: '#FAF5FF', padding: 16, borderRadius: 'var(--r-md)', textAlign: 'center' }}>
-                      <div style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--brand-purple)' }}>45%</div>
+                      <div style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--purple-600)' }}>
+                        {Math.round((stats.activeAgencies / stats.totalAgencies) * 100) || 0}%
+                      </div>
                       <div style={{ fontSize: '.8rem', color: 'var(--tx-2)', fontWeight: 600 }}>Tiến độ toàn chiến dịch</div>
                     </div>
                   </div>
                   <div style={{ height: 8, background: 'var(--border)', borderRadius: 4, overflow: 'hidden' }}>
-                    <div style={{ width: '45%', height: '100%', background: 'var(--brand-blue)' }} />
+                    <div style={{ width: `${Math.round((stats.activeAgencies / stats.totalAgencies) * 100) || 0}%`, height: '100%', background: 'var(--blue-600)' }} />
                   </div>
                 </div>
               </div>
@@ -136,9 +200,9 @@ const PublicCampaigns = () => {
           {activeTab === 'targets' && (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 24 }}>
               {[
-                { title: 'Nhóm 1: Phường, Đô thị, Hành chính', count: 32, icon: Landmark, color: 'var(--brand-blue)', targets: ['Hỗ trợ kỹ năng số: > 1.500 lượt', 'VNeID & Tiện ích: > 700 lượt', 'Dịch vụ công: > 500 lượt', 'Hộ kinh doanh QR: > 160 hộ', 'Điểm chuyển đổi số: Tuyến phố ko tiền mặt'] },
-                { title: 'Nhóm 2: Xã có chợ, Trung tâm cụm', count: 40, icon: ShoppingCart, color: 'var(--brand-orange)', targets: ['Hỗ trợ kỹ năng số: > 1.000 lượt', 'VNeID & Tiện ích: > 500 lượt', 'Dịch vụ công: > 300 lượt', 'Hộ kinh doanh QR: > 100 hộ', 'Điểm chuyển đổi số: Chợ số, Khu dân cư số'] },
-                { title: 'Nhóm 3: Xã nông thôn, Vùng sâu', count: 30, icon: MapPin, color: 'var(--brand-green)', targets: ['Hỗ trợ kỹ năng số: > 600 lượt', 'VNeID & Tiện ích: > 300 lượt', 'Dịch vụ công: > 150 lượt', 'Hộ kinh doanh QR: > 30 hộ', 'Điểm chuyển đổi số: Thôn/buôn số'] },
+                { title: 'Nhóm 1: Phường, Đô thị, Hành chính', count: 32, icon: Landmark, color: 'var(--blue-600)', targets: ['Hỗ trợ kỹ năng số: > 1.500 lượt', 'VNeID & Tiện ích: > 700 lượt', 'Dịch vụ công: > 500 lượt', 'Hộ kinh doanh QR: > 160 hộ', 'Điểm chuyển đổi số: Tuyến phố ko tiền mặt'] },
+                { title: 'Nhóm 2: Xã có chợ, Trung tâm cụm', count: 40, icon: ShoppingCart, color: 'var(--amber-600)', targets: ['Hỗ trợ kỹ năng số: > 1.000 lượt', 'VNeID & Tiện ích: > 500 lượt', 'Dịch vụ công: > 300 lượt', 'Hộ kinh doanh QR: > 100 hộ', 'Điểm chuyển đổi số: Chợ số, Khu dân cư số'] },
+                { title: 'Nhóm 3: Xã nông thôn, Vùng sâu', count: 30, icon: MapPin, color: 'var(--green-600)', targets: ['Hỗ trợ kỹ năng số: > 600 lượt', 'VNeID & Tiện ích: > 300 lượt', 'Dịch vụ công: > 150 lượt', 'Hộ kinh doanh QR: > 30 hộ', 'Điểm chuyển đổi số: Thôn/buôn số'] },
               ].map((g, i) => {
                 const GIcon = g.icon;
                 return (
@@ -207,13 +271,13 @@ const PublicCampaigns = () => {
                   <p style={{ color: 'var(--tx-3)', fontSize: '.9rem' }}>Theo dõi tiến độ thực hiện nhiệm vụ của xã/phường (Mô phỏng 15 bước).</p>
                 </div>
                 <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: '2rem', fontWeight: 800, color: progress === 100 ? 'var(--brand-green)' : 'var(--brand-blue)', lineHeight: 1 }}>{progress}%</div>
+                  <div style={{ fontSize: '2rem', fontWeight: 800, color: progress === 100 ? 'var(--green-600)' : 'var(--blue-600)', lineHeight: 1 }}>{progress}%</div>
                   <div style={{ fontSize: '.8rem', color: 'var(--tx-3)', fontWeight: 600 }}>HOÀN THÀNH</div>
                 </div>
               </div>
 
               <div style={{ height: 8, background: 'var(--surface-2)', borderRadius: 4, overflow: 'hidden', marginBottom: 24 }}>
-                <div style={{ width: `${progress}%`, height: '100%', background: progress === 100 ? 'var(--brand-green)' : 'var(--brand-blue)', transition: 'width 0.4s cubic-bezier(0.4, 0, 0.2, 1)' }} />
+                <div style={{ width: `${progress}%`, height: '100%', background: progress === 100 ? 'var(--green-600)' : 'var(--blue-600)', transition: 'width 0.4s cubic-bezier(0.4, 0, 0.2, 1)' }} />
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -225,12 +289,12 @@ const PublicCampaigns = () => {
                       onClick={() => toggleCheck(idx)}
                       style={{ 
                         display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', 
-                        borderRadius: 'var(--r-md)', border: isChecked ? '1px solid var(--brand-green)' : '1px solid var(--border)',
+                        borderRadius: 'var(--r-md)', border: isChecked ? '1px solid var(--green-600)' : '1px solid var(--border)',
                         background: isChecked ? '#F0FDF4' : 'var(--surface-0)',
                         cursor: 'pointer', transition: 'all .2s'
                       }}
                     >
-                      <div style={{ color: isChecked ? 'var(--brand-green)' : 'var(--tx-3)', flexShrink: 0, transition: 'all .2s' }}>
+                      <div style={{ color: isChecked ? 'var(--green-600)' : 'var(--tx-3)', flexShrink: 0, transition: 'all .2s' }}>
                         {isChecked ? <CheckCircle2 size={22} /> : <Circle size={22} />}
                       </div>
                       <span style={{ fontSize: '.95rem', fontWeight: 500, color: isChecked ? 'var(--tx-1)' : 'var(--tx-2)', textDecoration: isChecked ? 'line-through' : 'none', opacity: isChecked ? 0.7 : 1 }}>
