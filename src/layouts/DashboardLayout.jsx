@@ -110,17 +110,17 @@ const DashboardLayout = () => {
             <SLink to="/dashboard/news" icon={FileText} label="Quản lý Tin tức"/>
           </>)}
 
-          <div className="sidebar-sec">AI EOFFICE</div>
-          <SLink to="/dashboard/eoffice" icon={Briefcase} label="Dashboard eOffice" exact />
-          <SLink to="/dashboard/eoffice/incoming" icon={FileInput} label="Văn bản đến"/>
-          <SLink to="/dashboard/eoffice/outgoing" icon={FileOutput} label="Văn bản đi"/>
-          <SLink to="/dashboard/eoffice/tasks" icon={CheckSquare} label="Quản lý Công việc"/>
-          <SLink to="/dashboard/eoffice/drive" icon={Database} label="Kho Dữ liệu chung"/>
-          <SLink to="/dashboard/eoffice/ai-center" icon={Zap} label="Trung tâm AI"/>
-          <SLink to="/dashboard/eoffice/report" icon={Bot} label="Báo cáo AI"/>
-          {can('ADMIN', 'SENIOR_ADMIN') && (
-            <SLink to="/dashboard/eoffice/activity" icon={Activity} label="Nhật ký hoạt động"/>
-          )}
+          {/* AI EOFFICE chỉ dành cho Cán bộ Tỉnh và Cán bộ Xã */}
+          {can('PROVINCE_ADMIN', 'COMMUNE_ADMIN') && (<>
+            <div className="sidebar-sec">AI EOFFICE</div>
+            <SLink to="/dashboard/eoffice" icon={Briefcase} label="Dashboard eOffice" exact />
+            <SLink to="/dashboard/eoffice/incoming" icon={FileInput} label="Văn bản đến"/>
+            <SLink to="/dashboard/eoffice/outgoing" icon={FileOutput} label="Văn bản đi"/>
+            <SLink to="/dashboard/eoffice/tasks" icon={CheckSquare} label="Quản lý Công việc"/>
+            <SLink to="/dashboard/eoffice/drive" icon={Database} label="Kho Dữ liệu chung"/>
+            <SLink to="/dashboard/eoffice/ai-center" icon={Zap} label="Trung tâm AI"/>
+            <SLink to="/dashboard/eoffice/report" icon={Bot} label="Báo cáo AI"/>
+          </>)}
 
           {can('SENIOR_ADMIN') && (<>
             <div className="sidebar-sec">Hệ thống</div>
