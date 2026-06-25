@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import api from '../../lib/api';
 import { toast } from 'react-toastify';
 import { UserPlus, Trash2, RefreshCw, Building2 } from 'lucide-react';
-import { COMMUNES_LIST } from '../../constants/locations';
+import { PROVINCES_DATA } from '../../constants/locations';
 
 const ROLES = [
   { value: 'COMMUNE_ADMIN', label: '🏡 Cán bộ Xã (Commune Admin)' },
@@ -103,6 +103,14 @@ const UsersList = () => {
                 {agencies.map(a => <option key={a._id} value={a._id}>{a.name} ({a.level})</option>)}
               </select>
             </div>
+          </div>
+          <div className="form-row-3">
+            <div className="form-group">
+              <label className="form-label">Tỉnh phụ trách</label>
+              <select className="form-input form-select" value={form.province} onChange={e => setForm({ ...form, province: e.target.value, commune: '' })}>
+                {Object.keys(PROVINCES_DATA).map(p => <option key={p} value={p}>{p}</option>)}
+              </select>
+            </div>
             <div className="form-group">
               <label className="form-label">Huyện phụ trách</label>
               <input className="form-input" placeholder="VD: TP Buôn Ma Thuột" value={form.district} onChange={e => setForm({ ...form, district: e.target.value })} />
@@ -111,7 +119,7 @@ const UsersList = () => {
               <label className="form-label">Xã phụ trách</label>
               <select className="form-input form-select" value={form.commune} onChange={e => setForm({ ...form, commune: e.target.value })}>
                 <option value="">-- Chọn Xã/Phường --</option>
-                {COMMUNES_LIST.map(c => <option key={c} value={c}>{c}</option>)}
+                {PROVINCES_DATA[form.province] && PROVINCES_DATA[form.province].map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
           </div>
