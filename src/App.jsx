@@ -30,6 +30,8 @@ const DocumentsOutgoing = lazy(() => import('./pages/dashboard/eoffice/Documents
 const TasksManager      = lazy(() => import('./pages/dashboard/eoffice/TasksManager'));
 const ActivityLog       = lazy(() => import('./pages/dashboard/eoffice/ActivityLog'));
 const AiReport          = lazy(() => import('./pages/dashboard/eoffice/AiReport'));
+const AiCommandCenter   = lazy(() => import('./pages/dashboard/eoffice/AiCommandCenter'));
+const SharedDrive       = lazy(() => import('./pages/dashboard/eoffice/SharedDrive'));
 
 import ChatbotWidget from './components/ChatbotWidget';
 
@@ -88,8 +90,10 @@ function App() {
             <Route path="eoffice/incoming" element={<DocumentsIncoming />} />
             <Route path="eoffice/outgoing" element={<DocumentsOutgoing />} />
             <Route path="eoffice/tasks" element={<TasksManager />} />
+            <Route path="eoffice/drive" element={<SharedDrive />} />
             <Route path="eoffice/report" element={<ProtectedRoute allowedRoles={['COMMUNE_ADMIN', 'PROVINCE_ADMIN', 'ADMIN', 'SENIOR_ADMIN']}><AiReport /></ProtectedRoute>} />
             <Route path="eoffice/activity" element={<ProtectedRoute allowedRoles={['ADMIN', 'SENIOR_ADMIN']}><ActivityLog /></ProtectedRoute>} />
+            <Route path="eoffice/ai-center" element={<ProtectedRoute allowedRoles={['COMMUNE_ADMIN', 'PROVINCE_ADMIN', 'ADMIN', 'SENIOR_ADMIN']}><AiCommandCenter /></ProtectedRoute>} />
           </Route>
 
           {/* 404 fallback */}

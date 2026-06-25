@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useRef } from 'react';
 import api from '../../../lib/api';
 import { toast } from 'react-toastify';
-import { FileInput, Search, Plus, Eye, Trash2, RefreshCw, Upload, Bot, ChevronDown, X, Save, Calendar, Building2, User, FileText, AlertTriangle, Shield } from 'lucide-react';
+import { FileInput, Search, Plus, Eye, Trash2, RefreshCw, Upload, Bot, ChevronDown, X, Save, Calendar, Building2, User, FileText, AlertTriangle, Shield, MessageCircle } from 'lucide-react';
+import AiChatPanel, { AiChatButton } from '../../../components/AiChatPanel';
 
 const CATEGORIES = ['Công văn', 'Báo cáo', 'Kế hoạch', 'Tờ trình', 'Thông báo', 'Quyết định', 'Giấy mời', 'Chỉ thị', 'Hướng dẫn', 'Khác'];
 const URGENCIES = ['Thường', 'Khẩn', 'Thượng khẩn', 'Hỏa tốc'];
@@ -18,6 +19,8 @@ const emptyForm = {
 
 const DocumentsIncoming = () => {
   const [docs, setDocs] = useState([]);
+  const [chatOpen, setChatOpen] = useState(false);
+  const [chatTarget, setChatTarget] = useState(null);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -527,6 +530,29 @@ const DocumentsIncoming = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* AI Chat Panel */}
+      <AiChatPanel
+        targetId={chatTarget?._id}
+        targetType="document"
+        targetTitle={chatTarget?.summary || chatTarget?.documentNumber || 'Văn bản'}
+        isOpen={chatOpen}
+        onClose={() => { setChatOpen(false); setChatTarget(null); }}
+      />
+
+      {/* Nút mở chat khi đang xem chi tiết */}
+      {showDetail && !chatOpen && (
+        <button onClick={() => { setChatTarget(showDetail); setChatOpen(true); }} title="Chat với AI về văn bản này" style={{
+          position: 'fixed', bottom: 24, right: 24, width: 56, height: 56,
+          borderRadius: '50%', border: 'none', cursor: 'pointer', zIndex: 999,
+          background: 'linear-gradient(135deg, #1e40af, #3b82f6)',
+          color: '#fff', boxShadow: '0 4px 16px rgba(37,99,235,.4)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          transition: 'transform .2s'
+        }}>
+          <MessageCircle size={24} />
+        </button>
       )}
     </div>
   );

@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import api from '../../../lib/api';
 import { toast } from 'react-toastify';
-import { CheckSquare, Plus, RefreshCw, Trash2, Calendar, User, Search, Clock, CheckCircle } from 'lucide-react';
+import { CheckSquare, Plus, RefreshCw, Trash2, Calendar, User, Search, Clock, CheckCircle, MessageCircle } from 'lucide-react';
+import AiChatPanel from '../../../components/AiChatPanel';
 
 const MarkdownRender = ({ text }) => {
   if (!text) return null;
@@ -38,6 +39,9 @@ const TasksManager = () => {
   const [submitting, setSubmitting] = useState(false);
   const [aiSolving, setAiSolving] = useState(false);
   const [showAiSolution, setShowAiSolution] = useState(null);
+  const [chatOpen, setChatOpen] = useState(false);
+  const [chatTarget, setChatTarget] = useState(null);
+  const [creatingOutgoing, setCreatingOutgoing] = useState(false);
 
   const role = localStorage.getItem('role') || '';
   const isAdmin = ['ADMIN', 'SENIOR_ADMIN', 'PROVINCE_ADMIN'].includes(role);
@@ -101,12 +105,24 @@ const TasksManager = () => {
     setAiSolving(true);
     try {
       const res = await api.post(`/tasks/${id}/ai-solve`);
-      toast.success('🤖 AI đã giải quyết công việc xong!');
+      toast.success('AI đã xử lý xong!');
+      setShowAiSolution(res.data.task);
       fetchTasks();
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Lỗi AI giải quyết');
-    }
+    } catch (err) { toast.error(err.response?.data?.message || 'Lỗi AI xử lý'); }
     setAiSolving(false);
+  };
+
+  const handleCreateOutgoingFromAI = async (task) => {
+    setCreatingOutgoing(true);
+    try {
+      await api.post('/documents/ai-create-outgoing', {
+        taskId: task._id,
+        sourceDocId: task.sourceDocument?._id
+      });
+      toast.success('Đã tạo Văn bản đi thành công từ bản thảo AI!');
+      setShowAiSolution(null);
+    } catch (err) { toast.error(err.response?.data?.message || 'Lỗi tạo VB đi'); }
+    setCreatingOutgoing(false);
   };
 
   return (
@@ -158,6 +174,17 @@ const TasksManager = () => {
                 {t.aiGenerated && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'var(--success)' }}>🤖 Tạo tự động bởi AI</div>
                 )}
+                {t.aiGeneratedFiles && t.aiGeneratedFiles.length > 0 && (
+                  <div style={{ marginTop: 8, padding: 8, background: '#EFF6FF', borderRadius: 'var(--r-sm)', border: '1px solid #BFDBFE' }}>
+                    <div style={{ fontSize: '.75rem', fontWeight: 600, color: 'var(--brand-blue)', marginBottom: 4 }}>📎 BẢN THẢO AI ĐÃ SOẠN:</div>
+                    {t.aiGeneratedFiles.map((file, idx) => (
+                      <a key={idx} href={`http://localhost:5000/${file.filePath}`} target="_blank" rel="noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '.8rem', color: 'var(--tx-1)', textDecoration: 'none', marginBottom: 4 }}>
+                        <span style={{ fontSize: '1.2rem' }}>{file.fileType === 'xlsx' ? '📊' : '📝'}</span>
+                        <span style={{ textDecoration: 'underline' }}>{file.fileName}</span>
+                      </a>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Actions */}
@@ -182,6 +209,9 @@ const TasksManager = () => {
                     🤖 Xem KQ AI
                   </button>
                 )}
+                <button className="btn btn-ghost btn-sm" style={{ color: 'var(--brand-blue)' }} onClick={() => { setChatTarget(t); setChatOpen(true); }} title="Chat với AI">
+                  <MessageCircle size={14}/>
+                </button>
                 {['ADMIN', 'SENIOR_ADMIN'].includes(role) && (
                   <button className="btn btn-ghost btn-sm" style={{ color: 'var(--danger)' }} onClick={() => handleDelete(t._id)}>
                     <Trash2 size={14}/>
@@ -251,6 +281,11 @@ const TasksManager = () => {
                 <MarkdownRender text={showAiSolution.aiSolution} />
               </div>
               <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end', marginTop: 20 }}>
+                {showAiSolution.aiGeneratedFiles && showAiSolution.aiGeneratedFiles.length > 0 && (
+                  <button className="btn btn-success" onClick={() => handleCreateOutgoingFromAI(showAiSolution)} disabled={creatingOutgoing}>
+                    {creatingOutgoing ? 'Đang tạo...' : '📤 Tạo VB đi từ File này'}
+                  </button>
+                )}
                 <button className="btn btn-outline" onClick={() => { navigator.clipboard.writeText(showAiSolution.aiSolution); toast.success('Đã copy!'); }}>
                   📋 Copy
                 </button>
@@ -260,6 +295,15 @@ const TasksManager = () => {
           </div>
         </div>
       )}
+
+      {/* AI Chat Panel */}
+      <AiChatPanel
+        targetId={chatTarget?._id}
+        targetType="task"
+        targetTitle={chatTarget?.title || 'Công việc'}
+        isOpen={chatOpen}
+        onClose={() => { setChatOpen(false); setChatTarget(null); }}
+      />
     </div>
   );
 };

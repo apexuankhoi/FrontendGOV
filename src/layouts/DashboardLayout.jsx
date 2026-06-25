@@ -3,7 +3,7 @@ import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, Map, FileText, Users, LogOut,
   Globe, Menu, X, ChevronRight, UserCircle, Settings, Bot,
-  FileInput, FileOutput, CheckSquare, Activity, Briefcase, Bell
+  FileInput, FileOutput, CheckSquare, Activity, Briefcase, Bell, Zap, Database
 } from 'lucide-react';
 import api, { API_URL } from '../lib/api';
 import { io } from 'socket.io-client';
@@ -113,6 +113,8 @@ const DashboardLayout = () => {
           <SLink to="/dashboard/eoffice/incoming" icon={FileInput} label="Văn bản đến"/>
           <SLink to="/dashboard/eoffice/outgoing" icon={FileOutput} label="Văn bản đi"/>
           <SLink to="/dashboard/eoffice/tasks" icon={CheckSquare} label="Quản lý Công việc"/>
+          <SLink to="/dashboard/eoffice/drive" icon={Database} label="Kho Dữ liệu chung"/>
+          <SLink to="/dashboard/eoffice/ai-center" icon={Zap} label="Trung tâm AI"/>
           <SLink to="/dashboard/eoffice/report" icon={Bot} label="Báo cáo AI"/>
           {can('ADMIN', 'SENIOR_ADMIN') && (
             <SLink to="/dashboard/eoffice/activity" icon={Activity} label="Nhật ký hoạt động"/>
