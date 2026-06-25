@@ -32,20 +32,20 @@ const COMMUNE_GROUPS = [
   {
     id: 'G1',
     name: 'Nhóm 1: Phường Đô thị - TT Hành chính',
-    targets: { digitalSkills: 1500, vneidSupport: 700, publicServices: 500, qrSupport: 160 },
-    communes: ["Phường Buôn Ma Thuột", "Phường Tân An", "Phường Tân Lập", "Phường Thành Nhất", "Phường Ea Kao", "Xã Hòa Phú", "Phường Buôn Hồ", "Phường Cư Bao"]
+    targets: { digitalSkills: 1500, vneidSupport: 700, publicServices: 500, qrSupport: 160, trainingClasses: 6, digitalProducts: 12, youthTrained: 250 },
+    communes: ["Phường Buôn Ma Thuột", "Phường Tân An", "Phường Tân Lập", "Phường Thành Nhất", "Phường Ea Kao", "Phường Buôn Hồ", "Phường Cư Bao", "Phường Phú Yên", "Phường Tuy Hòa", "Phường Bình Kiến", "Phường Xuân Đài", "Phường Sông Cầu", "Phường Đông Hòa", "Phường Hòa Hiệp", "Xã Ea Súp", "Xã Quảng Phú", "Xã Pơng Drang", "Xã Ea Drăng", "Xã Krông Năng", "Xã Krông Pắc", "Xã Ea Kar", "Xã Ea Knốp", "Xã M'Drắk", "Xã Krông Bông", "Xã Liên Sơn Lắk", "Xã Krông Ana", "Xã Tuy An Bắc", "Xã Phú Hòa 1", "Xã Tây Hòa", "Xã Sơn Hòa", "Xã Sông Hinh", "Xã Đồng Xuân"]
   },
   {
     id: 'G2',
     name: 'Nhóm 2: Xã có Chợ - TT Cụm xã',
-    targets: { digitalSkills: 1000, vneidSupport: 500, publicServices: 300, qrSupport: 100 },
-    communes: ["Xã Ea Drông", "Xã Ea Súp", "Xã Ea Rốk", "Xã Ea Bung", "Xã Ia Rvê", "Xã Ia Lốp", "Xã Ea Wer", "Xã Ea Nuôl", "Xã Buôn Đôn", "Xã Ea Kiết", "Xã Ea M'Droh", "Xã Quảng Phú", "Xã Cuôr Đăng", "Xã Cư M'gar", "Xã Ea Tul", "Xã Pơng Drang", "Xã Krông Búk", "Xã Cư Pơng", "Xã Ea Khal", "Xã Ea Drăng", "Xã Ea Wy"]
+    targets: { digitalSkills: 1000, vneidSupport: 500, publicServices: 300, qrSupport: 100, trainingClasses: 5, digitalProducts: 10, youthTrained: 200 },
+    communes: ["Xã Hòa Phú", "Xã Ea Drông", "Xã Ea Wer", "Xã Ea Nuôl", "Xã Ea Kiết", "Xã Ea M'Droh", "Xã Cuôr Đăng", "Xã Cư M'gar", "Xã Ea Tul", "Xã Krông Búk", "Xã Ea Khal", "Xã Ea Hiao", "Xã Dliê Ya", "Xã Tam Giang", "Xã Phú Xuân", "Xã Ea Knuếc", "Xã Tân Tiến", "Xã Ea Phê", "Xã Ea Kly", "Xã Cư Yang", "Xã Ea Păl", "Xã Hòa Sơn", "Xã Đắk Liêng", "Xã Ea Ning", "Xã Dray Bhăng", "Xã Ea Ktur", "Xã Dur Kmăl", "Xã Ea Na", "Xã Xuân Thọ", "Xã Xuân Cảnh", "Xã Xuân Lộc", "Xã Hòa Xuân", "Xã Tuy An Đông", "Xã Ô Loan", "Xã Tuy An Nam", "Xã Phú Hòa 2", "Xã Hòa Thịnh", "Xã Hòa Mỹ", "Xã Sơn Thành", "Xã Đức Bình"]
   },
   {
     id: 'G3',
     name: 'Nhóm 3: Xã Nông thôn - Vùng sâu',
-    targets: { digitalSkills: 600, vneidSupport: 300, publicServices: 150, qrSupport: 30 },
-    communes: ["Xã Ea H'Leo", "Xã Ea Hiao", "Xã Krông Năng", "Xã Dliê Ya", "Xã Tam Giang", "Xã Phú Xuân", "Xã Krông Pắc", "Xã Ea Knuếc", "Xã Tân Tiến", "Xã Ea Phê", "Xã Ea Kly", "Xã Vụ Bổn", "Xã Ea Kar", "Xã Ea Ô", "Xã Ea Knốp", "Xã Cư Yang", "Xã Ea Păl", "Xã M'Drắk", "Xã Ea Riêng", "Xã Cư M'ta", "Xã Krông Á", "Xã Cư Prao", "Xã Ea Trang", "Xã Hòa Sơn", "Xã Dang Kang", "Xã Krông Bông", "Xã Yang Mao", "Xã Cư Pui", "Xã Liên Sơn Lắk", "Xã Đắk Liêng", "Xã Nam Ka", "Xã Đắk Phơi", "Xã Krông Nô", "Xã Ea Ning", "Xã Dray Bhăng", "Xã Ea Ktur", "Xã Krông Ana", "Xã Dur Kmăl", "Xã Ea Na"]
+    targets: { digitalSkills: 600, vneidSupport: 300, publicServices: 150, qrSupport: 30, trainingClasses: 4, digitalProducts: 8, youthTrained: 150 },
+    communes: ["Xã Ea Rốk", "Xã Ea Bung", "Xã Cư Pơng", "Xã Ea Wy", "Xã Ea Ô", "Xã Ea Riêng", "Xã Cư M'ta", "Xã Krông Á", "Xã Cư Prao", "Xã Dang Kang", "Xã Yang Mao", "Xã Cư Pui", "Xã Nam Ka", "Xã Đắk Phơi", "Xã Tuy An Tây", "Xã Vân Hòa", "Xã Tây Sơn", "Xã Suối Trai", "Xã Ea Ly", "Xã Ea Bá", "Xã Xuân Lãnh", "Xã Phú Mỡ", "Xã Xuân Phước", "Xã Buôn Đôn", "Xã Ea H'Leo", "Xã Ea Trang", "Xã Ia Lốp", "Xã Ia Rvê", "Xã Krông Nô", "Xã Vụ Bổn"]
   }
 ];
 
@@ -247,9 +247,9 @@ const PublicCampaigns = () => {
                           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
                             <div className="form-group"><label className="form-label">Đội hình ra quân</label><input type="number" min="0" className="form-input" placeholder="0" value={formData.activeTeams} onChange={e => setFormData({...formData, activeTeams: e.target.value})} /></div>
                             <div className="form-group"><label className="form-label">Tình nguyện viên</label><input type="number" min="0" className="form-input" placeholder="0" value={formData.volunteers} onChange={e => setFormData({...formData, volunteers: e.target.value})} /></div>
-                            <div className="form-group"><label className="form-label">Lớp/Điểm HD</label><input type="number" min="0" className="form-input" placeholder="0" value={formData.trainingClasses} onChange={e => setFormData({...formData, trainingClasses: e.target.value})} /></div>
-                            <div className="form-group"><label className="form-label">Sản phẩm số hóa</label><input type="number" min="0" className="form-input" placeholder="0" value={formData.digitalProducts} onChange={e => setFormData({...formData, digitalProducts: e.target.value})} /></div>
-                            <div className="form-group"><label className="form-label">Đoàn viên học AI</label><input type="number" min="0" className="form-input" placeholder="0" value={formData.youthTrained} onChange={e => setFormData({...formData, youthTrained: e.target.value})} /></div>
+                            <div className="form-group"><label className="form-label">Lớp/Điểm HD <span style={{color:'var(--danger)', fontSize:'.7rem'}}>(>{activeGroup.targets.trainingClasses})</span></label><input type="number" min="0" className="form-input" placeholder="0" value={formData.trainingClasses} onChange={e => setFormData({...formData, trainingClasses: e.target.value})} /></div>
+                            <div className="form-group"><label className="form-label">Sản phẩm số hóa <span style={{color:'var(--danger)', fontSize:'.7rem'}}>(>{activeGroup.targets.digitalProducts})</span></label><input type="number" min="0" className="form-input" placeholder="0" value={formData.digitalProducts} onChange={e => setFormData({...formData, digitalProducts: e.target.value})} /></div>
+                            <div className="form-group"><label className="form-label">Đoàn viên học AI <span style={{color:'var(--danger)', fontSize:'.7rem'}}>(>{activeGroup.targets.youthTrained})</span></label><input type="number" min="0" className="form-input" placeholder="0" value={formData.youthTrained} onChange={e => setFormData({...formData, youthTrained: e.target.value})} /></div>
                             <div className="form-group"><label className="form-label">HĐ an toàn số</label><input type="number" min="0" className="form-input" placeholder="0" value={formData.safetyCampaigns} onChange={e => setFormData({...formData, safetyCampaigns: e.target.value})} /></div>
                             <div className="form-group" style={{gridColumn:'span 3'}}><label className="form-label">Số lượng tin bài/video truyền thông</label><input type="number" min="0" className="form-input" placeholder="0" value={formData.mediaPosts} onChange={e => setFormData({...formData, mediaPosts: e.target.value})} /></div>
                           </div>
@@ -319,9 +319,9 @@ const PublicCampaigns = () => {
           {activeTab === 'targets' && (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 24 }}>
               {[
-                { title: 'Nhóm 1: Phường, Đô thị, Hành chính', count: 32, icon: Landmark, color: 'var(--blue-600)', targets: ['Hỗ trợ kỹ năng số: > 1.500 lượt', 'VNeID & Tiện ích: > 700 lượt', 'Dịch vụ công: > 500 lượt', 'Hộ kinh doanh QR: > 160 hộ', 'Điểm chuyển đổi số: Tuyến phố ko tiền mặt'] },
-                { title: 'Nhóm 2: Xã có chợ, Trung tâm cụm', count: 40, icon: ShoppingCart, color: 'var(--amber-600)', targets: ['Hỗ trợ kỹ năng số: > 1.000 lượt', 'VNeID & Tiện ích: > 500 lượt', 'Dịch vụ công: > 300 lượt', 'Hộ kinh doanh QR: > 100 hộ', 'Điểm chuyển đổi số: Chợ số, Khu dân cư số'] },
-                { title: 'Nhóm 3: Xã nông thôn, Vùng sâu', count: 30, icon: MapPin, color: 'var(--green-600)', targets: ['Hỗ trợ kỹ năng số: > 600 lượt', 'VNeID & Tiện ích: > 300 lượt', 'Dịch vụ công: > 150 lượt', 'Hộ kinh doanh QR: > 30 hộ', 'Điểm chuyển đổi số: Thôn/buôn số'] },
+                { title: 'Nhóm 1: Phường, Đô thị, Hành chính', count: 32, icon: Landmark, color: 'var(--blue-600)', desc: 'Tập trung vào DVC trực tuyến, VNeID, thanh toán QR, tuyến phố/chợ không tiền mặt, mô hình đô thị số.', targets: ['Hỗ trợ kỹ năng số: > 1.500 lượt', 'VNeID & Tiện ích: > 700 lượt', 'Dịch vụ công: > 500 lượt', 'Hộ kinh doanh QR: > 160 hộ', 'Tổ chức lớp/điểm hướng dẫn: 6 lớp', 'Số hóa sản phẩm OCOP: 12 sản phẩm', 'Đoàn viên tập huấn AI: 250 người', 'Mô hình điểm: Tuyến phố/Chợ không tiền mặt'] },
+                { title: 'Nhóm 2: Xã có chợ, Trung tâm cụm', count: 40, icon: ShoppingCart, color: 'var(--amber-600)', desc: 'Tập trung vào VNeID, dịch vụ công trực tuyến, chợ số, hộ kinh doanh QR, sản phẩm địa phương số.', targets: ['Hỗ trợ kỹ năng số: > 1.000 lượt', 'VNeID & Tiện ích: > 500 lượt', 'Dịch vụ công: > 300 lượt', 'Hộ kinh doanh QR: > 100 hộ', 'Tổ chức lớp/điểm hướng dẫn: 5 lớp', 'Số hóa sản phẩm OCOP: 10 sản phẩm', 'Đoàn viên tập huấn AI: 200 người', 'Mô hình điểm: Chợ số, Khu dân cư số'] },
+                { title: 'Nhóm 3: Xã nông thôn, Vùng sâu', count: 30, icon: MapPin, color: 'var(--green-600)', desc: 'Tập trung Bình dân học vụ số, an toàn số cộng đồng, ưu tiên đội hình lưu động đến thôn, buôn.', targets: ['Hỗ trợ kỹ năng số: > 600 lượt', 'VNeID & Tiện ích: > 300 lượt', 'Dịch vụ công: > 150 lượt', 'Hộ kinh doanh QR: > 30 hộ', 'Tổ chức lớp/điểm hướng dẫn: 4 lớp', 'Số hóa sản phẩm OCOP: 8 sản phẩm', 'Đoàn viên tập huấn AI: 150 người', 'Mô hình điểm: Thôn/buôn số, Khu dân cư an toàn số'] },
               ].map((g, i) => {
                 const GIcon = g.icon;
                 return (
@@ -335,8 +335,9 @@ const PublicCampaigns = () => {
                         <div style={{ fontSize: '.85rem', color: 'var(--tx-3)', fontWeight: 600 }}>{g.count} đơn vị xã/phường</div>
                       </div>
                     </div>
+                    <p style={{ fontSize: '.9rem', color: 'var(--tx-2)', marginBottom: 16 }}>{g.desc}</p>
                     <div style={{ background: 'var(--surface-1)', padding: '12px 16px', borderRadius: 'var(--r-md)' }}>
-                      <div style={{ fontSize: '.8rem', fontWeight: 700, color: 'var(--tx-2)', marginBottom: 10, textTransform: 'uppercase' }}>Chỉ tiêu tối thiểu</div>
+                      <div style={{ fontSize: '.8rem', fontWeight: 700, color: 'var(--tx-2)', marginBottom: 10, textTransform: 'uppercase' }}>Chỉ tiêu tối thiểu (Phụ lục 1)</div>
                       <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
                         {g.targets.map((t, idx) => (
                           <li key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: '.9rem' }}>
