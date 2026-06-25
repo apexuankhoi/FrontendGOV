@@ -123,6 +123,9 @@ const DashboardLayout = () => {
             <SLink to="/dashboard/eoffice/drive" icon={Database} label="Kho Dữ liệu chung"/>
             <SLink to="/dashboard/eoffice/ai-center" icon={Zap} label="Trung tâm AI"/>
             <SLink to="/dashboard/eoffice/report" icon={Bot} label="Báo cáo AI"/>
+            {can('PROVINCE_ADMIN', 'ADMIN', 'SENIOR_ADMIN') && (
+              <SLink to="/dashboard/eoffice/agencies-monitor" icon={Activity} label="Quản lý Tuyến dưới"/>
+            )}
           </>)}
 
           {can('SENIOR_ADMIN') && (<>

@@ -33,6 +33,7 @@ const ActivityLog       = lazy(() => import('./pages/dashboard/eoffice/ActivityL
 const AiReport          = lazy(() => import('./pages/dashboard/eoffice/AiReport'));
 const AiCommandCenter   = lazy(() => import('./pages/dashboard/eoffice/AiCommandCenter'));
 const SharedDrive       = lazy(() => import('./pages/dashboard/eoffice/SharedDrive'));
+const AgenciesMonitor   = lazy(() => import('./pages/dashboard/eoffice/AgenciesMonitor'));
 
 import ChatbotWidget from './components/ChatbotWidget';
 
@@ -104,6 +105,7 @@ function App() {
             <Route path="eoffice/report" element={<ProtectedRoute allowedRoles={['COMMUNE_ADMIN', 'PROVINCE_ADMIN', 'ADMIN', 'SENIOR_ADMIN']}><AiReport /></ProtectedRoute>} />
             <Route path="eoffice/activity" element={<ProtectedRoute allowedRoles={['ADMIN', 'SENIOR_ADMIN']}><ActivityLog /></ProtectedRoute>} />
             <Route path="eoffice/ai-center" element={<ProtectedRoute allowedRoles={['COMMUNE_ADMIN', 'PROVINCE_ADMIN', 'ADMIN', 'SENIOR_ADMIN']}><AiCommandCenter /></ProtectedRoute>} />
+            <Route path="eoffice/agencies-monitor" element={<ProtectedRoute allowedRoles={['PROVINCE_ADMIN', 'ADMIN', 'SENIOR_ADMIN']}><AgenciesMonitor /></ProtectedRoute>} />
           </Route>
 
           {/* 404 fallback */}
