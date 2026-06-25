@@ -75,7 +75,9 @@ const PublicCampaigns = () => {
   });
   
   const [selectedCommune, setSelectedCommune] = useState('');
-  const activeGroup = COMMUNE_GROUPS.find(g => g.communes.includes(selectedCommune));
+  const activeGroup = COMMUNE_GROUPS.find(g => 
+    g.communes.some(c => selectedCommune.includes(c) || c.includes(selectedCommune))
+  );
 
   const [formData, setFormData] = useState({
     activeTeams: '', volunteers: '', digitalSkills: '', vneidSupport: '',
