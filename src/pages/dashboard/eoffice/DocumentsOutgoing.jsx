@@ -220,9 +220,7 @@ const DocumentsOutgoing = () => {
                 <label className="form-label">Trích yếu nội dung *</label>
                 <textarea className="form-input" rows={2} required value={form.summary} onChange={e => setForm({ ...form, summary: e.target.value })} />
               </div>
-              <div className="form-grid-3">
-                </div>
-              </div>
+
               
               <div className="form-group" style={{ marginTop: 8 }}>
                 <label className="form-label">Chọn Nơi nhận / Liên thông tự động <span style={{fontSize: '0.8em', color: 'var(--tx-3)'}}>(Chọn để tự động gửi liên thông)</span></label>
