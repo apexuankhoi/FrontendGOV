@@ -91,7 +91,7 @@ const DashboardLayout = () => {
       {/* Sidebar */}
       <aside className={`sidebar ${open ? 'open' : ''}`}>
         <div className="sidebar-logo" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '24px 0 16px' }}>
-          <img src="/logo.png" alt="Webgov Logo" style={{ height: 50, width: 50, objectFit: 'contain', marginBottom: 8 }} />
+          <img src="https://upload.wikimedia.org/wikipedia/vi/0/07/Huy_hieu_Doan.png" alt="Webgov Logo" style={{ height: 50, width: 50, objectFit: 'contain', marginBottom: 8 }} />
           <span className="t1" style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--primary-dark)' }}>Webgov</span>
           <span className="t2" style={{ opacity: 0.7, fontSize: '0.8rem', fontWeight: 600 }}>
             {(() => { try { return JSON.parse(localStorage.getItem('agency'))?.name || 'Tỉnh Đắk Lắk'; } catch { return 'Tỉnh Đắk Lắk'; } })()}
