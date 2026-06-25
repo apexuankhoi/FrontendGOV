@@ -28,23 +28,56 @@ const CHECKLIST_ITEMS = [
   "Gửi báo cáo tổng kết, minh chứng sau chiến dịch"
 ];
 
+const COMMUNE_GROUPS = [
+  {
+    id: 'G1',
+    name: 'Nhóm 1: Phường Đô thị - TT Hành chính',
+    targets: { digitalSkills: 1500, vneidSupport: 700, publicServices: 500, qrSupport: 160 },
+    communes: ["Phường Buôn Ma Thuột", "Phường Tân An", "Phường Tân Lập", "Phường Thành Nhất", "Phường Ea Kao", "Xã Hòa Phú", "Phường Buôn Hồ", "Phường Cư Bao"]
+  },
+  {
+    id: 'G2',
+    name: 'Nhóm 2: Xã có Chợ - TT Cụm xã',
+    targets: { digitalSkills: 1000, vneidSupport: 500, publicServices: 300, qrSupport: 100 },
+    communes: ["Xã Ea Drông", "Xã Ea Súp", "Xã Ea Rốk", "Xã Ea Bung", "Xã Ia Rvê", "Xã Ia Lốp", "Xã Ea Wer", "Xã Ea Nuôl", "Xã Buôn Đôn", "Xã Ea Kiết", "Xã Ea M'Droh", "Xã Quảng Phú", "Xã Cuôr Đăng", "Xã Cư M'gar", "Xã Ea Tul", "Xã Pơng Drang", "Xã Krông Búk", "Xã Cư Pơng", "Xã Ea Khal", "Xã Ea Drăng", "Xã Ea Wy"]
+  },
+  {
+    id: 'G3',
+    name: 'Nhóm 3: Xã Nông thôn - Vùng sâu',
+    targets: { digitalSkills: 600, vneidSupport: 300, publicServices: 150, qrSupport: 30 },
+    communes: ["Xã Ea H'Leo", "Xã Ea Hiao", "Xã Krông Năng", "Xã Dliê Ya", "Xã Tam Giang", "Xã Phú Xuân", "Xã Krông Pắc", "Xã Ea Knuếc", "Xã Tân Tiến", "Xã Ea Phê", "Xã Ea Kly", "Xã Vụ Bổn", "Xã Ea Kar", "Xã Ea Ô", "Xã Ea Knốp", "Xã Cư Yang", "Xã Ea Păl", "Xã M'Drắk", "Xã Ea Riêng", "Xã Cư M'ta", "Xã Krông Á", "Xã Cư Prao", "Xã Ea Trang", "Xã Hòa Sơn", "Xã Dang Kang", "Xã Krông Bông", "Xã Yang Mao", "Xã Cư Pui", "Xã Liên Sơn Lắk", "Xã Đắk Liêng", "Xã Nam Ka", "Xã Đắk Phơi", "Xã Krông Nô", "Xã Ea Ning", "Xã Dray Bhăng", "Xã Ea Ktur", "Xã Krông Ana", "Xã Dur Kmăl", "Xã Ea Na"]
+  }
+];
+
 const PublicCampaigns = () => {
   const [activeTab, setActiveTab] = useState('report');
   const [checkedItems, setCheckedItems] = useState([]);
   
   // Use localStorage for auth state like in other components
   const token = localStorage.getItem('token');
+  const role = localStorage.getItem('role');
   const agencyName = localStorage.getItem('agencyName');
+  
+  const canReport = ['COMMUNE_ADMIN', 'PROVINCE_ADMIN', 'SENIOR_ADMIN'].includes(role);
   
   const [stats, setStats] = useState({
     vneid: 12450, qr: 5230, digitalSkills: 0, publicServices: 0, activeAgencies: 102, totalAgencies: 102
   });
   
+  const [selectedCommune, setSelectedCommune] = useState('');
+  const activeGroup = COMMUNE_GROUPS.find(g => g.communes.includes(selectedCommune));
+
   const [formData, setFormData] = useState({
-    digitalSkills: '', qrSupport: ''
+    activeTeams: '', volunteers: '', digitalSkills: '', vneidSupport: '',
+    publicServices: '', qrSupport: '', trainingClasses: '', digitalProducts: '',
+    youthTrained: '', safetyCampaigns: '', mediaPosts: ''
   });
   
   const [loading, setLoading] = useState(false);
+  
+  useEffect(() => {
+    if (agencyName) setSelectedCommune(agencyName);
+  }, [agencyName]);
   
   useEffect(() => {
     fetchStats();
@@ -78,11 +111,24 @@ const PublicCampaigns = () => {
     setLoading(true);
     try {
       await api.post('/campaign/report', {
-        digitalSkills: Number(formData.digitalSkills),
-        qrSupport: Number(formData.qrSupport)
+        activeTeams: Number(formData.activeTeams) || 0,
+        volunteers: Number(formData.volunteers) || 0,
+        digitalSkills: Number(formData.digitalSkills) || 0,
+        vneidSupport: Number(formData.vneidSupport) || 0,
+        publicServices: Number(formData.publicServices) || 0,
+        qrSupport: Number(formData.qrSupport) || 0,
+        trainingClasses: Number(formData.trainingClasses) || 0,
+        digitalProducts: Number(formData.digitalProducts) || 0,
+        youthTrained: Number(formData.youthTrained) || 0,
+        safetyCampaigns: Number(formData.safetyCampaigns) || 0,
+        mediaPosts: Number(formData.mediaPosts) || 0
       });
       toast.success('Gửi báo cáo thành công!');
-      setFormData({ digitalSkills: '', qrSupport: '' });
+      setFormData({
+        activeTeams: '', volunteers: '', digitalSkills: '', vneidSupport: '',
+        publicServices: '', qrSupport: '', trainingClasses: '', digitalProducts: '',
+        youthTrained: '', safetyCampaigns: '', mediaPosts: ''
+      });
       fetchStats();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Lỗi khi gửi báo cáo');
@@ -153,19 +199,91 @@ const PublicCampaigns = () => {
           {activeTab === 'report' && (
             <div style={{ display: 'grid', gap: 24 }}>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 24 }}>
-                <div className="card" style={{ borderTop: '4px solid var(--blue-600)' }}>
-                  <h3 style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}><UploadCloud size={20} color="var(--blue-600)"/> Nhập liệu Hằng ngày (Cấp Xã)</h3>
-                  <p style={{ color: 'var(--tx-3)', fontSize: '.9rem', marginBottom: 20 }}>Dành cho các đội hình khai báo số liệu trực tiếp mỗi 20h00.</p>
-                  
-                  <form style={{ display: 'flex', flexDirection: 'column', gap: 12 }} onSubmit={handleSubmitReport}>
-                    <div className="form-group"><label className="form-label">Cơ quan / Xã Phường</label><input className="form-input" disabled value={token ? (agencyName || localStorage.getItem('username') || 'Đã đăng nhập') : 'Yêu cầu đăng nhập'} /></div>
-                    <div className="form-group"><label className="form-label">Số lượt người dân được hỗ trợ kỹ năng số</label><input type="number" min="0" required className="form-input" placeholder="0" value={formData.digitalSkills} onChange={e => setFormData({...formData, digitalSkills: e.target.value})} /></div>
-                    <div className="form-group"><label className="form-label">Số hộ kinh doanh, tiểu thương hỗ trợ QR</label><input type="number" min="0" required className="form-input" placeholder="0" value={formData.qrSupport} onChange={e => setFormData({...formData, qrSupport: e.target.value})} /></div>
-                    <button type="submit" disabled={loading} className="btn btn-primary" style={{ width: '100%', marginTop: 8 }}>
-                      {loading ? <Loader2 size={16} className="spin" /> : 'Gửi Báo Cáo Nhanh'}
+                
+                {/* Form Báo cáo (Chỉ dành cho Cán bộ) */}
+                {canReport ? (
+                  <div className="card" style={{ borderTop: '4px solid var(--blue-600)' }}>
+                    <h3 style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}><UploadCloud size={20} color="var(--blue-600)"/> Báo cáo Hằng ngày (Cấp Xã)</h3>
+                    <p style={{ color: 'var(--tx-3)', fontSize: '.9rem', marginBottom: 20 }}>Chọn Xã/Phường để xem Chỉ tiêu tối thiểu tương ứng của nhóm và nhập liệu báo cáo trong ngày.</p>
+                    
+                    <form style={{ display: 'flex', flexDirection: 'column', gap: 16 }} onSubmit={handleSubmitReport}>
+                      <div className="form-group">
+                        <label className="form-label" style={{ fontWeight: 700, color: 'var(--primary-dark)' }}>Cơ quan / Xã Phường</label>
+                        <select className="form-input" value={selectedCommune} onChange={e => setSelectedCommune(e.target.value)} disabled={!!token && role === 'COMMUNE_ADMIN'}>
+                          <option value="">-- Chọn Xã / Phường --</option>
+                          {COMMUNE_GROUPS.map(g => (
+                             <optgroup key={g.id} label={g.name}>
+                               {g.communes.map(c => <option key={c} value={c}>{c}</option>)}
+                             </optgroup>
+                          ))}
+                        </select>
+                      </div>
+
+                      {activeGroup && (
+                        <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', padding: 16, borderRadius: 8 }}>
+                          <div style={{ fontSize: '.85rem', fontWeight: 700, color: 'var(--blue-600)', marginBottom: 12 }}>
+                            MỤC TIÊU CHIẾN DỊCH ({activeGroup.name})
+                          </div>
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px 16px' }}>
+                            <div className="form-group">
+                              <label className="form-label">1. Số lượt HT Kỹ năng số <span style={{color:'var(--danger)', fontSize:'.75rem'}}>(Chỉ tiêu: &gt;{activeGroup.targets.digitalSkills})</span></label>
+                              <input type="number" min="0" className="form-input" placeholder="0" value={formData.digitalSkills} onChange={e => setFormData({...formData, digitalSkills: e.target.value})} />
+                            </div>
+                            <div className="form-group">
+                              <label className="form-label">2. Số lượt HT VNeID <span style={{color:'var(--danger)', fontSize:'.75rem'}}>(Chỉ tiêu: &gt;{activeGroup.targets.vneidSupport})</span></label>
+                              <input type="number" min="0" className="form-input" placeholder="0" value={formData.vneidSupport} onChange={e => setFormData({...formData, vneidSupport: e.target.value})} />
+                            </div>
+                            <div className="form-group">
+                              <label className="form-label">3. Số lượt HT Dịch vụ công <span style={{color:'var(--danger)', fontSize:'.75rem'}}>(Chỉ tiêu: &gt;{activeGroup.targets.publicServices})</span></label>
+                              <input type="number" min="0" className="form-input" placeholder="0" value={formData.publicServices} onChange={e => setFormData({...formData, publicServices: e.target.value})} />
+                            </div>
+                            <div className="form-group">
+                              <label className="form-label">4. Số hộ KD hỗ trợ QR <span style={{color:'var(--danger)', fontSize:'.75rem'}}>(Chỉ tiêu: &gt;{activeGroup.targets.qrSupport})</span></label>
+                              <input type="number" min="0" className="form-input" placeholder="0" value={formData.qrSupport} onChange={e => setFormData({...formData, qrSupport: e.target.value})} />
+                            </div>
+                          </div>
+
+                          <div style={{ fontSize: '.85rem', fontWeight: 700, color: 'var(--tx-2)', marginTop: 16, marginBottom: 12 }}>CÁC CHỈ TIÊU KHÁC</div>
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
+                            <div className="form-group"><label className="form-label">Đội hình ra quân</label><input type="number" min="0" className="form-input" placeholder="0" value={formData.activeTeams} onChange={e => setFormData({...formData, activeTeams: e.target.value})} /></div>
+                            <div className="form-group"><label className="form-label">Tình nguyện viên</label><input type="number" min="0" className="form-input" placeholder="0" value={formData.volunteers} onChange={e => setFormData({...formData, volunteers: e.target.value})} /></div>
+                            <div className="form-group"><label className="form-label">Lớp/Điểm HD</label><input type="number" min="0" className="form-input" placeholder="0" value={formData.trainingClasses} onChange={e => setFormData({...formData, trainingClasses: e.target.value})} /></div>
+                            <div className="form-group"><label className="form-label">Sản phẩm số hóa</label><input type="number" min="0" className="form-input" placeholder="0" value={formData.digitalProducts} onChange={e => setFormData({...formData, digitalProducts: e.target.value})} /></div>
+                            <div className="form-group"><label className="form-label">Đoàn viên học AI</label><input type="number" min="0" className="form-input" placeholder="0" value={formData.youthTrained} onChange={e => setFormData({...formData, youthTrained: e.target.value})} /></div>
+                            <div className="form-group"><label className="form-label">HĐ an toàn số</label><input type="number" min="0" className="form-input" placeholder="0" value={formData.safetyCampaigns} onChange={e => setFormData({...formData, safetyCampaigns: e.target.value})} /></div>
+                            <div className="form-group" style={{gridColumn:'span 3'}}><label className="form-label">Số lượng tin bài/video truyền thông</label><input type="number" min="0" className="form-input" placeholder="0" value={formData.mediaPosts} onChange={e => setFormData({...formData, mediaPosts: e.target.value})} /></div>
+                          </div>
+                        </div>
+                      )}
+                      
+                      <button type="submit" disabled={loading || !selectedCommune} className="btn btn-primary" style={{ width: '100%', marginTop: 8 }}>
+                        {loading ? <Loader2 size={16} className="spin" /> : 'Lưu Báo Cáo Chuyển Đổi Số'}
+                      </button>
+                    </form>
+                  </div>
+                ) : (
+                  {/* Block dành cho Người dân */}
+                  <div className="card" style={{ borderTop: '4px solid var(--green-600)', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                    <div style={{ textAlign: 'center', marginBottom: 20 }}>
+                      <div style={{ width: 64, height: 64, background: 'var(--green-600)', color: 'white', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+                        <Smartphone size={32} />
+                      </div>
+                      <h3 style={{ fontSize: '1.4rem', color: 'var(--primary-dark)', marginBottom: 8 }}>Bạn cần hỗ trợ Chuyển đổi số?</h3>
+                      <p style={{ color: 'var(--tx-2)' }}>102 Đội hình thanh niên tại các Xã/Phường luôn sẵn sàng hỗ trợ bạn hoàn toàn miễn phí.</p>
+                    </div>
+                    
+                    <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+                      <li style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}><CheckCircle2 size={18} color="var(--green-600)" style={{ flexShrink: 0, marginTop: 2 }} /> <span>Cài đặt và định danh điện tử VNeID mức 2</span></li>
+                      <li style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}><CheckCircle2 size={18} color="var(--green-600)" style={{ flexShrink: 0, marginTop: 2 }} /> <span>Tạo mã QR thanh toán cho Hộ kinh doanh/Tiểu thương</span></li>
+                      <li style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}><CheckCircle2 size={18} color="var(--green-600)" style={{ flexShrink: 0, marginTop: 2 }} /> <span>Hướng dẫn nộp hồ sơ Dịch vụ công trực tuyến</span></li>
+                      <li style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}><CheckCircle2 size={18} color="var(--green-600)" style={{ flexShrink: 0, marginTop: 2 }} /> <span>Bảo mật thông tin, phòng chống lừa đảo trên mạng</span></li>
+                    </ul>
+                    
+                    <button className="btn btn-primary" style={{ background: 'var(--green-600)', borderColor: 'var(--green-600)', width: '100%' }}>
+                      Tìm điểm hỗ trợ gần bạn nhất
                     </button>
-                  </form>
-                </div>
+                  </div>
+                )}
 
                 <div className="card">
                   <h3 style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}><BarChart3 size={20} color="var(--amber-600)"/> Bảng Tổng hợp Lũy kế (Toàn Tỉnh)</h3>
