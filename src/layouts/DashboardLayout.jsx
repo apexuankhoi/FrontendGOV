@@ -105,9 +105,10 @@ const DashboardLayout = () => {
           <div className="sidebar-sec">Tổng quan</div>
           <SLink to="/dashboard" icon={LayoutDashboard} label="Dashboard" exact />
 
-          {can('ADMIN','SENIOR_ADMIN') && (<>
-            <div className="sidebar-sec">Chiến dịch</div>
-            <SLink to="/dashboard/map" icon={Map} label="Quản lý Đội hình" />
+          {can('PROVINCE_ADMIN', 'ADMIN', 'SENIOR_ADMIN') && (<>
+            <div className="sidebar-sec">Chiến dịch 44 ngày</div>
+            {can('ADMIN', 'SENIOR_ADMIN') && <SLink to="/dashboard/map" icon={Map} label="Quản lý Đội hình" />}
+            <SLink to="/dashboard/campaigns" icon={CheckSquare} label="Báo cáo Tiến độ xã" />
 
             <div className="sidebar-sec">Nội dung</div>
             <SLink to="/dashboard/news" icon={FileText} label="Quản lý Tin tức"/>

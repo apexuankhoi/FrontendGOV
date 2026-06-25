@@ -24,6 +24,7 @@ const AddTeam      = lazy(() => import('./pages/dashboard/AddTeam'));
 const NewsAdmin    = lazy(() => import('./pages/dashboard/NewsAdmin'));
 const UsersList    = lazy(() => import('./pages/dashboard/UsersList'));
 const Profile      = lazy(() => import('./pages/dashboard/Profile'));
+const CampaignAdmin= lazy(() => import('./pages/dashboard/CampaignAdmin'));
 
 // eOffice Pages - Tính năng nâng cao, chỉ tải khi vào eOffice
 const EofficeDashboard  = lazy(() => import('./pages/dashboard/eoffice/EofficeDashboard'));
@@ -96,6 +97,7 @@ function App() {
             <Route path="map/edit/:id" element={<ProtectedRoute allowedRoles={['ADMIN', 'SENIOR_ADMIN']}><AddTeam /></ProtectedRoute>} />
             <Route path="news" element={<NewsAdmin />} />
             <Route path="users" element={<ProtectedRoute allowedRoles={['SENIOR_ADMIN']}><UsersList /></ProtectedRoute>} />
+            <Route path="campaigns" element={<ProtectedRoute allowedRoles={['PROVINCE_ADMIN', 'ADMIN', 'SENIOR_ADMIN']}><CampaignAdmin /></ProtectedRoute>} />
             <Route path="profile" element={<Profile />} />
 
             {/* AI eOffice */}
