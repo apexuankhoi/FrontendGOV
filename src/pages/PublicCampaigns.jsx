@@ -262,7 +262,6 @@ const PublicCampaigns = () => {
                     </form>
                   </div>
                 ) : (
-                  {/* Block dành cho Người dân */}
                   <div className="card" style={{ borderTop: '4px solid var(--green-600)', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                     <div style={{ textAlign: 'center', marginBottom: 20 }}>
                       <div style={{ width: 64, height: 64, background: 'var(--green-600)', color: 'white', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
