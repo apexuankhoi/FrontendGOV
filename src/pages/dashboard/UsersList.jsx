@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import api from '../../lib/api';
 import { toast } from 'react-toastify';
-import { UserPlus, Trash2, RefreshCw } from 'lucide-react';
+import { UserPlus, Trash2, RefreshCw, Building2 } from 'lucide-react';
 import { COMMUNES_LIST } from '../../constants/locations';
 
 const ROLES = [
@@ -21,11 +21,15 @@ const ROLE_BADGE = {
 
 const UsersList = () => {
   const [users, setUsers] = useState([]);
+  const [agencies, setAgencies] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [form, setForm] = useState({ username: '', email: '', password: '', role: 'COMMUNE_ADMIN', province: 'Đắk Lắk', district: '', commune: '' });
+  const [form, setForm] = useState({ username: '', email: '', password: '', role: 'COMMUNE_ADMIN', province: 'Đắk Lắk', district: '', commune: '', agencyId: '' });
   const token = localStorage.getItem('token');
 
-  useEffect(() => { fetchUsers(); }, []);
+  useEffect(() => {
+    fetchUsers();
+    api.get('/agencies').then(r => setAgencies(r.data)).catch(() => {});
+  }, []);
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -42,7 +46,7 @@ const UsersList = () => {
       await api.post('/users', form);
       toast.success('✅ Cấp phát tài khoản thành công!');
       fetchUsers();
-      setForm({ username: '', email: '', password: '', role: 'COMMUNE_ADMIN', province: 'Đắk Lắk', district: '', commune: '' });
+      setForm({ username: '', email: '', password: '', role: 'COMMUNE_ADMIN', province: 'Đắk Lắk', district: '', commune: '', agencyId: '' });
     } catch (err) { toast.error(err.response?.data?.message || 'Lỗi tạo tài khoản'); }
   };
 
@@ -93,8 +97,11 @@ const UsersList = () => {
           </div>
           <div className="form-row-3">
             <div className="form-group">
-              <label className="form-label">Tỉnh</label>
-              <input className="form-input" disabled value="Đắk Lắk" />
+              <label className="form-label"><Building2 size={14} style={{verticalAlign:'middle',marginRight:4}}/> Cơ quan trực thuộc <span className="required">*</span></label>
+              <select className="form-input form-select" value={form.agencyId} onChange={e => setForm({ ...form, agencyId: e.target.value })} required>
+                <option value="">-- Chọn Cơ quan --</option>
+                {agencies.map(a => <option key={a._id} value={a._id}>{a.name} ({a.level})</option>)}
+              </select>
             </div>
             <div className="form-group">
               <label className="form-label">Huyện phụ trách</label>
@@ -128,18 +135,22 @@ const UsersList = () => {
               <th>Tên người dùng</th>
               <th>Email</th>
               <th>Quyền (Role)</th>
+              <th>Cơ quan</th>
               <th>Địa bàn</th>
               <th>Thao tác</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={5} style={{ textAlign: 'center', padding: 40 }}>Đang tải...</td></tr>
+              <tr><td colSpan={6} style={{ textAlign: 'center', padding: 40 }}>Đang tải...</td></tr>
             ) : users.map(u => (
               <tr key={u._id}>
                 <td style={{ fontWeight: 600 }}>{u.username}</td>
                 <td style={{ color: 'var(--text-secondary)' }}>{u.email}</td>
                 <td><span className={`badge ${ROLE_BADGE[u.role] || 'badge-info'}`}>{u.role}</span></td>
+                <td style={{ fontSize: '0.85rem', color: 'var(--primary)' }}>
+                  {u.agencyId?.name || '—'}
+                </td>
                 <td style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
                   {u.locationContext?.commune || ''} {u.locationContext?.district || 'Đắk Lắk'}
                 </td>

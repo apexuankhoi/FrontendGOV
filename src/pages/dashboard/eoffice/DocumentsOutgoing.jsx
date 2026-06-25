@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import api from '../../../lib/api';
 import { toast } from 'react-toastify';
-import { FileOutput, Search, Plus, Eye, Trash2, RefreshCw, Bot, X, Save, Calendar, Building2, User, FileText, AlertTriangle, Shield, Sparkles } from 'lucide-react';
+import { FileOutput, Search, Plus, Eye, Trash2, RefreshCw, Bot, X, Save, Calendar, Building2, User, FileText, AlertTriangle, Shield, Sparkles, Send } from 'lucide-react';
 
 const CATEGORIES = ['Công văn', 'Báo cáo', 'Kế hoạch', 'Tờ trình', 'Thông báo', 'Quyết định', 'Giấy mời', 'Chỉ thị', 'Hướng dẫn', 'Khác'];
 const URGENCIES = ['Thường', 'Khẩn', 'Thượng khẩn', 'Hỏa tốc'];
@@ -32,6 +32,12 @@ const DocumentsOutgoing = () => {
   const [form, setForm] = useState({ ...emptyForm });
   const [files, setFiles] = useState([]);
   const [submitting, setSubmitting] = useState(false);
+  
+  // Dispatch (Liên thông)
+  const [showDispatch, setShowDispatch] = useState(null);
+  const [agencies, setAgencies] = useState([]);
+  const [selectedAgencies, setSelectedAgencies] = useState([]);
+  const [dispatching, setDispatching] = useState(false);
 
   const role = localStorage.getItem('role') || '';
   const canCreate = ['COMMUNE_ADMIN', 'PROVINCE_ADMIN', 'SENIOR_ADMIN'].includes(role);
@@ -48,6 +54,22 @@ const DocumentsOutgoing = () => {
   };
 
   useEffect(() => { fetchDocs(); }, [search]);
+
+  useEffect(() => {
+    api.get('/agencies').then(r => setAgencies(r.data)).catch(() => {});
+  }, []);
+
+  const handleDispatch = async () => {
+    if (selectedAgencies.length === 0) return toast.error('Vui lòng chọn ít nhất 1 cơ quan nhận');
+    setDispatching(true);
+    try {
+      const res = await api.post(`/documents/${showDispatch._id}/dispatch`, { targetAgencyIds: selectedAgencies });
+      toast.success(res.data.message);
+      setShowDispatch(null);
+      setSelectedAgencies([]);
+    } catch (err) { toast.error(err.response?.data?.message || 'Lỗi gửi liên thông'); }
+    setDispatching(false);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -139,6 +161,7 @@ const DocumentsOutgoing = () => {
                   <td>
                     <div style={{ display: 'flex', gap: 6 }}>
                       <button className="btn btn-ghost btn-sm" onClick={() => setShowDetail(d)}><Eye size={14} /></button>
+                      <button className="btn btn-ghost btn-sm" style={{ color: 'var(--primary)' }} title="Gửi Liên thông" onClick={() => { setShowDispatch(d); setSelectedAgencies([]); }}><Send size={14} /></button>
                       {canDelete && <button className="btn btn-ghost btn-sm" style={{ color: 'var(--danger)' }} onClick={() => handleDelete(d._id)}><Trash2 size={14} /></button>}
                     </div>
                   </td>
@@ -284,6 +307,42 @@ const DocumentsOutgoing = () => {
               }}>
                 {aiDrafting ? <><span className="dot-typing">...</span> Đang xử lý</> : <><Sparkles size={16} /> Tạo bản nháp</>}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL Gửi Liên thông */}
+      {showDispatch && (
+        <div className="modal-overlay" onClick={() => setShowDispatch(null)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3><Send size={20} /> Gửi Liên thông Văn bản</h3>
+              <button className="btn btn-ghost btn-sm" onClick={() => setShowDispatch(null)}><X size={18} /></button>
+            </div>
+            <div style={{ padding: 24 }}>
+              <div style={{ marginBottom: 16, padding: 16, background: '#EFF6FF', borderRadius: 'var(--r-md)', border: '1px solid #BFDBFE' }}>
+                <div style={{ fontWeight: 700, marginBottom: 4 }}>{showDispatch.summary}</div>
+                <div style={{ fontSize: '.85rem', color: 'var(--tx-3)' }}>Số: {showDispatch.documentNumber || '—'} | Loại: {showDispatch.category}</div>
+              </div>
+              <label style={{ fontWeight: 600, marginBottom: 12, display: 'block' }}>Chọn cơ quan nhận:</label>
+              <div style={{ maxHeight: 250, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {agencies.map(a => (
+                  <label key={a._id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 'var(--r-md)', border: selectedAgencies.includes(a._id) ? '2px solid var(--primary)' : '1px solid var(--border)', background: selectedAgencies.includes(a._id) ? '#EFF6FF' : 'var(--bg-1)', cursor: 'pointer', transition: 'all .15s' }}>
+                    <input type="checkbox" checked={selectedAgencies.includes(a._id)} onChange={() => setSelectedAgencies(prev => prev.includes(a._id) ? prev.filter(x => x !== a._id) : [...prev, a._id])} />
+                    <div>
+                      <div style={{ fontWeight: 600, fontSize: '.9rem' }}>{a.name}</div>
+                      <div style={{ fontSize: '.75rem', color: 'var(--tx-3)' }}>Cấp: {a.level}{a.parentAgency ? ` | Trực thuộc: ${a.parentAgency.name}` : ''}</div>
+                    </div>
+                  </label>
+                ))}
+              </div>
+              <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end', marginTop: 24 }}>
+                <button className="btn btn-ghost" onClick={() => setShowDispatch(null)}>Hủy</button>
+                <button className="btn btn-primary" onClick={handleDispatch} disabled={dispatching || selectedAgencies.length === 0}>
+                  {dispatching ? 'Đang gửi...' : `📤 Gửi tới ${selectedAgencies.length} cơ quan`}
+                </button>
+              </div>
             </div>
           </div>
         </div>

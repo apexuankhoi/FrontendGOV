@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../../lib/api';
 import { toast } from 'react-toastify';
-import { Bot, Search, FileText, CheckSquare, AlertTriangle, Users, BarChart3, Send, FileDown, RefreshCw, Zap, Shield, TrendingUp } from 'lucide-react';
+import { Bot, Search, FileText, CheckSquare, AlertTriangle, Users, BarChart3, Send, FileDown, RefreshCw, Zap, Shield, TrendingUp, Globe, MessageSquare, Layers, BarChart2 } from 'lucide-react';
 
 const MarkdownRender = ({ text }) => {
   if (!text) return null;
