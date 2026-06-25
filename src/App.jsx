@@ -1,5 +1,5 @@
 import React, { Suspense, lazy } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -59,9 +59,18 @@ const PageLoader = () => (
   </div>
 );
 
+const RouteTracker = () => {
+  const location = useLocation();
+  React.useEffect(() => {
+    sessionStorage.setItem('currentPath', location.pathname + location.search);
+  }, [location]);
+  return null;
+};
+
 function App() {
   return (
     <>
+      <RouteTracker />
       <Suspense fallback={<PageLoader />}>
         <Routes>
           {/* Public Pages */}
