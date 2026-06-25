@@ -37,10 +37,12 @@ const PublicNews = () => {
                 <div className="news-card-content">
                   <div className="news-card-date">
                     <Calendar size={12} />
-                    {new Date(n.createdAt).toLocaleDateString('vi-VN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+                    {n.createdAt && !isNaN(new Date(n.createdAt)) 
+                      ? new Date(n.createdAt).toLocaleDateString('vi-VN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+                      : 'Mới cập nhật'}
                   </div>
                   <h3>{n.title}</h3>
-                  <p style={{ whiteSpace: 'pre-wrap', WebkitLineClamp: 5 }}>{n.content}</p>
+                  <p style={{ whiteSpace: 'pre-wrap', WebkitLineClamp: 5, overflow: 'hidden', display: '-webkit-box', WebkitBoxOrient: 'vertical' }}>{n.content}</p>
                 </div>
               </div>
             ))}

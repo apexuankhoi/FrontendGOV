@@ -8,12 +8,14 @@ import MainLayout      from './layouts/MainLayout';
 import DashboardLayout from './layouts/DashboardLayout';
 
 // Public Pages - Dùng Lazy Loading để giảm tải
-const Home          = lazy(() => import('./pages/Home'));
-const Login         = lazy(() => import('./pages/Login'));
-const Register      = lazy(() => import('./pages/Register'));
-const PublicTeams   = lazy(() => import('./pages/PublicTeams'));
-const PublicNews    = lazy(() => import('./pages/PublicNews'));
-const PublicProfile = lazy(() => import('./pages/PublicProfile'));
+const Home            = lazy(() => import('./pages/Home'));
+const PublicHome      = lazy(() => import('./pages/PublicHome'));
+const Login           = lazy(() => import('./pages/Login'));
+const Register        = lazy(() => import('./pages/Register'));
+const PublicTeams     = lazy(() => import('./pages/PublicTeams'));
+const PublicNews      = lazy(() => import('./pages/PublicNews'));
+const PublicProfile   = lazy(() => import('./pages/PublicProfile'));
+const PublicCampaigns = lazy(() => import('./pages/PublicCampaigns'));
 
 // Dashboard Pages - Cán bộ mới cần tải đống JS này
 const Overview     = lazy(() => import('./pages/dashboard/Overview'));
@@ -66,6 +68,8 @@ function App() {
           {/* Public Pages */}
           <Route element={<MainLayout />}>
             <Route path="/" element={<Home />} />
+            <Route index element={<PublicHome />} />
+            <Route path="/chien-dich" element={<PublicCampaigns />} />
             <Route path="/teams" element={<PublicTeams />} />
             <Route path="/doi-hinh" element={<PublicTeams />} />
             <Route path="/news" element={<PublicNews />} />

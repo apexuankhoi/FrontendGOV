@@ -35,6 +35,7 @@ const MainLayout = () => (
             <h5>Người dân</h5>
             <ul>
               <li><Link to="/">Trang chủ</Link></li>
+              <li><Link to="/chien-dich">Thông tin Chiến dịch</Link></li>
               <li><Link to="/doi-hinh">Đội hình tình nguyện</Link></li>
               <li><Link to="/tin-tuc">Tin tức chiến dịch</Link></li>
               <li><Link to="/register">Đăng ký tài khoản</Link></li>

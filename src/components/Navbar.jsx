@@ -50,9 +50,10 @@ const Navbar = () => {
 
         {/* Desktop nav links */}
         <nav className="nav-center">
-          <Link to="/"          className={`nav-link ${isActive('/')}`}>Trang chủ</Link>
-          <Link to="/doi-hinh"  className={`nav-link ${isActive('/doi-hinh')}`}>Đội hình</Link>
-          <Link to="/tin-tuc"   className={`nav-link ${isActive('/tin-tuc')}`}>Tin tức</Link>
+          <Link to="/"            className={`nav-link ${isActive('/')}`}>Trang chủ</Link>
+          <Link to="/chien-dich"  className={`nav-link ${isActive('/chien-dich')}`}>Chiến dịch</Link>
+          <Link to="/doi-hinh"    className={`nav-link ${isActive('/doi-hinh')}`}>Đội hình</Link>
+          <Link to="/tin-tuc"     className={`nav-link ${isActive('/tin-tuc')}`}>Tin tức</Link>
         </nav>
 
         {/* Desktop right */}
@@ -125,9 +126,10 @@ const Navbar = () => {
 
       {/* Mobile drawer */}
       <div className={`nav-mobile-drawer ${mobileOpen ? 'open' : ''}`}>
-        <Link to="/"         className={`nav-link ${isActive('/')}`}        onClick={() => setMobileOpen(false)}>Trang chủ</Link>
-        <Link to="/doi-hinh" className={`nav-link ${isActive('/doi-hinh')}`} onClick={() => setMobileOpen(false)}>Đội hình tình nguyện</Link>
-        <Link to="/tin-tuc"  className={`nav-link ${isActive('/tin-tuc')}`}  onClick={() => setMobileOpen(false)}>Tin tức chiến dịch</Link>
+        <Link to="/"           className={`nav-link ${isActive('/')}`}            onClick={() => setMobileOpen(false)}>Trang chủ</Link>
+        <Link to="/chien-dich" className={`nav-link ${isActive('/chien-dich')}`} onClick={() => setMobileOpen(false)}>Chiến dịch</Link>
+        <Link to="/doi-hinh"   className={`nav-link ${isActive('/doi-hinh')}`}   onClick={() => setMobileOpen(false)}>Đội hình tình nguyện</Link>
+        <Link to="/tin-tuc"    className={`nav-link ${isActive('/tin-tuc')}`}    onClick={() => setMobileOpen(false)}>Tin tức chiến dịch</Link>
         <hr style={{ border: 'none', borderTop: '1px solid var(--border)', margin: '6px 0' }}/>
         {!token ? (
           <div style={{ display: 'flex', gap: 10 }}>

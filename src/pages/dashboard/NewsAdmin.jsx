@@ -110,7 +110,9 @@ const NewsAdmin = () => {
                 <h4 style={{ color: 'var(--brand-blue)', marginBottom: 6 }}>{n.title}</h4>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: 8 }}>
                   <Calendar size={12} />
-                  {new Date(n.createdAt).toLocaleDateString('vi-VN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+                  {n.createdAt && !isNaN(new Date(n.createdAt)) 
+                    ? new Date(n.createdAt).toLocaleDateString('vi-VN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+                    : 'Mới cập nhật'}
                 </div>
                 <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                   {n.content}
