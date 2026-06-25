@@ -7,8 +7,11 @@ export const getFileUrl = (path, fileName) => {
       // Inject fl_attachment để tải về với đúng tên file gốc
       const parts = path.split('/upload/');
       if (parts.length === 2) {
-        // Tên file phải được encode an toàn trên URL
-        const safeName = encodeURIComponent(fileName);
+        // Tên file phải được sanitize (chỉ giữ chữ, số, dấu chấm, gạch ngang/dưới) vì Cloudinary chặn %20
+        const safeName = fileName
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/[^a-zA-Z0-9.-]/g, "_");
         return `${parts[0]}/upload/fl_attachment:${safeName}/${parts[1]}`;
       }
     }
