@@ -209,17 +209,10 @@ const PublicCampaigns = () => {
                     <form style={{ display: 'flex', flexDirection: 'column', gap: 16 }} onSubmit={handleSubmitReport}>
                       <div className="form-group">
                         <label className="form-label" style={{ fontWeight: 700, color: 'var(--primary-dark)' }}>Cơ quan / Xã Phường</label>
-                        <select className="form-input" value={selectedCommune} onChange={e => setSelectedCommune(e.target.value)} disabled={!!token && role === 'COMMUNE_ADMIN'}>
-                          <option value="">-- Chọn Xã / Phường --</option>
-                          {COMMUNE_GROUPS.map(g => (
-                             <optgroup key={g.id} label={g.name}>
-                               {g.communes.map(c => <option key={c} value={c}>{c}</option>)}
-                             </optgroup>
-                          ))}
-                        </select>
+                        <input className="form-input" disabled value={agencyName || 'Không xác định'} style={{ background: '#F1F5F9', fontWeight: 600 }} />
                       </div>
 
-                      {activeGroup && (
+                      {activeGroup ? (
                         <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', padding: 16, borderRadius: 8 }}>
                           <div style={{ fontSize: '.85rem', fontWeight: 700, color: 'var(--blue-600)', marginBottom: 12 }}>
                             MỤC TIÊU CHIẾN DỊCH ({activeGroup.name})
@@ -254,9 +247,13 @@ const PublicCampaigns = () => {
                             <div className="form-group" style={{gridColumn:'span 3'}}><label className="form-label">Số lượng tin bài/video truyền thông</label><input type="number" min="0" className="form-input" placeholder="0" value={formData.mediaPosts} onChange={e => setFormData({...formData, mediaPosts: e.target.value})} /></div>
                           </div>
                         </div>
+                      ) : (
+                        <div style={{ padding: 16, background: '#FEF2F2', color: 'var(--danger)', borderRadius: 8, fontSize: '.9rem' }}>
+                          Tài khoản của bạn ({agencyName}) không thuộc danh sách 102 Xã/Phường được giao chỉ tiêu. Chức năng nhập liệu chỉ dành cho Quản trị viên cấp Xã.
+                        </div>
                       )}
                       
-                      <button type="submit" disabled={loading || !selectedCommune} className="btn btn-primary" style={{ width: '100%', marginTop: 8 }}>
+                      <button type="submit" disabled={loading || !activeGroup} className="btn btn-primary" style={{ width: '100%', marginTop: 8 }}>
                         {loading ? <Loader2 size={16} className="spin" /> : 'Lưu Báo Cáo Chuyển Đổi Số'}
                       </button>
                     </form>
