@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import api from '../../../lib/api';
 import { toast } from 'react-toastify';
 import Swal from 'sweetalert2';
+import { getFileUrl } from '../../../utils/fileHelper';
 import { FileInput, Search, Plus, Eye, Trash2, RefreshCw, Upload, Bot, ChevronDown, X, Save, Calendar, Building2, User, FileText, AlertTriangle, Shield, MessageCircle } from 'lucide-react';
 import AiChatPanel, { AiChatButton } from '../../../components/AiChatPanel';
 
@@ -487,7 +488,7 @@ const DocumentsIncoming = () => {
                   <div style={{ fontSize: '.85rem', fontWeight: 600, marginBottom: 8 }}>📎 File đính kèm ({showDetail.attachments.length})</div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
                     {showDetail.attachments.map((att, i) => (
-                      <a key={i} href={att.filePath.startsWith('http') ? att.filePath : `${import.meta.env.VITE_API_URL || 'http://localhost:5005'}/${att.filePath.replace(/\\/g, '/')}`} target="_blank" rel="noopener noreferrer"
+                      <a key={i} href={getFileUrl(att.filePath, att.originalName)} target="_blank" rel="noopener noreferrer"
                         className="badge badge-info" style={{ textDecoration: 'none', cursor: 'pointer' }}>
                         📄 {att.originalName}
                       </a>
