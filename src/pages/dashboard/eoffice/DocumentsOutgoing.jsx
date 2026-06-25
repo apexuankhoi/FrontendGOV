@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import api from '../../../lib/api';
 import { toast } from 'react-toastify';
+import Swal from 'sweetalert2';
 import { FileOutput, Search, Plus, Eye, Trash2, RefreshCw, Bot, X, Save, Calendar, Building2, User, FileText, AlertTriangle, Shield, Sparkles, Send } from 'lucide-react';
 
 const CATEGORIES = ['Công văn', 'Báo cáo', 'Kế hoạch', 'Tờ trình', 'Thông báo', 'Quyết định', 'Giấy mời', 'Chỉ thị', 'Hướng dẫn', 'Khác'];
@@ -109,12 +110,24 @@ const DocumentsOutgoing = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Xóa văn bản này?')) return;
-    try {
-      await api.delete(`/documents/${id}`);
-      toast.success('Đã xóa văn bản');
-      fetchDocs();
-    } catch { toast.error('Lỗi xóa văn bản'); }
+    Swal.fire({
+      title: 'Xóa văn bản?',
+      text: "Bạn có chắc muốn xóa văn bản này?",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Xóa',
+      cancelButtonText: 'Hủy'
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          await api.delete(`/documents/${id}`);
+          toast.success('Đã xóa văn bản');
+          fetchDocs();
+        } catch { toast.error('Lỗi xóa văn bản'); }
+      }
+    });
   };
 
   return (

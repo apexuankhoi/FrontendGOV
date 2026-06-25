@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import api, { BASE_URL } from '../lib/api';
+import Swal from 'sweetalert2';
 import { toast } from 'react-toastify';
 import { Bot, Send, X, Trash2, FileDown, MessageCircle } from 'lucide-react';
 
@@ -86,12 +87,24 @@ const AiChatPanel = ({ targetId, targetType, targetTitle, isOpen, onClose }) => 
   };
 
   const handleClear = async () => {
-    if (!window.confirm('Xoa toan bo lich su chat voi AI?')) return;
-    try {
-      await api.delete(`${apiBase}/${targetId}/chat`, { params: { type: targetType } });
-      setMessages([]);
-      toast.success('Da xoa lich su');
-    } catch { toast.error('Loi xoa'); }
+    Swal.fire({
+      title: 'Xóa lịch sử?',
+      text: "Xóa toàn bộ lịch sử chat với AI?",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Xóa',
+      cancelButtonText: 'Hủy'
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          await api.delete(`${apiBase}/${targetId}/chat`, { params: { type: targetType } });
+          setMessages([]);
+          toast.success('Đã xóa lịch sử');
+        } catch { toast.error('Lỗi xóa lịch sử'); }
+      }
+    });
   };
 
   const handleKeyDown = (e) => {

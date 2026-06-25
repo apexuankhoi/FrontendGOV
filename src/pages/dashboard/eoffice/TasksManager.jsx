@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import api, { BASE_URL } from '../../../lib/api';
 import { toast } from 'react-toastify';
 import { CheckSquare, Plus, RefreshCw, Trash2, Calendar, User, Search, Clock, CheckCircle, MessageCircle, Paperclip } from 'lucide-react';
+import Swal from 'sweetalert2';
 import AiChatPanel from '../../../components/AiChatPanel';
 
 const MarkdownRender = ({ text }) => {
@@ -93,12 +94,24 @@ const TasksManager = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Xóa công việc này?')) return;
-    try {
-      await api.delete(`/tasks/${id}`);
-      toast.success('Đã xóa');
-      fetchTasks();
-    } catch { toast.error('Lỗi xóa'); }
+    Swal.fire({
+      title: 'Xóa công việc?',
+      text: "Bạn có chắc muốn xóa công việc này?",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Xóa',
+      cancelButtonText: 'Hủy'
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          await api.delete(`/tasks/${id}`);
+          toast.success('Đã xóa');
+          fetchTasks();
+        } catch { toast.error('Lỗi khi xóa'); }
+      }
+    });
   };
 
   const handleAiSolve = async (id) => {

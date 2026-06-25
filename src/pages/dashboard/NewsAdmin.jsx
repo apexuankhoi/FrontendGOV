@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import api from '../../lib/api';
 import { toast } from 'react-toastify';
 import { Plus, Trash2, RefreshCw, Calendar } from 'lucide-react';
+import Swal from 'sweetalert2';
 
 const NewsAdmin = () => {
   const [news, setNews] = useState([]);
@@ -34,12 +35,24 @@ const NewsAdmin = () => {
   };
 
   const handleDelete = async (id, title) => {
-    if (!window.confirm(`Xóa bài "${title}"?`)) return;
-    try {
-      await api.delete(`/news/${id}`);
-      toast.success('Đã xóa bài viết');
-      fetchNews();
-    } catch { toast.error('Lỗi xóa bài viết'); }
+    Swal.fire({
+      title: 'Xóa bài viết?',
+      text: `Bạn có chắc muốn xóa bài "${title}"?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Xóa',
+      cancelButtonText: 'Hủy'
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          await api.delete(`/news/${id}`);
+          toast.success('Đã xóa');
+          fetchNews();
+        } catch { toast.error('Lỗi khi xóa'); }
+      }
+    });
   };
 
   return (

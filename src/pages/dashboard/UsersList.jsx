@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import api from '../../lib/api';
 import { toast } from 'react-toastify';
 import { UserPlus, Trash2, RefreshCw, Building2 } from 'lucide-react';
+import Swal from 'sweetalert2';
 import { PROVINCES_DATA } from '../../constants/locations';
 
 const ROLES = [
@@ -62,12 +63,24 @@ const UsersList = () => {
   };
 
   const handleDelete = async (id, uname) => {
-    if (!window.confirm(`Xóa tài khoản "${uname}"? Hành động này không thể hoàn tác.`)) return;
-    try {
-      await api.delete(`/users/${id}`);
-      toast.success('Đã xóa tài khoản');
-      fetchUsers();
-    } catch { toast.error('Lỗi xóa tài khoản'); }
+    Swal.fire({
+      title: 'Xóa tài khoản?',
+      text: `Bạn có chắc muốn xóa tài khoản "${uname}"? Hành động này không thể hoàn tác.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Xóa',
+      cancelButtonText: 'Hủy'
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          await api.delete(`/users/${id}`);
+          toast.success('Đã xóa');
+          fetchUsers();
+        } catch { toast.error('Lỗi khi xóa'); }
+      }
+    });
   };
 
   return (
