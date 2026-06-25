@@ -95,7 +95,7 @@ const Register = () => {
         phone: form.phone,
         otp: form.otp,
         password: form.password,
-        role: tab === 'ADMIN' ? 'COMMUNE_ADMIN' : 'CITIZEN'
+        role: tab === 'ADMIN' ? (form.commune.startsWith('Tỉnh') ? 'PROVINCE_ADMIN' : 'COMMUNE_ADMIN') : 'CITIZEN'
       };
 
       if (tab === 'CITIZEN') {
@@ -173,7 +173,13 @@ const Register = () => {
                     <MapPin size={18} />
                     <select required value={form.commune} onChange={e => setForm({...form, commune: e.target.value})}>
                       <option value="">-- Chọn --</option>
-                      {DAKLAK_COMMUNES.map(c => <option key={c} value={c}>{c}</option>)}
+                      <optgroup label="Cấp Tỉnh">
+                        <option value="Tỉnh Đắk Lắk">Tỉnh Đắk Lắk</option>
+                        <option value="Tỉnh Phú Yên">Tỉnh Phú Yên</option>
+                      </optgroup>
+                      <optgroup label="Cấp Xã/Phường/Đoàn">
+                        {DAKLAK_COMMUNES.map(c => <option key={c} value={c}>{c}</option>)}
+                      </optgroup>
                       <option value="Khác">Khác</option>
                     </select>
                   </div>

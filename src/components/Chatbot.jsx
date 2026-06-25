@@ -28,7 +28,7 @@ const Chatbot = () => {
       setTimeout(() => {
         setMessages(prev => [...prev, { 
           sender: 'bot', 
-          text: `Đây là thông tin về "${userMsg}". Theo quy định, bạn có thể xem xét các văn bản liên quan trong mục tin tức hoặc nộp hồ sơ tại UBND cấp xã.` 
+          text: `Đây là thông tin về "${userMsg}". Theo quy định, bạn có thể xem xét các văn bản liên quan trong mục tin tức hoặc nộp hồ sơ tại cấp xã.` 
         }]);
         setLoading(false);
       }, 1000);

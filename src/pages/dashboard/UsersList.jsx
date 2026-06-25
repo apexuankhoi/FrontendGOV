@@ -43,7 +43,18 @@ const UsersList = () => {
   const handleCreate = async (e) => {
     e.preventDefault();
     try {
-      await api.post('/users', form);
+      const payload = { ...form };
+      if (payload.role === 'PROVINCE_ADMIN') {
+        const provAgency = agencies.find(a => a.level === 'PROVINCE' && a.name.includes(payload.province));
+        if (provAgency) {
+          payload.agencyId = provAgency._id;
+          payload.commune = provAgency.name;
+        } else {
+          return toast.error('Không tìm thấy Cơ quan cấp Tỉnh cho tỉnh này.');
+        }
+      }
+      
+      await api.post('/users', payload);
       toast.success('✅ Cấp phát tài khoản thành công!');
       fetchUsers();
       setForm({ username: '', email: '', password: '', role: 'COMMUNE_ADMIN', province: 'Đắk Lắk', district: '', commune: '', agencyId: '' });
@@ -76,7 +87,7 @@ const UsersList = () => {
           <div className="form-row">
             <div className="form-group">
               <label className="form-label">Tên người dùng <span className="required">*</span></label>
-              <input className="form-input" required placeholder="VD: UBND Xã Ea Tu" value={form.username} onChange={e => setForm({ ...form, username: e.target.value })} />
+              <input className="form-input" required placeholder="VD: Xã Ea Tu" value={form.username} onChange={e => setForm({ ...form, username: e.target.value })} />
             </div>
             <div className="form-group">
               <label className="form-label">Email đăng nhập <span className="required">*</span></label>
@@ -90,7 +101,7 @@ const UsersList = () => {
             </div>
             <div className="form-group">
               <label className="form-label">Phân quyền (Role) <span className="required">*</span></label>
-              <select className="form-input form-select" value={form.role} onChange={e => setForm({ ...form, role: e.target.value })}>
+              <select className="form-input form-select" value={form.role} onChange={e => setForm({ ...form, role: e.target.value, agencyId: '', commune: '' })}>
                 {ROLES.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
               </select>
             </div>
@@ -103,22 +114,24 @@ const UsersList = () => {
               </select>
             </div>
 
-            <div className="form-group">
-              <label className="form-label"><Building2 size={14} style={{verticalAlign:'middle',marginRight:4}}/> Cơ quan trực thuộc <span className="required">*</span></label>
-              <select className="form-input form-select" value={form.agencyId} onChange={e => {
-                const selectedAgency = agencies.find(a => a._id === e.target.value);
-                setForm({ ...form, agencyId: e.target.value, commune: selectedAgency?.name || '' });
-              }} required>
-                <option value="">-- Chọn Cơ quan --</option>
-                {agencies
-                  .filter(a => {
-                    if (!form.province) return true;
-                    if (a.level === 'PROVINCE') return a.name.includes(form.province);
-                    return a.parentAgency?.name?.includes(form.province);
-                  })
-                  .map(a => <option key={a._id} value={a._id}>{a.name} ({a.level === 'PROVINCE' ? 'Tỉnh' : 'Xã'})</option>)}
-              </select>
-            </div>
+            {form.role !== 'PROVINCE_ADMIN' && (
+              <div className="form-group">
+                <label className="form-label"><Building2 size={14} style={{verticalAlign:'middle',marginRight:4}}/> Cơ quan trực thuộc <span className="required">*</span></label>
+                <select className="form-input form-select" value={form.agencyId} onChange={e => {
+                  const selectedAgency = agencies.find(a => a._id === e.target.value);
+                  setForm({ ...form, agencyId: e.target.value, commune: selectedAgency?.name || '' });
+                }} required>
+                  <option value="">-- Chọn Cơ quan --</option>
+                  {agencies
+                    .filter(a => {
+                      if (!form.province) return true;
+                      if (a.level === 'PROVINCE') return false; // Hide province when selecting commune
+                      return a.parentAgency?.name?.includes(form.province) || a.parentAgency?.name?.includes('Tỉnh ' + form.province) || a.name.includes(form.province);
+                    })
+                    .map(a => <option key={a._id} value={a._id}>{a.name}</option>)}
+                </select>
+              </div>
+            )}
           </div>
           <button type="submit" className="btn btn-primary">
             <UserPlus size={16} /> Cấp phát tài khoản
