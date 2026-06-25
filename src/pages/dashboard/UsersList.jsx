@@ -95,17 +95,14 @@ const UsersList = () => {
               </select>
             </div>
           </div>
-          <div className="form-row-3">
+          <div className="form-row">
             <div className="form-group">
               <label className="form-label">Tỉnh phụ trách</label>
               <select className="form-input form-select" value={form.province} onChange={e => setForm({ ...form, province: e.target.value, commune: '', agencyId: '' })}>
                 {Object.keys(PROVINCES_DATA).map(p => <option key={p} value={p}>{p}</option>)}
               </select>
             </div>
-            <div className="form-group">
-              <label className="form-label">Huyện phụ trách</label>
-              <input className="form-input" placeholder="VD: TP Buôn Ma Thuột" value={form.district} onChange={e => setForm({ ...form, district: e.target.value })} />
-            </div>
+
             <div className="form-group">
               <label className="form-label"><Building2 size={14} style={{verticalAlign:'middle',marginRight:4}}/> Cơ quan trực thuộc <span className="required">*</span></label>
               <select className="form-input form-select" value={form.agencyId} onChange={e => {

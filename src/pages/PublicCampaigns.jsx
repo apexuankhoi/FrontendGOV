@@ -56,7 +56,17 @@ const PublicCampaigns = () => {
   // Use localStorage for auth state like in other components
   const token = localStorage.getItem('token');
   const role = localStorage.getItem('role');
-  const agencyName = localStorage.getItem('agencyName');
+  
+  // Safely get agency name
+  let agencyName = localStorage.getItem('agencyName');
+  if (!agencyName) {
+    try {
+      const agencyData = JSON.parse(localStorage.getItem('agency'));
+      if (agencyData && agencyData.name) agencyName = agencyData.name;
+    } catch (e) {
+      // Ignore
+    }
+  }
   
   const canReport = ['COMMUNE_ADMIN', 'PROVINCE_ADMIN', 'SENIOR_ADMIN'].includes(role);
   

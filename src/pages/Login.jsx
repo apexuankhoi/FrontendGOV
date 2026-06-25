@@ -20,7 +20,10 @@ const Login = () => {
       localStorage.setItem('refreshToken', r.data.refreshToken);
       localStorage.setItem('role',         r.data.role);
       localStorage.setItem('username',     r.data.username);
-      if (r.data.agency) localStorage.setItem('agency', JSON.stringify(r.data.agency));
+      if (r.data.agency) {
+        localStorage.setItem('agency', JSON.stringify(r.data.agency));
+        localStorage.setItem('agencyName', r.data.agency.name);
+      }
 
       if (ADMIN_ROLES.includes(r.data.role)) {
         navigate('/dashboard');
