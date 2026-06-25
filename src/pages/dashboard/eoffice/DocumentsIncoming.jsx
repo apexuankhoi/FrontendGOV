@@ -281,7 +281,7 @@ const DocumentsIncoming = () => {
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
                 <Bot size={22} color="var(--brand-blue)" />
                 <span style={{ fontWeight: 600, fontSize: '.92rem' }}>AI đọc file tự động</span>
-                <input ref={fileInputRef} type="file" accept=".pdf,.doc,.docx" style={{ flex: 1, minWidth: 200 }} className="form-input" />
+                <input ref={fileInputRef} type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" style={{ flex: 1, minWidth: 200 }} className="form-input" />
                 <button className="btn btn-primary btn-sm" onClick={handleAiUpload} disabled={aiLoading}>
                   {aiLoading ? '⏳ Đang đọc...' : '🤖 AI Đọc File'}
                 </button>

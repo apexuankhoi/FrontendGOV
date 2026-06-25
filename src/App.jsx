@@ -15,6 +15,7 @@ const PublicTeams     = lazy(() => import('./pages/PublicTeams'));
 const PublicNews      = lazy(() => import('./pages/PublicNews'));
 const PublicProfile   = lazy(() => import('./pages/PublicProfile'));
 const PublicCampaigns = lazy(() => import('./pages/PublicCampaigns'));
+const PersonalDrive   = lazy(() => import('./pages/PersonalDrive'));
 
 // Dashboard Pages - Cán bộ mới cần tải đống JS này
 const Overview     = lazy(() => import('./pages/dashboard/Overview'));
@@ -78,6 +79,7 @@ function App() {
           <Route element={<MainLayout />}>
             <Route index element={<Home />} />
             <Route path="/chien-dich" element={<PublicCampaigns />} />
+            <Route path="/my-drive" element={<ProtectedRoute><div className="container" style={{ minHeight: '80vh', padding: '20px 0' }}><PersonalDrive /></div></ProtectedRoute>} />
             <Route path="/doi-hinh" element={<PublicTeams />} />
             <Route path="/news" element={<PublicNews />} />
             <Route path="/tin-tuc" element={<PublicNews />} />

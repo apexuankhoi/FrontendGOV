@@ -64,13 +64,8 @@ const Navbar = () => {
               <Link to="/login" className="btn btn-outline btn-sm">Đăng nhập</Link>
               <Link to="/register" className="btn btn-primary btn-sm">Đăng ký</Link>
             </>
-          ) : isAdmin ? (
-            /* Cán bộ → vào Dashboard */
-            <Link to="/dashboard" className="btn btn-primary btn-sm">
-              <LayoutDashboard size={15} /> Quản trị
-            </Link>
           ) : (
-            /* Citizen → Avatar dropdown */
+            /* Logged in users (Admin + Citizen) → Avatar dropdown */
             <div style={{ position: 'relative' }} ref={dropdownRef}>
               <button
                 onClick={() => setDropdownOpen(o => !o)}
@@ -93,19 +88,37 @@ const Navbar = () => {
                   position: 'absolute', top: 'calc(100% + 10px)', right: 0,
                   background: '#fff', border: '1px solid var(--border)',
                   borderRadius: 'var(--r-lg)', boxShadow: 'var(--sh-xl)',
-                  minWidth: 200, padding: 8, zIndex: 300,
+                  minWidth: 220, padding: 8, zIndex: 300,
                   animation: 'fadeUp .2s ease',
                 }}>
                   <div style={{ padding: '10px 14px 12px', borderBottom: '1px solid var(--border)' }}>
                     <div style={{ fontWeight: 700, fontSize: '.9rem' }}>{username || 'Người dùng'}</div>
-                    <div style={{ fontSize: '.75rem', color: 'var(--tx-3)', marginTop: 2 }}>Người dân · Đắk Lắk</div>
+                    <div style={{ fontSize: '.75rem', color: 'var(--tx-3)', marginTop: 2 }}>{isAdmin ? 'Cán bộ quản lý' : 'Người dân'}</div>
                   </div>
+                  
                   <Link to="/profile" onClick={() => setDropdownOpen(false)}
                     style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', color: 'var(--tx-2)', fontWeight: 500, fontSize: '.875rem', borderRadius: 8, margin: '4px 0', transition: 'background .15s' }}
                     onMouseEnter={e => e.currentTarget.style.background = 'var(--surface-2)'}
                     onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-                    <User size={16} /> Hồ sơ cá nhân
+                    <User size={16} /> Thông tin cá nhân
                   </Link>
+
+                  {isAdmin && (
+                    <Link to="/dashboard" onClick={() => setDropdownOpen(false)}
+                      style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', color: 'var(--tx-2)', fontWeight: 500, fontSize: '.875rem', borderRadius: 8, margin: '4px 0', transition: 'background .15s' }}
+                      onMouseEnter={e => e.currentTarget.style.background = 'var(--surface-2)'}
+                      onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                      <LayoutDashboard size={16} /> Trang quản trị
+                    </Link>
+                  )}
+
+                  <Link to="/my-drive" onClick={() => setDropdownOpen(false)}
+                    style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', color: 'var(--tx-2)', fontWeight: 500, fontSize: '.875rem', borderRadius: 8, margin: '4px 0', transition: 'background .15s' }}
+                    onMouseEnter={e => e.currentTarget.style.background = 'var(--surface-2)'}
+                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-1.22-1.82A2 2 0 0 0 7.53 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg> Kho tài liệu cá nhân
+                  </Link>
+
                   <button onClick={logout}
                     style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', color: 'var(--danger)', fontWeight: 500, fontSize: '.875rem', borderRadius: 8, margin: '4px 0', background: 'none', border: 'none', width: '100%', cursor: 'pointer', fontFamily: 'inherit', transition: 'background .15s' }}
                     onMouseEnter={e => e.currentTarget.style.background = 'var(--danger-bg)'}
@@ -136,17 +149,15 @@ const Navbar = () => {
             <Link to="/login" className="btn btn-outline w-full" onClick={() => setMobileOpen(false)}>Đăng nhập</Link>
             <Link to="/register" className="btn btn-primary w-full" onClick={() => setMobileOpen(false)}>Đăng ký</Link>
           </div>
-        ) : isAdmin ? (
-          <Link to="/dashboard" className="btn btn-primary w-full" onClick={() => setMobileOpen(false)}>
-            <LayoutDashboard size={15} /> Vào Quản trị
-          </Link>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             <div style={{ padding: '10px 14px', background: 'var(--primary-bg)', borderRadius: 'var(--r-md)', display: 'flex', alignItems: 'center', gap: 10 }}>
               <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700 }}>{username ? username.charAt(0).toUpperCase() : 'U'}</div>
-              <div><div style={{ fontWeight: 700, fontSize: '.875rem' }}>{username || 'Người dùng'}</div><div style={{ fontSize: '.72rem', color: 'var(--tx-3)' }}>Người dân</div></div>
+              <div><div style={{ fontWeight: 700, fontSize: '.875rem' }}>{username || 'Người dùng'}</div><div style={{ fontSize: '.72rem', color: 'var(--tx-3)' }}>{isAdmin ? 'Cán bộ quản lý' : 'Người dân'}</div></div>
             </div>
-            <Link to="/profile" className="btn btn-outline w-full" onClick={() => setMobileOpen(false)}>Hồ sơ cá nhân</Link>
+            <Link to="/profile" className="btn btn-outline w-full" onClick={() => setMobileOpen(false)}>Thông tin cá nhân</Link>
+            {isAdmin && <Link to="/dashboard" className="btn btn-outline w-full" onClick={() => setMobileOpen(false)}>Trang quản trị</Link>}
+            <Link to="/my-drive" className="btn btn-outline w-full" onClick={() => setMobileOpen(false)}>Kho tài liệu cá nhân</Link>
             <button className="btn btn-outline w-full" style={{ color: 'var(--danger)', borderColor: 'var(--danger)' }} onClick={() => { logout(); setMobileOpen(false); }}>Đăng xuất</button>
           </div>
         )}
