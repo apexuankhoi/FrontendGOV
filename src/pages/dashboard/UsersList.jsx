@@ -97,17 +97,8 @@ const UsersList = () => {
           </div>
           <div className="form-row-3">
             <div className="form-group">
-              <label className="form-label"><Building2 size={14} style={{verticalAlign:'middle',marginRight:4}}/> Cơ quan trực thuộc <span className="required">*</span></label>
-              <select className="form-input form-select" value={form.agencyId} onChange={e => setForm({ ...form, agencyId: e.target.value })} required>
-                <option value="">-- Chọn Cơ quan --</option>
-                {agencies.map(a => <option key={a._id} value={a._id}>{a.name} ({a.level})</option>)}
-              </select>
-            </div>
-          </div>
-          <div className="form-row-3">
-            <div className="form-group">
               <label className="form-label">Tỉnh phụ trách</label>
-              <select className="form-input form-select" value={form.province} onChange={e => setForm({ ...form, province: e.target.value, commune: '' })}>
+              <select className="form-input form-select" value={form.province} onChange={e => setForm({ ...form, province: e.target.value, commune: '', agencyId: '' })}>
                 {Object.keys(PROVINCES_DATA).map(p => <option key={p} value={p}>{p}</option>)}
               </select>
             </div>
@@ -116,10 +107,19 @@ const UsersList = () => {
               <input className="form-input" placeholder="VD: TP Buôn Ma Thuột" value={form.district} onChange={e => setForm({ ...form, district: e.target.value })} />
             </div>
             <div className="form-group">
-              <label className="form-label">Xã phụ trách</label>
-              <select className="form-input form-select" value={form.commune} onChange={e => setForm({ ...form, commune: e.target.value })}>
-                <option value="">-- Chọn Xã/Phường --</option>
-                {PROVINCES_DATA[form.province] && PROVINCES_DATA[form.province].map(c => <option key={c} value={c}>{c}</option>)}
+              <label className="form-label"><Building2 size={14} style={{verticalAlign:'middle',marginRight:4}}/> Cơ quan trực thuộc <span className="required">*</span></label>
+              <select className="form-input form-select" value={form.agencyId} onChange={e => {
+                const selectedAgency = agencies.find(a => a._id === e.target.value);
+                setForm({ ...form, agencyId: e.target.value, commune: selectedAgency?.name || '' });
+              }} required>
+                <option value="">-- Chọn Cơ quan --</option>
+                {agencies
+                  .filter(a => {
+                    if (!form.province) return true;
+                    if (a.level === 'PROVINCE') return a.name.includes(form.province);
+                    return a.parentAgency?.name?.includes(form.province);
+                  })
+                  .map(a => <option key={a._id} value={a._id}>{a.name} ({a.level === 'PROVINCE' ? 'Tỉnh' : 'Xã'})</option>)}
               </select>
             </div>
           </div>
