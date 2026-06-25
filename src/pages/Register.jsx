@@ -175,7 +175,6 @@ const Register = () => {
                       <option value="">-- Chọn --</option>
                       <optgroup label="Cấp Tỉnh">
                         <option value="Tỉnh Đắk Lắk">Tỉnh Đắk Lắk</option>
-                        <option value="Tỉnh Phú Yên">Tỉnh Phú Yên</option>
                       </optgroup>
                       <optgroup label="Cấp Xã/Phường/Đoàn">
                         {DAKLAK_COMMUNES.map(c => <option key={c} value={c}>{c}</option>)}

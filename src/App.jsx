@@ -79,9 +79,9 @@ function App() {
           {/* Dashboard (staff/admin only) */}
           <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
             <Route index element={<Overview />} />
-            <Route path="map" element={<TeamsList />} />
-            <Route path="map/add" element={<AddTeam />} />
-            <Route path="map/edit/:id" element={<AddTeam />} />
+            <Route path="map" element={<ProtectedRoute allowedRoles={['ADMIN', 'SENIOR_ADMIN']}><TeamsList /></ProtectedRoute>} />
+            <Route path="map/add" element={<ProtectedRoute allowedRoles={['ADMIN', 'SENIOR_ADMIN']}><AddTeam /></ProtectedRoute>} />
+            <Route path="map/edit/:id" element={<ProtectedRoute allowedRoles={['ADMIN', 'SENIOR_ADMIN']}><AddTeam /></ProtectedRoute>} />
             <Route path="news" element={<NewsAdmin />} />
             <Route path="users" element={<ProtectedRoute allowedRoles={['SENIOR_ADMIN']}><UsersList /></ProtectedRoute>} />
             <Route path="profile" element={<Profile />} />

@@ -12,9 +12,7 @@ export const PROVINCES_DATA = {
     "Xã M'Drắk", "Xã Ea Riêng", "Xã Cư M'ta", "Xã Krông Á", "Xã Cư Prao", "Xã Ea Trang",
     "Xã Hòa Sơn", "Xã Dang Kang", "Xã Krông Bông", "Xã Yang Mao", "Xã Cư Pui",
     "Xã Liên Sơn Lắk", "Xã Đắk Liêng", "Xã Nam Ka", "Xã Đắk Phơi",
-    "Xã Krông Nô", "Xã Ea Ning", "Xã Dray Bhăng", "Xã Ea Ktur", "Xã Krông Ana", "Xã Dur Kmăl", "Xã Ea Na"
-  ],
-  "Phú Yên": [
+    "Xã Krông Nô", "Xã Ea Ning", "Xã Dray Bhăng", "Xã Ea Ktur", "Xã Krông Ana", "Xã Dur Kmăl", "Xã Ea Na",
     "Đoàn phường Tuy Hòa", "Đoàn phường Phú Yên", "Đoàn phường Bình Kiến", "Đoàn phường Xuân Đài", "Đoàn phường Sông Cầu",
     "Đoàn xã Xuân Thọ", "Đoàn xã Xuân Cảnh", "Đoàn xã Xuân Lộc",
     "Đoàn phường Đông Hòa", "Đoàn phường Hòa Hiệp", "Đoàn xã Hòa Xuân",
@@ -28,6 +26,5 @@ export const PROVINCES_DATA = {
 
 // Vẫn giữ COMMUNES_LIST gộp chung cho các file cũ (nếu có)
 export const COMMUNES_LIST = [
-  ...PROVINCES_DATA["Đắk Lắk"],
-  ...PROVINCES_DATA["Phú Yên"]
+  ...PROVINCES_DATA["Đắk Lắk"]
 ];

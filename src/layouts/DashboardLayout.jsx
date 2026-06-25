@@ -105,10 +105,10 @@ const DashboardLayout = () => {
           <div className="sidebar-sec">Tổng quan</div>
           <SLink to="/dashboard" icon={LayoutDashboard} label="Dashboard" exact />
 
-          <div className="sidebar-sec">Chiến dịch</div>
-          <SLink to="/dashboard/map" icon={Map} label="Quản lý Đội hình" />
-
           {can('ADMIN','SENIOR_ADMIN') && (<>
+            <div className="sidebar-sec">Chiến dịch</div>
+            <SLink to="/dashboard/map" icon={Map} label="Quản lý Đội hình" />
+
             <div className="sidebar-sec">Nội dung</div>
             <SLink to="/dashboard/news" icon={FileText} label="Quản lý Tin tức"/>
           </>)}
