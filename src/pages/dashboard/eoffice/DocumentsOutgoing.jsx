@@ -35,10 +35,15 @@ const DocumentsOutgoing = () => {
   
   // Dispatch (Liên thông)
   const [showDispatch, setShowDispatch] = useState(null);
+  const [dispatchProvince, setDispatchProvince] = useState('');
   const [agencies, setAgencies] = useState([]);
   const [selectedAgencies, setSelectedAgencies] = useState([]);
   const [dispatching, setDispatching] = useState(false);
 
+  // Create Form Selection
+  const [createProvince, setCreateProvince] = useState('');
+  const [createSelectedAgencies, setCreateSelectedAgencies] = useState([]);
+  
   const role = localStorage.getItem('role') || '';
   const canCreate = ['COMMUNE_ADMIN', 'PROVINCE_ADMIN', 'SENIOR_ADMIN'].includes(role);
   const canDelete = ['ADMIN', 'SENIOR_ADMIN'].includes(role);
@@ -81,8 +86,22 @@ const DocumentsOutgoing = () => {
       formData.append('type', 'OUTGOING');
       files.forEach(f => formData.append('files', f));
 
-      await api.post('/documents', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
-      toast.success('📤 Tạo văn bản đi thành công!');
+      if (createSelectedAgencies.length > 0) {
+        // Auto set receivingAgency string if empty
+        const names = createSelectedAgencies.map(id => agencies.find(a => a._id === id)?.name);
+        if (!form.receivingAgency) {
+          formData.set('receivingAgency', names.join(', '));
+        }
+      }
+
+      const resDoc = await api.post('/documents', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+      
+      // Auto dispatch if agencies selected
+      if (createSelectedAgencies.length > 0) {
+        await api.post(`/documents/${resDoc.data.document._id}/dispatch`, { targetAgencyIds: createSelectedAgencies });
+      }
+      
+      toast.success('📤 Tạo và gửi văn bản thành công!');
       setShowForm(false);
       fetchDocs();
     } catch (err) { toast.error(err.response?.data?.message || 'Lỗi tạo văn bản'); }
@@ -202,19 +221,43 @@ const DocumentsOutgoing = () => {
                 <textarea className="form-input" rows={2} required value={form.summary} onChange={e => setForm({ ...form, summary: e.target.value })} />
               </div>
               <div className="form-grid-3">
-                <div className="form-group">
-                  <label className="form-label">Nơi nhận <span style={{fontSize: '0.8em', color: 'var(--tx-3)'}}>(Không bắt buộc)</span></label>
-                  <input className="form-input" list="agencies-list" placeholder="Chọn hoặc gõ tên nơi nhận..." value={form.receivingAgency} onChange={e => setForm({ ...form, receivingAgency: e.target.value })} />
-                  <datalist id="agencies-list">
-                    <option value="Như trên" />
-                    <option value="Lưu VT" />
-                    <option value="Như trên, Lưu VT" />
-                    <option value="UBND Tỉnh" />
-                    <option value="Các sở, ban, ngành" />
-                    <option value="UBND các Huyện, Thị xã, Thành phố" />
-                    {agencies.map(a => <option key={a._id} value={a.name} />)}
-                  </datalist>
                 </div>
+              </div>
+              
+              <div className="form-group" style={{ marginTop: 8 }}>
+                <label className="form-label">Chọn Nơi nhận / Liên thông tự động <span style={{fontSize: '0.8em', color: 'var(--tx-3)'}}>(Chọn để tự động gửi liên thông)</span></label>
+                <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 8 }}>
+                  <label style={{ fontWeight: 600, fontSize: '.85rem' }}>Lọc theo Tỉnh:</label>
+                  <select className="form-input form-select" style={{ flex: 1 }} value={createProvince} onChange={e => setCreateProvince(e.target.value)}>
+                    <option value="">-- Tất cả các Tỉnh --</option>
+                    {agencies.filter(a => a.level === 'PROVINCE').map(p => <option key={p._id} value={p._id}>{p.name}</option>)}
+                  </select>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
+                  <label style={{ cursor: 'pointer', fontSize: '.85rem', color: 'var(--brand-blue)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <input type="checkbox" onChange={e => {
+                      const filtered = agencies.filter(a => createProvince ? (a.parentAgency?._id === createProvince || a._id === createProvince) : true);
+                      if (e.target.checked) {
+                        const newSelected = [...new Set([...createSelectedAgencies, ...filtered.map(a => a._id)])];
+                        setCreateSelectedAgencies(newSelected);
+                      } else {
+                        const filteredIds = filtered.map(a => a._id);
+                        setCreateSelectedAgencies(createSelectedAgencies.filter(id => !filteredIds.includes(id)));
+                      }
+                    }} /> Chọn tất cả danh sách dưới
+                  </label>
+                </div>
+                <div style={{ maxHeight: 180, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 6, padding: 4, background: '#F8FAFC', borderRadius: 8, border: '1px solid #E2E8F0' }}>
+                  {agencies.filter(a => createProvince ? (a.parentAgency?._id === createProvince || a._id === createProvince) : true).map(a => (
+                    <label key={a._id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 6, background: createSelectedAgencies.includes(a._id) ? '#DBEAFE' : '#FFF', border: createSelectedAgencies.includes(a._id) ? '1px solid #93C5FD' : '1px solid #E2E8F0', cursor: 'pointer' }}>
+                      <input type="checkbox" checked={createSelectedAgencies.includes(a._id)} onChange={() => setCreateSelectedAgencies(prev => prev.includes(a._id) ? prev.filter(x => x !== a._id) : [...prev, a._id])} />
+                      <div style={{ fontSize: '.85rem', fontWeight: 500 }}>{a.name}</div>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div className="form-grid-2">
                 <div className="form-group">
                   <label className="form-label">Người ký</label>
                   <input className="form-input" value={form.signer} onChange={e => setForm({ ...form, signer: e.target.value })} />
@@ -334,14 +377,35 @@ const DocumentsOutgoing = () => {
                 <div style={{ fontWeight: 700, marginBottom: 4 }}>{showDispatch.summary}</div>
                 <div style={{ fontSize: '.85rem', color: 'var(--tx-3)' }}>Số: {showDispatch.documentNumber || '—'} | Loại: {showDispatch.category}</div>
               </div>
-              <label style={{ fontWeight: 600, marginBottom: 12, display: 'block' }}>Chọn cơ quan nhận:</label>
+              <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 12 }}>
+                <label style={{ fontWeight: 600 }}>Bộ lọc Tỉnh:</label>
+                <select className="form-input form-select" style={{ flex: 1 }} value={dispatchProvince} onChange={e => setDispatchProvince(e.target.value)}>
+                  <option value="">-- Tất cả các Tỉnh --</option>
+                  {agencies.filter(a => a.level === 'PROVINCE').map(p => <option key={p._id} value={p._id}>{p.name}</option>)}
+                </select>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                <label style={{ fontWeight: 600 }}>Chọn cơ quan nhận:</label>
+                <label style={{ cursor: 'pointer', fontSize: '.85rem', color: 'var(--brand-blue)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <input type="checkbox" onChange={e => {
+                    const filtered = agencies.filter(a => dispatchProvince ? (a.parentAgency?._id === dispatchProvince || a._id === dispatchProvince) : true);
+                    if (e.target.checked) {
+                      const newSelected = [...new Set([...selectedAgencies, ...filtered.map(a => a._id)])];
+                      setSelectedAgencies(newSelected);
+                    } else {
+                      const filteredIds = filtered.map(a => a._id);
+                      setSelectedAgencies(selectedAgencies.filter(id => !filteredIds.includes(id)));
+                    }
+                  }} /> Chọn tất cả danh sách dưới
+                </label>
+              </div>
               <div style={{ maxHeight: 250, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {agencies.map(a => (
+                {agencies.filter(a => dispatchProvince ? (a.parentAgency?._id === dispatchProvince || a._id === dispatchProvince) : true).map(a => (
                   <label key={a._id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 'var(--r-md)', border: selectedAgencies.includes(a._id) ? '2px solid var(--primary)' : '1px solid var(--border)', background: selectedAgencies.includes(a._id) ? '#EFF6FF' : 'var(--bg-1)', cursor: 'pointer', transition: 'all .15s' }}>
                     <input type="checkbox" checked={selectedAgencies.includes(a._id)} onChange={() => setSelectedAgencies(prev => prev.includes(a._id) ? prev.filter(x => x !== a._id) : [...prev, a._id])} />
                     <div>
                       <div style={{ fontWeight: 600, fontSize: '.9rem' }}>{a.name}</div>
-                      <div style={{ fontSize: '.75rem', color: 'var(--tx-3)' }}>Cấp: {a.level}{a.parentAgency ? ` | Trực thuộc: ${a.parentAgency.name}` : ''}</div>
+                      <div style={{ fontSize: '.75rem', color: 'var(--tx-3)' }}>Cấp: {a.level === 'PROVINCE' ? 'Tỉnh' : 'Xã/Phường'}{a.parentAgency ? ` | Trực thuộc: ${a.parentAgency.name}` : ''}</div>
                     </div>
                   </label>
                 ))}
