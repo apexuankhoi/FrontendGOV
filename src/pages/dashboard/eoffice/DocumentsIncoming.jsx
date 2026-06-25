@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import api from '../../../lib/api';
 import { toast } from 'react-toastify';
 import Swal from 'sweetalert2';
-import { getFileUrl } from '../../../utils/fileHelper';
+import { getFileUrl, downloadFile } from '../../../utils/fileHelper';
 import { FileInput, Search, Plus, Eye, Trash2, RefreshCw, Upload, Bot, ChevronDown, X, Save, Calendar, Building2, User, FileText, AlertTriangle, Shield, MessageCircle } from 'lucide-react';
 import AiChatPanel, { AiChatButton } from '../../../components/AiChatPanel';
 
@@ -486,12 +486,12 @@ const DocumentsIncoming = () => {
               {showDetail.attachments?.length > 0 && (
                 <div style={{ marginBottom: 16 }}>
                   <div style={{ fontSize: '.85rem', fontWeight: 600, marginBottom: 8 }}>📎 File đính kèm ({showDetail.attachments.length})</div>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
+                  <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 12 }}>
                     {showDetail.attachments.map((att, i) => (
-                      <a key={i} href={getFileUrl(att.filePath, att.originalName)} target="_blank" rel="noopener noreferrer"
-                        className="badge badge-info" style={{ textDecoration: 'none', cursor: 'pointer' }}>
+                      <button key={i} onClick={() => downloadFile(getFileUrl(att.filePath), att.originalName)}
+                        className="badge badge-info" style={{ textDecoration: 'none', cursor: 'pointer', border: 'none' }}>
                         📄 {att.originalName}
-                      </a>
+                      </button>
                     ))}
                   </div>
                   

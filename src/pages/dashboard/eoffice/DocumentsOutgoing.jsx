@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import api from '../../../lib/api';
 import { toast } from 'react-toastify';
 import Swal from 'sweetalert2';
-import { getFileUrl } from '../../../utils/fileHelper';
+import { getFileUrl, downloadFile } from '../../../utils/fileHelper';
 import { FileOutput, Search, Plus, Eye, Trash2, RefreshCw, Bot, X, Save, Calendar, Building2, User, FileText, AlertTriangle, Shield, Sparkles, Send } from 'lucide-react';
 
 const CATEGORIES = ['Công văn', 'Báo cáo', 'Kế hoạch', 'Tờ trình', 'Thông báo', 'Quyết định', 'Giấy mời', 'Chỉ thị', 'Hướng dẫn', 'Khác'];
@@ -310,9 +310,9 @@ const DocumentsOutgoing = () => {
                   <div style={{ fontSize: '.85rem', fontWeight: 600, marginBottom: 8 }}>📎 File đính kèm</div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
                     {showDetail.attachments.map((att, i) => (
-                      <a key={i} href={getFileUrl(att.filePath, att.originalName)} target="_blank" rel="noopener noreferrer" className="badge badge-info" style={{ textDecoration: 'none' }}>
+                      <button key={i} onClick={() => downloadFile(getFileUrl(att.filePath), att.originalName)} className="badge badge-info" style={{ textDecoration: 'none', cursor: 'pointer', border: 'none' }}>
                         📄 {att.originalName}
-                      </a>
+                      </button>
                     ))}
                   </div>
                 </div>
