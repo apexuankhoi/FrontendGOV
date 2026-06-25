@@ -131,8 +131,8 @@ const AiCommandCenter = () => {
   return (
     <div className="animate-up">
       <div className="page-header">
-        <h2 style={{ display: 'flex', alignItems: 'center', gap: 10 }}><Bot size={24} color="var(--brand-blue)" /> Trung tam AI</h2>
-        <p>Cong cu AI nang cao: Tra cuu, Kiem duyet, Tong hop, Danh gia KPI</p>
+        <h2 style={{ display: 'flex', alignItems: 'center', gap: 10 }}><Bot size={24} color="var(--brand-blue)" /> Trung tâm AI</h2>
+        <p>Công cụ AI nâng cao: Tra cứu, Kiểm duyệt, Tổng hợp, Đánh giá KPI</p>
       </div>
 
       {/* Tabs */}
@@ -161,15 +161,15 @@ const AiCommandCenter = () => {
         <div className="card">
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
             <Search size={20} color="var(--primary)" />
-            <span style={{ fontWeight: 700, fontSize: '.95rem' }}>Tra cuu bang tieng Viet tu nhien</span>
+            <span style={{ fontWeight: 700, fontSize: '.95rem' }}>Tra cứu bằng tiếng Việt tự nhiên</span>
           </div>
           <div style={{ display: 'flex', gap: 10, marginBottom: 20 }}>
             <input className="form-input" style={{ flex: 1 }} value={question} onChange={e => setQuestion(e.target.value)}
-              placeholder='Vi du: "Bao nhieu van ban qua han thang nay?"' 
+              placeholder='Ví dụ: "Bao nhiêu văn bản quá hạn tháng này?"' 
               onKeyDown={e => e.key === 'Enter' && handleQuery()} />
             <button className="btn btn-primary" onClick={handleQuery} disabled={queryLoading} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               {queryLoading ? <RefreshCw size={15} style={{ animation: 'spin 1s linear infinite' }} /> : <Send size={15} />}
-              {queryLoading ? 'Dang...' : 'Hoi'}
+              {queryLoading ? 'Đang hỏi...' : 'Hỏi'}
             </button>
           </div>
           {answer && (
@@ -180,9 +180,9 @@ const AiCommandCenter = () => {
           {!answer && !queryLoading && (
             <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--tx-4)' }}>
               <Bot size={40} style={{ opacity: .3, marginBottom: 10 }} />
-              <p style={{ fontSize: '.85rem' }}>Hoi bat cu dieu gi ve du lieu he thong cua ban</p>
+              <p style={{ fontSize: '.85rem' }}>Hỏi bất cứ điều gì về dữ liệu hệ thống của bạn</p>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center', marginTop: 12 }}>
-                {['Bao nhieu VB chua xu ly?', 'Ai bi qua han nhieu nhat?', 'Thong ke VB theo linh vuc'].map(q => (
+                {['Bao nhiêu VB chưa xử lý?', 'Ai bị quá hạn nhiều nhất?', 'Thống kê VB theo lĩnh vực'].map(q => (
                   <button key={q} className="btn btn-ghost btn-sm" style={{ fontSize: '.8rem' }} onClick={() => { setQuestion(q); }}>{q}</button>
                 ))}
               </div>
@@ -197,17 +197,17 @@ const AiCommandCenter = () => {
         <div className="card">
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
             <Shield size={20} color="var(--danger)" />
-            <span style={{ fontWeight: 700, fontSize: '.95rem' }}>AI Kiem duyet Van ban</span>
+            <span style={{ fontWeight: 700, fontSize: '.95rem' }}>AI Kiểm duyệt Văn bản</span>
           </div>
           <div style={{ display: 'flex', gap: 10, marginBottom: 20, flexWrap: 'wrap' }}>
             <select className="form-input" style={{ flex: 1, minWidth: 250 }} value={selectedDocId} onChange={e => setSelectedDocId(e.target.value)}>
-              <option value="">-- Chon van ban can kiem duyet --</option>
+              <option value="">-- Chọn văn bản cần kiểm duyệt --</option>
               {docs.filter(d => d.ocrContent).map(d => (
-                <option key={d._id} value={d._id}>{d.documentNumber || 'Khong so'} - {(d.summary || '').slice(0, 60)}</option>
+                <option key={d._id} value={d._id}>{d.documentNumber || 'Không số'} - {(d.summary || '').slice(0, 60)}</option>
               ))}
             </select>
             <button className="btn btn-primary" onClick={handleProofread} disabled={proofLoading}>
-              {proofLoading ? 'Dang soi...' : 'AI Kiem duyet'}
+              {proofLoading ? 'Đang soi...' : 'AI Kiểm duyệt'}
             </button>
           </div>
           {proofResult && (
@@ -218,7 +218,7 @@ const AiCommandCenter = () => {
           {!proofResult && !proofLoading && (
             <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--tx-4)' }}>
               <Shield size={40} style={{ opacity: .3, marginBottom: 10 }} />
-              <p style={{ fontSize: '.85rem' }}>Chon 1 van ban co noi dung OCR de AI kiem tra loi chinh ta, the thuc, so lieu</p>
+              <p style={{ fontSize: '.85rem' }}>Chọn 1 văn bản có nội dung OCR để AI kiểm tra lỗi chính tả, thể thức, số liệu</p>
             </div>
           )}
         </div>
@@ -230,15 +230,15 @@ const AiCommandCenter = () => {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <Zap size={20} color="var(--warning)" />
-              <span style={{ fontWeight: 700, fontSize: '.95rem' }}>AI Tong hop nhieu Van ban</span>
+              <span style={{ fontWeight: 700, fontSize: '.95rem' }}>AI Tổng hợp nhiều Văn bản</span>
             </div>
             {selectedIds.length >= 2 && (
               <button className="btn btn-primary btn-sm" onClick={handleSynthesize} disabled={synthLoading}>
-                {synthLoading ? 'Dang tong hop...' : `Tong hop ${selectedIds.length} VB`}
+                {synthLoading ? 'Đang tổng hợp...' : `Tổng hợp ${selectedIds.length} VB`}
               </button>
             )}
           </div>
-          <p style={{ fontSize: '.8rem', color: 'var(--tx-3)', marginBottom: 12 }}>Tick chon it nhat 2 van ban (co OCR) de AI tong hop thanh 1 bao cao</p>
+          <p style={{ fontSize: '.8rem', color: 'var(--tx-3)', marginBottom: 12 }}>Tick chọn ít nhất 2 văn bản (có OCR) để AI tổng hợp thành 1 báo cáo</p>
           <div style={{ maxHeight: 300, overflowY: 'auto', border: '1px solid var(--border)', borderRadius: 'var(--r-md)' }}>
             {docs.filter(d => d.ocrContent).map(d => (
               <label key={d._id} style={{
@@ -248,10 +248,10 @@ const AiCommandCenter = () => {
               }}>
                 <input type="checkbox" checked={selectedIds.includes(d._id)} onChange={() => toggleDocSelect(d._id)} />
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontWeight: 600, fontSize: '.85rem' }}>{d.documentNumber || 'Khong so'} — {d.issuingAgency || ''}</div>
-                  <div style={{ fontSize: '.78rem', color: 'var(--tx-3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{d.summary || 'Khong co trich yeu'}</div>
+                  <div style={{ fontWeight: 600, fontSize: '.85rem' }}>{d.documentNumber || 'Không số'} — {d.issuingAgency || ''}</div>
+                  <div style={{ fontSize: '.78rem', color: 'var(--tx-3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{d.summary || 'Không có trích yếu'}</div>
                 </div>
-                <span className={`badge ${d.type === 'INCOMING' ? 'badge-info' : 'badge-success'}`} style={{ fontSize: '.7rem' }}>{d.type === 'INCOMING' ? 'Den' : 'Di'}</span>
+                <span className={`badge ${d.type === 'INCOMING' ? 'badge-info' : 'badge-success'}`} style={{ fontSize: '.7rem' }}>{d.type === 'INCOMING' ? 'Đến' : 'Đi'}</span>
               </label>
             ))}
           </div>
@@ -259,7 +259,7 @@ const AiCommandCenter = () => {
             <div style={{ marginTop: 20 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
                 <FileDown size={16} color="var(--success)" />
-                <span style={{ fontWeight: 600, fontSize: '.9rem' }}>File tong hop da tao:</span>
+                <span style={{ fontWeight: 600, fontSize: '.9rem' }}>File tổng hợp đã tạo:</span>
               </div>
               <a href={`http://localhost:5000/${synthResult.generatedFile.filePath}`} target="_blank" rel="noreferrer"
                 className="btn btn-outline btn-sm" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
@@ -299,37 +299,37 @@ const AiCommandCenter = () => {
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <TrendingUp size={20} color="var(--success)" />
-                <span style={{ fontWeight: 700, fontSize: '.95rem' }}>Bang KPI Can bo</span>
+                <span style={{ fontWeight: 700, fontSize: '.95rem' }}>Bảng KPI Cán bộ</span>
               </div>
               <div style={{ display: 'flex', gap: 8 }}>
-                <button className="btn btn-ghost btn-sm" onClick={fetchKPI}><RefreshCw size={14} /> Lam moi</button>
+                <button className="btn btn-ghost btn-sm" onClick={fetchKPI}><RefreshCw size={14} /> Làm mới</button>
                 <button className="btn btn-primary btn-sm" onClick={handleEvalKPI} disabled={evalLoading}>
-                  {evalLoading ? 'Dang...' : 'AI Danh gia'}
+                  {evalLoading ? 'Đang tải...' : 'AI Đánh giá'}
                 </button>
               </div>
             </div>
 
             {kpiLoading ? (
-              <div style={{ textAlign: 'center', padding: 40, color: 'var(--tx-4)' }}>Dang tai...</div>
+              <div style={{ textAlign: 'center', padding: 40, color: 'var(--tx-4)' }}>Đang tải...</div>
             ) : kpiData.length === 0 ? (
               <div style={{ textAlign: 'center', padding: 40, color: 'var(--tx-4)' }}>
                 <Users size={40} style={{ opacity: .3, marginBottom: 10 }} />
-                <p>Chua co du lieu KPI</p>
+                <p>Chưa có dữ liệu KPI</p>
               </div>
             ) : (
               <div style={{ overflowX: 'auto' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '.83rem' }}>
                   <thead>
                     <tr style={{ borderBottom: '2px solid var(--border)', textAlign: 'left' }}>
-                      <th style={{ padding: '8px 12px' }}>Can bo</th>
+                      <th style={{ padding: '8px 12px' }}>Cán bộ</th>
                       <th style={{ padding: '8px 12px' }}>Role</th>
                       <th style={{ padding: '8px 12px', textAlign: 'center' }}>VB Giao</th>
                       <th style={{ padding: '8px 12px', textAlign: 'center' }}>VB Xong</th>
-                      <th style={{ padding: '8px 12px', textAlign: 'center' }}>VB Qua han</th>
-                      <th style={{ padding: '8px 12px', textAlign: 'center' }}>CV Tong</th>
+                      <th style={{ padding: '8px 12px', textAlign: 'center' }}>VB Quá hạn</th>
+                      <th style={{ padding: '8px 12px', textAlign: 'center' }}>CV Tổng</th>
                       <th style={{ padding: '8px 12px', textAlign: 'center' }}>CV Xong</th>
-                      <th style={{ padding: '8px 12px', textAlign: 'center' }}>Ty le</th>
-                      <th style={{ padding: '8px 12px', textAlign: 'center' }}>Xep loai</th>
+                      <th style={{ padding: '8px 12px', textAlign: 'center' }}>Tỷ lệ</th>
+                      <th style={{ padding: '8px 12px', textAlign: 'center' }}>Xếp loại</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -364,7 +364,7 @@ const AiCommandCenter = () => {
             <div className="card">
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
                 <Bot size={18} color="var(--primary)" />
-                <span style={{ fontWeight: 700, fontSize: '.95rem' }}>AI Nhan xet & Danh gia</span>
+                <span style={{ fontWeight: 700, fontSize: '.95rem' }}>AI Nhận xét & Đánh giá</span>
               </div>
               <div style={{ background: '#FAFBFF', borderRadius: 'var(--r-md)', padding: '16px 20px', border: '1px solid var(--border)' }}>
                 <MarkdownRender text={kpiEval} />
