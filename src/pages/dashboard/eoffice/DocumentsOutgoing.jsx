@@ -203,8 +203,17 @@ const DocumentsOutgoing = () => {
               </div>
               <div className="form-grid-3">
                 <div className="form-group">
-                  <label className="form-label">Nơi nhận</label>
-                  <input className="form-input" placeholder="Các đơn vị nhận" value={form.receivingAgency} onChange={e => setForm({ ...form, receivingAgency: e.target.value })} />
+                  <label className="form-label">Nơi nhận <span style={{fontSize: '0.8em', color: 'var(--tx-3)'}}>(Không bắt buộc)</span></label>
+                  <input className="form-input" list="agencies-list" placeholder="Chọn hoặc gõ tên nơi nhận..." value={form.receivingAgency} onChange={e => setForm({ ...form, receivingAgency: e.target.value })} />
+                  <datalist id="agencies-list">
+                    <option value="Như trên" />
+                    <option value="Lưu VT" />
+                    <option value="Như trên, Lưu VT" />
+                    <option value="UBND Tỉnh" />
+                    <option value="Các sở, ban, ngành" />
+                    <option value="UBND các Huyện, Thị xã, Thành phố" />
+                    {agencies.map(a => <option key={a._id} value={a.name} />)}
+                  </datalist>
                 </div>
                 <div className="form-group">
                   <label className="form-label">Người ký</label>
