@@ -1,13 +1,18 @@
-﻿import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import api from '../../../lib/api';
 import { toast } from 'react-toastify';
-import { Bot, Calendar, FileText, CheckSquare, AlertTriangle, Clock, Copy, Printer, RefreshCw, BarChart3, TrendingUp, XCircle } from 'lucide-react';
+import {
+  Bot, Calendar, FileText, CheckSquare, AlertTriangle, Clock, Copy, Printer, RefreshCw,
+  BarChart3, TrendingUp, XCircle, Upload, FolderOpen, FileInput, Sparkles, BookOpen,
+  Layers, Target, ChevronDown
+} from 'lucide-react';
 
+// ── Markdown Renderer ──
 const MarkdownRender = ({ text }) => {
   if (!text) return null;
   const lines = text.split('\n');
   return (
-    <div style={{ lineHeight: 1.8, color: 'var(--tx-1)' }}>
+    <div style={{ lineHeight: 1.9, color: 'var(--tx-1)' }}>
       {lines.map((line, i) => {
         if (line.startsWith('# '))   return <h1 key={i} style={{ fontSize: '1.3rem', fontWeight: 800, margin: '20px 0 10px', color: 'var(--primary-dark)' }}>{line.slice(2)}</h1>;
         if (line.startsWith('## '))  return <h2 key={i} style={{ fontSize: '1.1rem', fontWeight: 700, margin: '16px 0 8px', color: 'var(--primary)' }}>{line.slice(3)}</h2>;
@@ -23,8 +28,9 @@ const MarkdownRender = ({ text }) => {
   );
 };
 
+// ── Stat Card ──
 const StatCard = ({ icon: Icon, label, value, color, sub }) => (
-  <div className="card" style={{ flex: 1, minWidth: 130, textAlign: 'center', padding: '14px 10px', borderTop: `3px solid ${color}` }}>
+  <div className="card" style={{ flex: 1, minWidth: 120, textAlign: 'center', padding: '14px 10px', borderTop: `3px solid ${color}` }}>
     <Icon size={20} color={color} style={{ marginBottom: 6 }} />
     <div style={{ fontSize: '1.5rem', fontWeight: 800, color }}>{value}</div>
     <div style={{ fontSize: '.76rem', fontWeight: 600, color: 'var(--tx-3)', marginTop: 2 }}>{label}</div>
@@ -32,6 +38,7 @@ const StatCard = ({ icon: Icon, label, value, color, sub }) => (
   </div>
 );
 
+// ── Deadline Card (bên phải) ──
 const DeadlineCard = ({ doc, isOverdue }) => {
   const daysLeft = Math.ceil((new Date(doc.deadline) - new Date()) / (1000*60*60*24));
   return (
@@ -56,52 +63,148 @@ const DeadlineCard = ({ doc, isOverdue }) => {
   );
 };
 
+// ── Tab button ──
+const TabBtn = ({ active, icon: Icon, label, onClick, color }) => (
+  <button
+    className={`btn ${active ? 'btn-primary' : 'btn-ghost'}`}
+    onClick={onClick}
+    style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '.85rem', whiteSpace: 'nowrap' }}
+  >
+    <Icon size={16} color={active ? '#fff' : color || 'var(--tx-2)'} />
+    {label}
+  </button>
+);
+
+// ══════════════════════════════════════════════════════════════
+// COMPONENT CHÍNH: AI BÁO CÁO 2.0
+// ══════════════════════════════════════════════════════════════
 const AiReport = () => {
   const today    = new Date();
   const firstDay = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().slice(0,10);
   const todayStr = today.toISOString().slice(0,10);
 
+  // ── State chung ──
+  const [activeMode, setActiveMode] = useState('outline');
   const [from, setFrom]       = useState(firstDay);
   const [to,   setTo]         = useState(todayStr);
   const [loading, setLoading] = useState(false);
   const [report,  setReport]  = useState('');
   const [stats,   setStats]   = useState(null);
-  const [deadlines, setDeadlines]           = useState({alerts:[],overdue:[],total:0});
-  const [loadingDeadlines, setLoadingDeadlines] = useState(true);
+  const [meta, setMeta]       = useState(null);
+  const [userRequest, setUserRequest] = useState('');
+  const [keywords, setKeywords] = useState('');
   const reportRef = useRef(null);
 
+  // ── Tài nguyên (Đề cương, Báo cáo mẫu) ──
+  const [resources, setResources] = useState({ templates: [], outlines: [] });
+  const [loadingRes, setLoadingRes] = useState(true);
+  const [selectedOutline, setSelectedOutline] = useState('');
+  const [selectedTemplates, setSelectedTemplates] = useState([]);
+
+  // ── Deadline ──
+  const [deadlines, setDeadlines]           = useState({alerts:[],overdue:[],total:0});
+  const [loadingDeadlines, setLoadingDeadlines] = useState(true);
+
+  // ── Upload file trực tiếp ──
+  const outlineUploadRef = useRef(null);
+  const templateUploadRef = useRef(null);
+  const [uploadingOutline, setUploadingOutline] = useState(false);
+  const [uploadingTemplate, setUploadingTemplate] = useState(false);
+
+  // ── Preset thời gian ──
   const setPreset = (key) => {
     const now = new Date();
     if (key==='thisMonth')  { setFrom(new Date(now.getFullYear(),now.getMonth(),1).toISOString().slice(0,10)); setTo(now.toISOString().slice(0,10)); }
     if (key==='lastMonth')  { setFrom(new Date(now.getFullYear(),now.getMonth()-1,1).toISOString().slice(0,10)); setTo(new Date(now.getFullYear(),now.getMonth(),0).toISOString().slice(0,10)); }
+    if (key==='6months')    { setFrom(new Date(now.getFullYear(),now.getMonth()-6,1).toISOString().slice(0,10)); setTo(now.toISOString().slice(0,10)); }
     if (key==='thisYear')   { setFrom(`${now.getFullYear()}-01-01`); setTo(now.toISOString().slice(0,10)); }
   };
 
+  // ── Fetch resources ──
+  const fetchResources = async () => {
+    setLoadingRes(true);
+    try {
+      const r = await api.get('/documents/ai-report-v2/resources');
+      setResources(r.data);
+    } catch { /* resources chưa có thư mục thì để rỗng */ }
+    setLoadingRes(false);
+  };
+
+  // ── Fetch deadlines ──
   const fetchDeadlines = async () => {
     setLoadingDeadlines(true);
     try { const r = await api.get('/documents/ai-deadline-alerts'); setDeadlines(r.data); }
-    catch { toast.error('Lỗi tải cảnh báo deadline'); }
+    catch { /* im lặng */ }
     setLoadingDeadlines(false);
   };
 
-  useEffect(()=>{ fetchDeadlines(); },[]);
+  useEffect(() => { fetchResources(); fetchDeadlines(); }, []);
 
-  const handleGenerate = async () => {
-    if (!from||!to){ toast.error('Chọn khoảng thời gian!'); return; }
-    setLoading(true); setReport(''); setStats(null);
+  // ── Upload file vào thư mục Drive ──
+  const handleUploadToDrive = async (file, folderName, setUploading) => {
+    setUploading(true);
     try {
-      const res = await api.get('/documents/ai-report', {params:{from,to}});
+      // 1. Tìm hoặc tạo thư mục
+      let parentId = null;
+      try {
+        const driveRes = await api.get('/drive', { params: { parentId: null } });
+        const folder = driveRes.data.find(f => f.isFolder && f.title.toLowerCase().includes(folderName.toLowerCase()));
+        if (folder) {
+          parentId = folder._id;
+        } else {
+          const newFolder = await api.post('/drive/folder', { title: folderName, parentId: null });
+          parentId = newFolder.data._id;
+        }
+      } catch { /* ignore */ }
+
+      // 2. Upload file
+      const formData = new FormData();
+      formData.append('file', file);
+      if (parentId) formData.append('parentId', parentId);
+      await api.post('/drive/upload', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+      toast.success(`Đã tải lên "${file.name}" vào thư mục ${folderName}`);
+      fetchResources();
+    } catch (err) {
+      toast.error('Lỗi tải file lên Drive');
+    }
+    setUploading(false);
+  };
+
+  // ── Toggle chọn template ──
+  const toggleTemplate = (id) => {
+    setSelectedTemplates(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+  };
+
+  // ── Tạo báo cáo ──
+  const handleGenerate = async () => {
+    if (!userRequest.trim()) {
+      toast.error('Vui lòng nhập yêu cầu báo cáo!');
+      return;
+    }
+    setLoading(true); setReport(''); setStats(null); setMeta(null);
+    try {
+      const res = await api.post('/documents/ai-report-v2/generate', {
+        mode: activeMode,
+        outlineFileId: selectedOutline || undefined,
+        templateFileIds: selectedTemplates.length > 0 ? selectedTemplates : undefined,
+        from, to,
+        userRequest,
+        keywords: keywords || undefined,
+      });
       setReport(res.data.report);
       setStats(res.data.stats);
+      setMeta(res.data.meta);
       toast.success('🤖 AI đã tạo báo cáo thành công!');
-    } catch(err){ toast.error(err.response?.data?.message||'Lỗi tạo báo cáo'); }
+    } catch(err) {
+      toast.error(err.response?.data?.message || 'Lỗi tạo báo cáo');
+    }
     setLoading(false);
   };
 
-  const handleCopy = () => { navigator.clipboard.writeText(report); toast.success('Đã sao chép!'); };
+  const handleCopy = () => { navigator.clipboard.writeText(report); toast.success('Đã sao chép nội dung!'); };
   const handlePrint = () => {
     const w = window.open('','_blank');
-    w.document.write(`<html><head><title>Báo cáo công tác</title><style>body{font-family:Arial;font-size:13px;line-height:1.8;padding:30px;color:#111}h1{font-size:1.3em}h2{font-size:1.1em}li{margin:3px 0}</style></head><body>${reportRef.current?.innerHTML||''}</body></html>`);
+    w.document.write(`<html><head><title>Báo cáo công tác</title><style>body{font-family:'Times New Roman',serif;font-size:13px;line-height:1.8;padding:30px;color:#111}h1{font-size:1.3em}h2{font-size:1.1em}li{margin:3px 0}</style></head><body>${reportRef.current?.innerHTML||''}</body></html>`);
     w.document.close(); w.print();
   };
 
@@ -109,26 +212,131 @@ const AiReport = () => {
     <div className="animate-up">
       <div className="page-header" style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',flexWrap:'wrap',gap:14}}>
         <div>
-          <h2 style={{display:'flex',alignItems:'center',gap:10}}><Bot size={24} color="var(--brand-blue)"/>Báo cáo AI &amp; Nhắc nhở</h2>
-          <p>AI tự động tổng hợp dữ liệu và soạn thảo báo cáo công tác</p>
+          <h2 style={{display:'flex',alignItems:'center',gap:10}}>
+            <Bot size={24} color="var(--brand-blue)"/>AI Báo cáo 2.0
+          </h2>
+          <p>Tạo báo cáo chuyên nghiệp theo đề cương, báo cáo mẫu, hoặc tổng hợp tự do.</p>
         </div>
-        <button className="btn btn-ghost btn-sm" onClick={fetchDeadlines}><RefreshCw size={14}/> Làm mới</button>
+        <button className="btn btn-ghost btn-sm" onClick={() => { fetchResources(); fetchDeadlines(); }}>
+          <RefreshCw size={14}/> Làm mới
+        </button>
+      </div>
+
+      {/* ── TABS CHẾ ĐỘ BÁO CÁO ── */}
+      <div style={{ display:'flex', gap:10, overflowX:'auto', paddingBottom:10, borderBottom:'1px solid var(--border)', marginBottom:20 }}>
+        <TabBtn active={activeMode==='outline'} icon={BookOpen} label="Theo Đề cương" onClick={()=>setActiveMode('outline')} color="var(--primary)" />
+        <TabBtn active={activeMode==='template'} icon={FileText} label="Theo Báo cáo mẫu" onClick={()=>setActiveMode('template')} color="#D97706" />
+        <TabBtn active={activeMode==='synthesis'} icon={Layers} label="Tổng hợp tự do" onClick={()=>setActiveMode('synthesis')} color="#16A34A" />
       </div>
 
       <div style={{display:'grid',gridTemplateColumns:'minmax(0,1fr) 320px',gap:20,alignItems:'start'}}>
-        {/* LEFT */}
+        {/* ══ LEFT ══ */}
         <div>
+
+          {/* ── CARD 1: Chọn tài liệu tham chiếu ── */}
+          <div className="card" style={{marginBottom:20}}>
+            <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:14}}>
+              <FolderOpen size={18} color="var(--primary)"/>
+              <span style={{fontWeight:700,fontSize:'.95rem'}}>
+                {activeMode === 'outline' ? '1. Chọn Đề cương' : activeMode === 'template' ? '1. Chọn Báo cáo mẫu' : '1. Tài liệu tham chiếu (tùy chọn)'}
+              </span>
+            </div>
+
+            {/* ── MODE: ĐỀ CƯƠNG ── */}
+            {activeMode === 'outline' && (
+              <>
+                <p style={{fontSize:'.8rem',color:'var(--tx-3)',marginBottom:12}}>
+                  AI sẽ tuân thủ 100% cấu trúc đề cương bạn chọn. Đề cương nằm trong thư mục <strong>02_DE_CUONG</strong> trên Drive.
+                </p>
+                {resources.outlines.length > 0 ? (
+                  <div style={{display:'flex',flexDirection:'column',gap:6,marginBottom:12}}>
+                    {resources.outlines.map(f => (
+                      <label key={f._id} style={{
+                        display:'flex', alignItems:'center', gap:10, padding:'10px 14px',
+                        borderRadius:'var(--r-md)', cursor:'pointer',
+                        border: selectedOutline === f._id ? '2px solid var(--primary)' : '1px solid var(--border)',
+                        background: selectedOutline === f._id ? 'var(--primary-bg)' : 'transparent',
+                      }}>
+                        <input type="radio" name="outline" checked={selectedOutline === f._id} onChange={() => setSelectedOutline(f._id)} />
+                        <FileText size={16} color="var(--primary)" />
+                        <div style={{flex:1}}>
+                          <div style={{fontWeight:600,fontSize:'.85rem'}}>{f.title}</div>
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                ) : (
+                  <div style={{textAlign:'center',padding:'20px',color:'var(--tx-4)',fontSize:'.85rem',background:'var(--bg-2)',borderRadius:'var(--r-md)',marginBottom:12}}>
+                    Chưa có đề cương nào. Tạo thư mục <strong>02_DE_CUONG</strong> trong Kho Dữ liệu và tải đề cương lên.
+                  </div>
+                )}
+                <button className="btn btn-ghost btn-sm" onClick={() => outlineUploadRef.current?.click()} disabled={uploadingOutline}>
+                  <Upload size={14}/> {uploadingOutline ? 'Đang tải...' : 'Tải đề cương mới lên'}
+                </button>
+                <input ref={outlineUploadRef} type="file" accept=".pdf,.doc,.docx" hidden
+                  onChange={e => { if (e.target.files[0]) handleUploadToDrive(e.target.files[0], '02_DE_CUONG', setUploadingOutline); e.target.value = ''; }} />
+              </>
+            )}
+
+            {/* ── MODE: TEMPLATE ── */}
+            {activeMode === 'template' && (
+              <>
+                <p style={{fontSize:'.8rem',color:'var(--tx-3)',marginBottom:12}}>
+                  AI sẽ giữ nguyên bố cục, học văn phong từ báo cáo mẫu và cập nhật số liệu mới. Báo cáo mẫu nằm trong thư mục <strong>01_BAO_CAO_MAU</strong>.
+                </p>
+                {resources.templates.length > 0 ? (
+                  <div style={{display:'flex',flexDirection:'column',gap:6,marginBottom:12}}>
+                    {resources.templates.map(f => (
+                      <label key={f._id} style={{
+                        display:'flex', alignItems:'center', gap:10, padding:'10px 14px',
+                        borderRadius:'var(--r-md)', cursor:'pointer',
+                        border: selectedTemplates.includes(f._id) ? '2px solid #D97706' : '1px solid var(--border)',
+                        background: selectedTemplates.includes(f._id) ? '#FFFBEB' : 'transparent',
+                      }}>
+                        <input type="checkbox" checked={selectedTemplates.includes(f._id)} onChange={() => toggleTemplate(f._id)} />
+                        <FileText size={16} color="#D97706" />
+                        <div style={{flex:1}}>
+                          <div style={{fontWeight:600,fontSize:'.85rem'}}>{f.title}</div>
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                ) : (
+                  <div style={{textAlign:'center',padding:'20px',color:'var(--tx-4)',fontSize:'.85rem',background:'var(--bg-2)',borderRadius:'var(--r-md)',marginBottom:12}}>
+                    Chưa có báo cáo mẫu nào. Tạo thư mục <strong>01_BAO_CAO_MAU</strong> trong Kho Dữ liệu và tải báo cáo lên.
+                  </div>
+                )}
+                <button className="btn btn-ghost btn-sm" onClick={() => templateUploadRef.current?.click()} disabled={uploadingTemplate}>
+                  <Upload size={14}/> {uploadingTemplate ? 'Đang tải...' : 'Tải báo cáo mẫu mới lên'}
+                </button>
+                <input ref={templateUploadRef} type="file" accept=".pdf,.doc,.docx" hidden
+                  onChange={e => { if (e.target.files[0]) handleUploadToDrive(e.target.files[0], '01_BAO_CAO_MAU', setUploadingTemplate); e.target.value = ''; }} />
+              </>
+            )}
+
+            {/* ── MODE: TỔNG HỢP ── */}
+            {activeMode === 'synthesis' && (
+              <div style={{background:'var(--bg-2)',borderRadius:'var(--r-md)',padding:16}}>
+                <p style={{fontSize:'.85rem',color:'var(--tx-2)',margin:0}}>
+                  <Sparkles size={14} style={{verticalAlign:'middle',marginRight:6}} color="#16A34A"/>
+                  Chế độ tổng hợp: AI sẽ tự quét toàn bộ kho văn bản, công việc, tìm tài liệu liên quan theo từ khóa và tổng hợp thành báo cáo hoàn chỉnh.
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* ── CARD 2: Khoảng thời gian + Yêu cầu ── */}
           <div className="card" style={{marginBottom:20}}>
             <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:14}}>
               <Calendar size={18} color="var(--primary)"/>
-              <span style={{fontWeight:700,fontSize:'.95rem'}}>Chọn khoảng thời gian báo cáo</span>
+              <span style={{fontWeight:700,fontSize:'.95rem'}}>2. Thời gian & Yêu cầu</span>
             </div>
             <div style={{display:'flex',gap:8,flexWrap:'wrap',marginBottom:14}}>
-              {[{l:'Tháng này',k:'thisMonth'},{l:'Tháng trước',k:'lastMonth'},{l:'Năm nay',k:'thisYear'}].map(({l,k})=>(
+              {[{l:'Tháng này',k:'thisMonth'},{l:'Tháng trước',k:'lastMonth'},{l:'6 tháng',k:'6months'},{l:'Năm nay',k:'thisYear'}].map(({l,k})=>(
                 <button key={k} className="btn btn-ghost btn-sm" onClick={()=>setPreset(k)} style={{fontSize:'.8rem'}}>{l}</button>
               ))}
             </div>
-            <div style={{display:'flex',gap:12,flexWrap:'wrap',alignItems:'flex-end'}}>
+            <div style={{display:'flex',gap:12,flexWrap:'wrap',marginBottom:16}}>
               <div>
                 <label style={{fontSize:'.8rem',fontWeight:600,color:'var(--tx-3)',display:'block',marginBottom:4}}>Từ ngày</label>
                 <input type="date" className="form-input" value={from} onChange={e=>setFrom(e.target.value)} style={{width:160}}/>
@@ -137,33 +345,66 @@ const AiReport = () => {
                 <label style={{fontSize:'.8rem',fontWeight:600,color:'var(--tx-3)',display:'block',marginBottom:4}}>Đến ngày</label>
                 <input type="date" className="form-input" value={to} onChange={e=>setTo(e.target.value)} style={{width:160}}/>
               </div>
-              <button className="btn btn-primary" onClick={handleGenerate} disabled={loading} style={{display:'flex',alignItems:'center',gap:8}}>
-                {loading ? <><RefreshCw size={15} style={{animation:'spin 1s linear infinite'}}/> Đang tạo...</>
-                         : <><Bot size={15}/> 🤖 Tạo báo cáo</>}
-              </button>
             </div>
+
+            {/* Từ khóa */}
+            <div style={{marginBottom:16}}>
+              <label style={{fontSize:'.8rem',fontWeight:600,color:'var(--tx-3)',display:'block',marginBottom:4}}>Từ khóa tìm VB liên quan (tùy chọn)</label>
+              <input className="form-input" value={keywords} onChange={e=>setKeywords(e.target.value)}
+                placeholder="VD: cư trú, VNeID, Đề án 06, PCCC..."
+                style={{width:'100%'}} />
+            </div>
+
+            {/* Yêu cầu */}
+            <div style={{marginBottom:16}}>
+              <label style={{fontSize:'.8rem',fontWeight:600,color:'var(--tx-3)',display:'block',marginBottom:4}}>
+                Yêu cầu báo cáo <span style={{color:'var(--danger)'}}>*</span>
+              </label>
+              <textarea className="form-input" value={userRequest} onChange={e=>setUserRequest(e.target.value)}
+                placeholder='VD: "Lập báo cáo kết quả thực hiện Đề án 06 - 6 tháng đầu năm 2026" hoặc "Báo cáo công tác cư trú tháng 6/2026"'
+                rows={3}
+                style={{width:'100%',resize:'vertical'}} />
+            </div>
+
+            <button className="btn btn-primary" onClick={handleGenerate} disabled={loading}
+              style={{display:'flex',alignItems:'center',gap:8,width:'100%',justifyContent:'center',padding:'12px 20px'}}>
+              {loading ? <><RefreshCw size={16} style={{animation:'spin 1s linear infinite'}}/> AI đang phân tích và soạn báo cáo...</>
+                       : <><Sparkles size={16}/> 🤖 Tạo báo cáo AI</>}
+            </button>
           </div>
 
+          {/* ── Thống kê (sau khi có kết quả) ── */}
           {stats && (
             <div style={{display:'flex',gap:12,flexWrap:'wrap',marginBottom:20}}>
-              <StatCard icon={FileText}    label="Văn bản đến" value={stats.docsIncoming} color="var(--primary)"/>
-              <StatCard icon={FileText}    label="Văn bản đi"  value={stats.docsOutgoing} color="var(--brand-blue)"/>
-              <StatCard icon={CheckSquare} label="Hoàn thành"  value={stats.tasksDone}    color="var(--success)" sub={`/ ${stats.tasksTotal} cv`}/>
-              <StatCard icon={TrendingUp}  label="Tỷ lệ ht"    value={`${stats.tasksTotal?Math.round(stats.tasksDone/stats.tasksTotal*100):0}%`}
+              <StatCard icon={FileInput} label="Văn bản đến" value={stats.docsIncoming} color="var(--primary)"/>
+              <StatCard icon={FileText} label="Văn bản đi" value={stats.docsOutgoing || 0} color="var(--brand-blue)"/>
+              <StatCard icon={CheckSquare} label="Hoàn thành" value={stats.tasksDone} color="var(--success)" sub={`/ ${stats.tasksTotal} cv`}/>
+              <StatCard icon={TrendingUp} label="Tỷ lệ ht" value={`${stats.tasksTotal?Math.round(stats.tasksDone/stats.tasksTotal*100):0}%`}
                 color={stats.tasksOverdue>0?'var(--warning)':'var(--success)'}/>
               {stats.tasksOverdue>0 && <StatCard icon={AlertTriangle} label="Quá hạn" value={stats.tasksOverdue} color="var(--danger)"/>}
             </div>
           )}
 
-          {loading && (
-            <div className="card" style={{textAlign:'center',padding:'60px 20px',color:'var(--tx-3)'}}>
-              <div style={{width:48,height:48,borderRadius:'50%',border:'4px solid var(--border)',borderTopColor:'var(--primary)',animation:'spin 0.8s linear infinite',margin:'0 auto 16px'}}/>
-              <p style={{fontWeight:600}}>🤖 AI đang phân tích dữ liệu và soạn báo cáo...</p>
-              <p style={{fontSize:'.85rem'}}>Vui lòng chờ khoảng 10–20 giây</p>
-              <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+          {/* ── Meta info ── */}
+          {meta && (
+            <div style={{display:'flex',gap:8,flexWrap:'wrap',marginBottom:16}}>
+              {meta.hasOutline && <span className="badge badge-info" style={{fontSize:'.75rem'}}>📋 Có đề cương</span>}
+              {meta.templateCount > 0 && <span className="badge badge-warning" style={{fontSize:'.75rem'}}>📄 {meta.templateCount} báo cáo mẫu</span>}
+              {meta.relatedDocsCount > 0 && <span className="badge badge-success" style={{fontSize:'.75rem'}}>🔗 {meta.relatedDocsCount} VB liên quan</span>}
+              <span className="badge" style={{fontSize:'.75rem'}}>📊 Chế độ: {meta.mode === 'outline' ? 'Đề cương' : meta.mode === 'template' ? 'Báo cáo mẫu' : 'Tổng hợp'}</span>
             </div>
           )}
 
+          {/* ── Loading ── */}
+          {loading && (
+            <div className="card" style={{textAlign:'center',padding:'60px 20px',color:'var(--tx-3)'}}>
+              <div style={{width:48,height:48,borderRadius:'50%',border:'4px solid var(--border)',borderTopColor:'var(--primary)',animation:'spin 0.8s linear infinite',margin:'0 auto 16px'}}/>
+              <p style={{fontWeight:600}}>🤖 AI đang phân tích đề cương, đọc báo cáo mẫu và soạn báo cáo...</p>
+              <p style={{fontSize:'.85rem'}}>Vui lòng chờ khoảng 15–30 giây</p>
+            </div>
+          )}
+
+          {/* ── Kết quả báo cáo ── */}
           {report && !loading && (
             <div className="card">
               <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16,flexWrap:'wrap',gap:10}}>
@@ -181,16 +422,17 @@ const AiReport = () => {
             </div>
           )}
 
+          {/* ── Placeholder ── */}
           {!report && !loading && (
             <div className="card" style={{textAlign:'center',padding:'60px 20px',color:'var(--tx-4)'}}>
               <Bot size={48} style={{opacity:.3,marginBottom:16}}/>
-              <p style={{fontSize:'.95rem'}}>Chọn khoảng thời gian và bấm <strong>"🤖 Tạo báo cáo"</strong></p>
-              <p style={{fontSize:'.85rem'}}>AI sẽ tổng hợp toàn bộ dữ liệu văn bản, công việc và soạn thảo báo cáo công tác hoàn chỉnh.</p>
+              <p style={{fontSize:'.95rem'}}>Chọn chế độ báo cáo, nhập yêu cầu và bấm <strong>"🤖 Tạo báo cáo AI"</strong></p>
+              <p style={{fontSize:'.85rem'}}>AI sẽ đọc đề cương, học văn phong từ báo cáo mẫu, kết hợp số liệu thực tế để soạn báo cáo chuyên nghiệp.</p>
             </div>
           )}
         </div>
 
-        {/* RIGHT — Deadline alerts */}
+        {/* ══ RIGHT — Deadline alerts ══ */}
         <div>
           <div className="card" style={{position:'sticky',top:80}}>
             <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:14}}>
@@ -233,7 +475,12 @@ const AiReport = () => {
         </div>
       </div>
 
-      <style>{`@media(max-width:768px){.ai-report-grid{grid-template-columns:1fr!important}}`}</style>
+      <style>{`
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @media(max-width:768px) {
+          .ai-report-grid { grid-template-columns: 1fr !important; }
+        }
+      `}</style>
     </div>
   );
 };
