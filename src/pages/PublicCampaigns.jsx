@@ -33,19 +33,19 @@ const COMMUNE_GROUPS = [
     id: 'G1',
     name: 'Nhóm 1: Phường Đô thị - TT Hành chính',
     targets: { digitalSkills: 1500, vneidSupport: 700, publicServices: 500, qrSupport: 160, trainingClasses: 6, digitalProducts: 12, youthTrained: 250 },
-    communes: ["Phường Buôn Ma Thuột", "Phường Tân An", "Phường Tân Lập", "Phường Thành Nhất", "Phường Ea Kao", "Phường Buôn Hồ", "Phường Cư Bao", "Phường Phú Yên", "Phường Tuy Hòa", "Phường Bình Kiến", "Phường Xuân Đài", "Phường Sông Cầu", "Phường Đông Hòa", "Phường Hòa Hiệp", "Xã Ea Súp", "Xã Quảng Phú", "Xã Pơng Drang", "Xã Ea Drăng", "Xã Krông Năng", "Xã Krông Pắc", "Xã Ea Kar", "Xã Ea Knốp", "Xã M'Drắk", "Xã Krông Bông", "Xã Liên Sơn Lắk", "Xã Krông Ana", "Xã Tuy An Bắc", "Xã Phú Hòa 1", "Xã Tây Hòa", "Xã Sơn Hòa", "Xã Sông Hinh", "Xã Đồng Xuân"]
+    communes: ["Phường Buôn Ma Thuột", "Phường Tân An", "Phường Tân Lập", "Phường Thành Nhất", "Phường Ea Kao", "Phường Buôn Hồ", "Phường Cư Bao", "Đoàn phường Phú Yên", "Đoàn phường Tuy Hòa", "Đoàn phường Bình Kiến", "Đoàn phường Xuân Đài", "Đoàn phường Sông Cầu", "Đoàn phường Đông Hòa", "Đoàn phường Hòa Hiệp", "Xã Ea Súp", "Xã Quảng Phú", "Xã Pơng Drang", "Xã Ea Drăng", "Xã Krông Năng", "Xã Krông Pắc", "Xã Ea Kar", "Xã Ea Knốp", "Xã M'Drắk", "Xã Krông Bông", "Xã Liên Sơn Lắk", "Xã Krông Ana", "Đoàn xã Tuy An Bắc", "Đoàn xã Phú Hòa 1", "Đoàn xã Tây Hòa", "Đoàn xã Sơn Hòa", "Đoàn xã Sông Hinh", "Đoàn xã Đồng Xuân"]
   },
   {
     id: 'G2',
     name: 'Nhóm 2: Xã có Chợ - TT Cụm xã',
     targets: { digitalSkills: 1000, vneidSupport: 500, publicServices: 300, qrSupport: 100, trainingClasses: 5, digitalProducts: 10, youthTrained: 200 },
-    communes: ["Xã Hòa Phú", "Xã Ea Drông", "Xã Ea Wer", "Xã Ea Nuôl", "Xã Ea Kiết", "Xã Ea M'Droh", "Xã Cuôr Đăng", "Xã Cư M'gar", "Xã Ea Tul", "Xã Krông Búk", "Xã Ea Khal", "Xã Ea Hiao", "Xã Dliê Ya", "Xã Tam Giang", "Xã Phú Xuân", "Xã Ea Knuếc", "Xã Tân Tiến", "Xã Ea Phê", "Xã Ea Kly", "Xã Cư Yang", "Xã Ea Păl", "Xã Hòa Sơn", "Xã Đắk Liêng", "Xã Ea Ning", "Xã Dray Bhăng", "Xã Ea Ktur", "Xã Dur Kmăl", "Xã Ea Na", "Xã Xuân Thọ", "Xã Xuân Cảnh", "Xã Xuân Lộc", "Xã Hòa Xuân", "Xã Tuy An Đông", "Xã Ô Loan", "Xã Tuy An Nam", "Xã Phú Hòa 2", "Xã Hòa Thịnh", "Xã Hòa Mỹ", "Xã Sơn Thành", "Xã Đức Bình"]
+    communes: ["Xã Hòa Phú", "Xã Ea Drông", "Xã Ea Wer", "Xã Ea Nuôl", "Xã Ea Kiết", "Xã Ea M'Droh", "Xã Cuôr Đăng", "Xã Cư M'gar", "Xã Ea Tul", "Xã Krông Búk", "Xã Ea Khal", "Xã Ea Hiao", "Xã Dliê Ya", "Xã Tam Giang", "Xã Phú Xuân", "Xã Ea Knuếc", "Xã Tân Tiến", "Xã Ea Phê", "Xã Ea Kly", "Xã Cư Yang", "Xã Ea Păl", "Xã Hòa Sơn", "Xã Đắk Liêng", "Xã Ea Ning", "Xã Dray Bhăng", "Xã Ea Ktur", "Xã Dur Kmăl", "Xã Ea Na", "Đoàn xã Xuân Thọ", "Đoàn xã Xuân Cảnh", "Đoàn xã Xuân Lộc", "Đoàn xã Hòa Xuân", "Đoàn xã Tuy An Đông", "Đoàn xã Ô Loan", "Đoàn xã Tuy An Nam", "Đoàn xã Phú Hòa 2", "Đoàn xã Hòa Thịnh", "Đoàn xã Hòa Mỹ", "Đoàn xã Sơn Thành", "Đoàn xã Đức Bình"]
   },
   {
     id: 'G3',
     name: 'Nhóm 3: Xã Nông thôn - Vùng sâu',
     targets: { digitalSkills: 600, vneidSupport: 300, publicServices: 150, qrSupport: 30, trainingClasses: 4, digitalProducts: 8, youthTrained: 150 },
-    communes: ["Xã Ea Rốk", "Xã Ea Bung", "Xã Cư Pơng", "Xã Ea Wy", "Xã Ea Ô", "Xã Ea Riêng", "Xã Cư M'ta", "Xã Krông Á", "Xã Cư Prao", "Xã Dang Kang", "Xã Yang Mao", "Xã Cư Pui", "Xã Nam Ka", "Xã Đắk Phơi", "Xã Tuy An Tây", "Xã Vân Hòa", "Xã Tây Sơn", "Xã Suối Trai", "Xã Ea Ly", "Xã Ea Bá", "Xã Xuân Lãnh", "Xã Phú Mỡ", "Xã Xuân Phước", "Xã Buôn Đôn", "Xã Ea H'Leo", "Xã Ea Trang", "Xã Ia Lốp", "Xã Ia Rvê", "Xã Krông Nô", "Xã Vụ Bổn"]
+    communes: ["Xã Ea Rốk", "Xã Ea Bung", "Xã Cư Pơng", "Xã Ea Wy", "Xã Ea Ô", "Xã Ea Riêng", "Xã Cư M'ta", "Xã Krông Á", "Xã Cư Prao", "Xã Dang Kang", "Xã Yang Mao", "Xã Cư Pui", "Xã Nam Ka", "Xã Đắk Phơi", "Đoàn xã Tuy An Tây", "Đoàn xã Vân Hòa", "Đoàn xã Tây Sơn", "Đoàn xã Suối Trai", "Đoàn xã Ea Ly", "Đoàn xã Ea Bá", "Đoàn xã Xuân Lãnh", "Đoàn xã Phú Mỡ", "Đoàn xã Xuân Phước", "Xã Buôn Đôn", "Xã Ea H'Leo", "Xã Ea Trang", "Xã Ia Lốp", "Xã Ia Rvê", "Xã Krông Nô", "Xã Vụ Bổn"]
   }
 ];
 
