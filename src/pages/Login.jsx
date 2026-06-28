@@ -1,15 +1,42 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import api from '../lib/api';
 import { useNavigate, Link } from 'react-router-dom';
-import { Mail, Lock, UserPlus, ShieldCheck, LogIn, Key, HelpCircle } from 'lucide-react';
+import { Mail, Lock, ShieldCheck, LogIn } from 'lucide-react';
 import { toast } from 'react-toastify';
 
 const ADMIN_ROLES = ['COMMUNE_ADMIN', 'PROVINCE_ADMIN', 'ADMIN', 'SENIOR_ADMIN'];
 
+const SLIDES = [
+  {
+    img: '/landmark1.jpg',
+    label: 'Tượng đài Chiến thắng Buôn Ma Thuột',
+    sub: 'Biểu tượng lịch sử hào hùng của Đắk Lắk',
+  },
+  {
+    img: '/landmark2.jpg',
+    label: 'Tháp Nghênh Phong',
+    sub: 'Công trình văn hóa đặc trưng vùng Tây Nguyên',
+  },
+];
+
 const Login = () => {
   const [form, setForm] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
+  const [slide, setSlide] = useState(0);
+  const [fading, setFading] = useState(false);
   const navigate = useNavigate();
+
+  // Auto-slide every 5s with crossfade
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setFading(true);
+      setTimeout(() => {
+        setSlide(prev => (prev + 1) % SLIDES.length);
+        setFading(false);
+      }, 600); // fade-out duration
+    }, 5000);
+    return () => clearInterval(timer);
+  }, []);
 
   const submit = async (e) => {
     e.preventDefault();
@@ -24,7 +51,6 @@ const Login = () => {
         localStorage.setItem('agency', JSON.stringify(r.data.agency));
         localStorage.setItem('agencyName', r.data.agency.name);
       }
-
       if (ADMIN_ROLES.includes(r.data.role)) {
         navigate('/dashboard');
       } else {
@@ -36,28 +62,58 @@ const Login = () => {
     setLoading(false);
   };
 
+  const current = SLIDES[slide];
+
   return (
     <div className="auth-mxh-page">
       <div className="auth-mxh-card">
-        {/* LEFT */}
-        <div className="auth-mxh-left">
-          <div className="auth-mxh-pill">Cổng thông tin 2026</div>
-          <h2>Chào mừng bạn quay trở lại</h2>
-          <p>Đăng nhập để quản lý đội hình, cập nhật công trình, hoạt động và dữ liệu chiến dịch toàn quốc.</p>
+        {/* LEFT — Slideshow */}
+        <div
+          className={`auth-mxh-left login-slide-panel ${fading ? 'slide-fading' : ''}`}
+          style={{ backgroundImage: `url('${current.img}')` }}
+        >
+          {/* Dark overlay */}
+          <div className="login-slide-overlay" />
 
-          <div className="auth-mxh-stats">
-            <div className="auth-mxh-stat-box">
-              <h3>100%</h3>
-              <span>Trực tuyến</span>
+          {/* Content above overlay */}
+          <div className="login-slide-content">
+            <div className="auth-mxh-pill">Cổng thông tin 2026</div>
+            <h2>Chào mừng bạn<br />quay trở lại</h2>
+            <p>Đăng nhập để quản lý đội hình, cập nhật công trình, hoạt động và dữ liệu chiến dịch toàn quốc.</p>
+
+            {/* Slide caption */}
+            <div className="login-slide-caption">
+              <div className="login-slide-caption-text">
+                <strong>{current.label}</strong>
+                <span>{current.sub}</span>
+              </div>
             </div>
-            <div className="auth-mxh-stat-box">
-              <h3>Live</h3>
-              <span>Đồng bộ</span>
+
+            {/* Dot indicators */}
+            <div className="login-slide-dots">
+              {SLIDES.map((_, i) => (
+                <button
+                  key={i}
+                  className={`login-slide-dot ${i === slide ? 'active' : ''}`}
+                  onClick={() => { setFading(true); setTimeout(() => { setSlide(i); setFading(false); }, 400); }}
+                />
+              ))}
+            </div>
+
+            <div className="auth-mxh-stats">
+              <div className="auth-mxh-stat-box">
+                <h3>100%</h3>
+                <span>Trực tuyến</span>
+              </div>
+              <div className="auth-mxh-stat-box">
+                <h3>Live</h3>
+                <span>Đồng bộ</span>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* RIGHT */}
+        {/* RIGHT — Form */}
         <div className="auth-mxh-right">
           <div className="auth-mxh-right-header">
             <ShieldCheck size={36} />
@@ -105,7 +161,7 @@ const Login = () => {
             Chưa có tài khoản? <Link to="/register">Đăng ký ngay</Link>
           </div>
 
-          {/* Quick Demo Logins for Portfolio */}
+          {/* Quick Demo Logins */}
           <div style={{ marginTop: 30, paddingTop: 20, borderTop: '1px dashed #cbd5e1' }}>
             <div style={{ fontSize: '0.8rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', marginBottom: 10 }}>Trải nghiệm nhanh</div>
             <div style={{ display: 'flex', gap: 10 }}>

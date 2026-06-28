@@ -841,11 +841,127 @@ button,input,textarea,select { font-family:inherit; }
   .auth-mxh-card { flex-direction: column; }
 }
 
-/* Left panel */
+/* ── LOGIN SLIDESHOW PANEL ──────────────────────────── */
+.login-slide-panel {
+  flex: 1;
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  padding: 0;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  transition: background-image 0.6s ease;
+}
+
+.login-slide-panel.slide-fading {
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+
+/* Dark gradient overlay so text is readable */
+.login-slide-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    160deg,
+    rgba(8, 18, 36, 0.78) 0%,
+    rgba(10, 30, 60, 0.72) 60%,
+    rgba(5, 15, 30, 0.85) 100%
+  );
+  z-index: 0;
+}
+
+/* All text content sits above overlay */
+.login-slide-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 40px;
+}
+
+.login-slide-content h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 15px;
+  line-height: 1.25;
+}
+
+.login-slide-content p {
+  color: rgba(255, 255, 255, 0.82);
+  line-height: 1.6;
+  font-size: 0.95rem;
+}
+
+/* Caption bar at bottom of left panel */
+.login-slide-caption {
+  margin-top: auto;
+  margin-bottom: 14px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.login-slide-caption::before {
+  content: '📍';
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.login-slide-caption-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.login-slide-caption-text strong {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.2;
+}
+
+.login-slide-caption-text span {
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* Slide indicator dots */
+.login-slide-dots {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.login-slide-dot {
+  width: 24px;
+  height: 4px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.3);
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.3s ease;
+}
+
+.login-slide-dot.active {
+  width: 40px;
+  background: #fff;
+}
+
+/* Keep .auth-mxh-left fallback for anything else using it */
 .auth-mxh-left {
   flex: 1;
-  background:
-    linear-gradient(160deg, rgba(10,22,40,0.72) 0%, rgba(13,61,110,0.78) 100%),
+  background: linear-gradient(160deg, rgba(10,22,40,0.72) 0%, rgba(13,61,110,0.78) 100%),
     url('/landmark1.jpg') center/cover no-repeat;
   padding: 40px;
   color: white;

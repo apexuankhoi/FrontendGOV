@@ -101,41 +101,23 @@ const Home = () => {
               </div>
             </div>
 
-            {/* Right: Landmark + Stats floating card */}
+            {/* Right: Glassmorphic Stats Grid */}
             <div className="ctz-hero-right">
-              <div className="ctz-hero-landmark-wrap">
-                {/* Floating landmark image */}
-                <div className="ctz-hero-lm-img">
-                  <img src="/landmark1.jpg" alt="Tượng đài Chiến thắng Buôn Ma Thuột" />
-                  <div className="ctz-hero-lm-badge">
-                    <span>🏗️ Tượng đài Chiến thắng Buôn Ma Thuột</span>
-                  </div>
-                  {/* Floating stat pills on image */}
-                  <div className="ctz-hero-pill-tl">
-                    <span className="ctz-hero-pill-val">{stats.volunteers}+</span>
-                    <span className="ctz-hero-pill-lbl">Tình nguyện viên</span>
-                  </div>
-                  <div className="ctz-hero-pill-br">
-                    <span className="ctz-hero-pill-val">{stats.beneficiaries}+</span>
-                    <span className="ctz-hero-pill-lbl">Người được hỗ trợ</span>
-                  </div>
-                </div>
-                {/* Second landmark thumbnail + bottom stats row */}
-                <div className="ctz-hero-lm-bottom">
-                  <div className="ctz-hero-lm-thumb">
-                    <img src="/landmark2.jpg" alt="Tháp Nghênh Phong" />
-                    <span>Tháp Nghênh Phong</span>
-                  </div>
-                  <div className="ctz-hero-lm-stats">
-                    <div className="ctz-hero-lm-stat">
-                      <strong>{stats.total}</strong><span>Đội hình</span>
+              <div className="ctz-stat-grid">
+                {[
+                  { val: stats.total, suf: '', lbl: 'Đội hình hoạt động', icon: Map },
+                  { val: stats.volunteers, suf: '+', lbl: 'Tình nguyện viên', icon: Users },
+                  { val: stats.projects, suf: '', lbl: 'Công trình hoàn thành', icon: Hammer },
+                  { val: stats.beneficiaries, suf: '+', lbl: 'Người được hỗ trợ', icon: Heart },
+                ].map((s, i) => (
+                  <div key={i} className="ctz-stat-box">
+                    <s.icon size={26} className="ctz-stat-icon" />
+                    <div className="ctz-stat-val">
+                      {typeof s.val === 'number' ? s.val.toLocaleString('vi-VN') : s.val}{s.suf}
                     </div>
-                    <div className="ctz-hero-lm-stat-divider" />
-                    <div className="ctz-hero-lm-stat">
-                      <strong>{stats.projects}</strong><span>Công trình</span>
-                    </div>
+                    <div className="ctz-stat-lbl">{s.lbl}</div>
                   </div>
-                </div>
+                ))}
               </div>
             </div>
           </div>
