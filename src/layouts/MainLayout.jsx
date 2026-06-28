@@ -21,13 +21,13 @@ const MainLayout = () => (
             <p style={{ marginBottom: 16 }}>Hệ thống Chính quyền số khu vực Tây Nguyên. Phát triển bởi Tỉnh Đoàn Đắk Lắk.</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               <a href="tel:02623800000" style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'rgba(255,255,255,.65)', fontSize: '.85rem' }}>
-                <Phone size={14}/> 0262 380 0000
+                <Phone size={14} /> 0262 380 0000
               </a>
               <a href="mailto:info@daklak.gov.vn" style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'rgba(255,255,255,.65)', fontSize: '.85rem' }}>
-                <Mail size={14}/> info@daklak.gov.vn
+                <Mail size={14} /> info@daklak.gov.vn
               </a>
               <span style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'rgba(255,255,255,.65)', fontSize: '.85rem' }}>
-                <Globe size={14}/> TP Buôn Ma Thuột, Đắk Lắk
+                <Globe size={14} /> TP Buôn Ma Thuột, Đắk Lắk
               </span>
             </div>
           </div>
@@ -49,20 +49,6 @@ const MainLayout = () => (
               <li><a href="#">Điều khoản sử dụng</a></li>
               <li><a href="#">Liên hệ hỗ trợ</a></li>
             </ul>
-          </div>
-        </div>
-        <div className="footer-landmarks">
-          <div className="footer-lm-item">
-            <img src="/landmark1.jpg" alt="Tượng đài Chiến thắng Buôn Ma Thuột" />
-            <span>Tượng đài Chiến thắng Buôn Ma Thuột</span>
-          </div>
-          <div className="footer-lm-divider" />
-          <div className="footer-lm-item">
-            <img src="/landmark2.jpg" alt="Tháp Nghênh Phong" />
-            <span>Tháp Nghênh Phong — Biểu tượng Tây Nguyên</span>
-          </div>
-          <div className="footer-lm-tagline">
-            <span>🌿 ĐẮk LẮk — Vùng đất anh hùng</span>
           </div>
         </div>
         <hr className="footer-hr" />

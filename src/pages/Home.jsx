@@ -101,21 +101,9 @@ const Home = () => {
               </div>
             </div>
 
-            {/* Right: Landmark Images + Stats */}
+            {/* Right: Stats card */}
             <div className="ctz-hero-right">
-              {/* Landmark image collage */}
-              <div className="ctz-hero-landmarks">
-                <div className="ctz-landmark-main">
-                  <img src="/landmark1.jpg" alt="Tượng đài Chiến thắng Buôn Ma Thuột" />
-                  <div className="ctz-landmark-caption">Tượng đài Chiến thắng BMT</div>
-                </div>
-                <div className="ctz-landmark-secondary">
-                  <img src="/landmark2.jpg" alt="Tháp Nghênh Phong" />
-                  <div className="ctz-landmark-caption">Tháp Nghênh Phong</div>
-                </div>
-              </div>
-              {/* Stats below landmarks */}
-              <div className="ctz-stat-grid" style={{ marginTop: 16 }}>
+              <div className="ctz-stat-grid">
                 {[
                   { val: stats.total, suf: '', lbl: 'Đội hình hoạt động', icon: Map },
                   { val: stats.volunteers, suf: '+', lbl: 'Tình nguyện viên', icon: Users },
@@ -259,13 +247,13 @@ const Home = () => {
             </div>
             <div className="ctz-landmark-card">
               <div className="ctz-landmark-img-wrap">
-                <img src="/landmark2.jpg" alt="Tháp Nghênh Phong" />
+                <img src="/landmark2.jpg" alt="Tháp Nghinh Phong" />
                 <div className="ctz-landmark-overlay">
                   <div className="ctz-landmark-tag">Công trình văn hóa</div>
                 </div>
               </div>
               <div className="ctz-landmark-info">
-                <h3>Tháp Nghênh Phong</h3>
+                <h3>Tháp Nghinh Phong</h3>
                 <p>Công trình kiến trúc độc đáo của Tây Nguyên — biểu tượng của sự phát triển văn hóa và du lịch tại điểm cuối dòng chảy của vùng đất Tây Nguyên huyền thoại.</p>
               </div>
             </div>

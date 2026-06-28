@@ -844,7 +844,11 @@ button,input,textarea,select { font-family:inherit; }
 /* Left panel */
 .auth-mxh-left {
   flex: 1;
-  background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%);
+  background:
+    linear-gradient(160deg, rgba(16,185,129,0.92) 0%, rgba(59,130,246,0.9) 100%),
+    url('/landmark1.jpg') left center/cover no-repeat,
+    url('/landmark2.jpg') right center/cover no-repeat;
+  background-blend-mode: multiply, normal, normal;
   padding: 40px;
   color: white;
   display: flex;
@@ -1232,7 +1236,14 @@ button,input,textarea,select { font-family:inherit; }
 /* ============================================================
    FOOTER
 ============================================================ */
-.pub-footer { background:var(--tx-1); color:rgba(255,255,255,.65); padding:56px 0 30px; margin-top:80px; }
+.pub-footer {
+  background:
+    linear-gradient(rgba(15,23,42,0.93), rgba(15,23,42,0.97)),
+    url('/landmark2.jpg') center 30%/cover no-repeat;
+  color: rgba(255,255,255,.65);
+  padding: 56px 0 30px;
+  margin-top: 80px;
+}
 .footer-grid { display:grid; grid-template-columns:2fr 1fr 1fr; gap:40px; margin-bottom:40px; }
 @media(max-width:768px) { .footer-grid { grid-template-columns:1fr; gap:24px; } }
 .footer-brand .name { font-family:'Lexend Deca',sans-serif; font-size:1.2rem; font-weight:800; color:#fff; margin-bottom:10px; display:block; }

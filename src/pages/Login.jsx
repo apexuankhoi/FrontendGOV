@@ -16,10 +16,10 @@ const Login = () => {
     setLoading(true);
     try {
       const r = await api.post('/auth/login', form);
-      localStorage.setItem('token',        r.data.token);
+      localStorage.setItem('token', r.data.token);
       localStorage.setItem('refreshToken', r.data.refreshToken);
-      localStorage.setItem('role',         r.data.role);
-      localStorage.setItem('username',     r.data.username);
+      localStorage.setItem('role', r.data.role);
+      localStorage.setItem('username', r.data.username);
       if (r.data.agency) {
         localStorage.setItem('agency', JSON.stringify(r.data.agency));
         localStorage.setItem('agencyName', r.data.agency.name);
@@ -44,18 +44,6 @@ const Login = () => {
           <div className="auth-mxh-pill">Cổng thông tin 2026</div>
           <h2>Chào mừng bạn quay trở lại</h2>
           <p>Đăng nhập để quản lý đội hình, cập nhật công trình, hoạt động và dữ liệu chiến dịch toàn quốc.</p>
-          
-          {/* Landmark image collage */}
-          <div className="login-landmark-collage">
-            <div className="login-lm-main">
-              <img src="/landmark1.jpg" alt="Tượng đài Chiến thắng Buôn Ma Thuột" />
-              <span>Tượng đài Chiến thắng BMT</span>
-            </div>
-            <div className="login-lm-side">
-              <img src="/landmark2.jpg" alt="Tháp Nghênh Phong" />
-              <span>Tháp Nghênh Phong</span>
-            </div>
-          </div>
 
           <div className="auth-mxh-stats">
             <div className="auth-mxh-stat-box">
@@ -89,7 +77,7 @@ const Login = () => {
                   placeholder="email@example.com"
                   required
                   value={form.email}
-                  onChange={e => setForm({...form, email: e.target.value})}
+                  onChange={e => setForm({ ...form, email: e.target.value })}
                 />
               </div>
             </div>
@@ -103,7 +91,7 @@ const Login = () => {
                   placeholder="Nhập mật khẩu"
                   required
                   value={form.password}
-                  onChange={e => setForm({...form, password: e.target.value})}
+                  onChange={e => setForm({ ...form, password: e.target.value })}
                 />
               </div>
             </div>
@@ -121,8 +109,8 @@ const Login = () => {
           <div style={{ marginTop: 30, paddingTop: 20, borderTop: '1px dashed #cbd5e1' }}>
             <div style={{ fontSize: '0.8rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', marginBottom: 10 }}>Trải nghiệm nhanh</div>
             <div style={{ display: 'flex', gap: 10 }}>
-              <button type="button" onClick={() => setForm({email:'admin@daklak.gov.vn', password:'123456'})} style={{flex: 1, padding: 8, fontSize: '0.85rem', background: '#f1f5f9', border: 'none', borderRadius: 6, cursor: 'pointer', fontWeight: 600}}>Cán bộ</button>
-              <button type="button" onClick={() => setForm({email:'nguoidan@gmail.com', password:'123456'})} style={{flex: 1, padding: 8, fontSize: '0.85rem', background: '#f1f5f9', border: 'none', borderRadius: 6, cursor: 'pointer', fontWeight: 600}}>Người dân</button>
+              <button type="button" onClick={() => setForm({ email: 'admin@daklak.gov.vn', password: '123456' })} style={{ flex: 1, padding: 8, fontSize: '0.85rem', background: '#f1f5f9', border: 'none', borderRadius: 6, cursor: 'pointer', fontWeight: 600 }}>Cán bộ</button>
+              <button type="button" onClick={() => setForm({ email: 'nguoidan@gmail.com', password: '123456' })} style={{ flex: 1, padding: 8, fontSize: '0.85rem', background: '#f1f5f9', border: 'none', borderRadius: 6, cursor: 'pointer', fontWeight: 600 }}>Người dân</button>
             </div>
           </div>
         </div>
