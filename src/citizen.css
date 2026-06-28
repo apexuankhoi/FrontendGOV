@@ -301,55 +301,187 @@
 }
 .ctz-cta-inner p { color: rgba(255,255,255,.65); font-size: .9rem; max-width: 500px; }
 
-/* ─── HERO LANDMARK COLLAGE (in hero right panel) ───────── */
-.ctz-hero-landmarks {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-bottom: 0;
-}
-
-.ctz-landmark-main,
-.ctz-landmark-secondary {
+/* ─── HERO LANDMARK FLOATING PANEL ──────────────────── */
+.ctz-hero-landmark-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
   position: relative;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 8px 24px rgba(0,0,0,.35);
+  z-index: 1;
 }
 
-.ctz-landmark-main img,
-.ctz-landmark-secondary img {
-  width: 100%;
-  height: 170px;
-  object-fit: cover;
-  display: block;
+.ctz-hero-lm-img {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,.1),
+    0 24px 60px rgba(0,0,0,.55),
+    0 0 40px rgba(59,130,246,.2);
+  transform: perspective(1000px) rotateY(-3deg) rotateX(2deg);
   transition: transform .4s ease;
 }
 
-.ctz-landmark-main:hover img,
-.ctz-landmark-secondary:hover img {
-  transform: scale(1.06);
+.ctz-hero-lm-img:hover {
+  transform: perspective(1000px) rotateY(0deg) rotateX(0deg);
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,.15),
+    0 32px 80px rgba(0,0,0,.6),
+    0 0 60px rgba(59,130,246,.3);
 }
 
-.ctz-landmark-caption {
+.ctz-hero-lm-img img {
+  width: 100%;
+  height: 280px;
+  object-fit: cover;
+  display: block;
+}
+
+/* Caption bar bottom of image */
+.ctz-hero-lm-badge {
   position: absolute;
   bottom: 0; left: 0; right: 0;
-  background: linear-gradient(transparent, rgba(0,0,0,.75));
-  color: #fff;
-  font-size: .7rem;
+  background: linear-gradient(transparent, rgba(0,0,0,.8));
+  padding: 32px 16px 12px;
+}
+
+.ctz-hero-lm-badge span {
+  font-size: .75rem;
+  color: rgba(255,255,255,.9);
   font-weight: 600;
-  padding: 20px 10px 8px;
+  letter-spacing: .03em;
+}
+
+/* Floating stat pill — top left of image */
+.ctz-hero-pill-tl {
+  position: absolute;
+  top: 14px; left: 14px;
+  background: rgba(255,255,255,.12);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 12px;
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  animation: floatPill 3s ease-in-out infinite;
+}
+
+/* Floating stat pill — bottom right of image */
+.ctz-hero-pill-br {
+  position: absolute;
+  bottom: 52px; right: 14px;
+  background: rgba(52,211,153,.15);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(52,211,153,.3);
+  border-radius: 12px;
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  animation: floatPill 3.5s ease-in-out infinite reverse;
+}
+
+.ctz-hero-pill-val {
+  font-family: 'Lexend Deca', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1;
+}
+
+.ctz-hero-pill-lbl {
+  font-size: .65rem;
+  color: rgba(255,255,255,.75);
+  font-weight: 500;
+}
+
+@keyframes floatPill {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-5px); }
+}
+
+/* Bottom row: thumbnail + inline stats */
+.ctz-hero-lm-bottom {
+  display: flex;
+  gap: 12px;
+  align-items: stretch;
+}
+
+.ctz-hero-lm-thumb {
+  position: relative;
+  width: 120px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0,0,0,.4);
+}
+
+.ctz-hero-lm-thumb img {
+  width: 100%;
+  height: 80px;
+  object-fit: cover;
+  display: block;
+}
+
+.ctz-hero-lm-thumb span {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  background: rgba(0,0,0,.7);
+  color: #fff;
+  font-size: .6rem;
+  font-weight: 600;
+  padding: 4px 6px;
   text-align: center;
-  letter-spacing: .02em;
+}
+
+.ctz-hero-lm-stats {
+  flex: 1;
+  background: rgba(255,255,255,.07);
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 12px;
+  backdrop-filter: blur(8px);
+}
+
+.ctz-hero-lm-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.ctz-hero-lm-stat strong {
+  font-family: 'Lexend Deca', sans-serif;
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1;
+}
+
+.ctz-hero-lm-stat span {
+  font-size: .7rem;
+  color: rgba(255,255,255,.6);
+  font-weight: 500;
+}
+
+.ctz-hero-lm-stat-divider {
+  width: 1px;
+  height: 32px;
+  background: rgba(255,255,255,.15);
 }
 
 @media(max-width: 1024px) {
-  .ctz-hero-landmarks { grid-template-columns: 1fr 1fr; }
-  .ctz-landmark-main img, .ctz-landmark-secondary img { height: 130px; }
+  .ctz-hero-lm-img { transform: none; }
+  .ctz-hero-lm-img img { height: 220px; }
 }
 @media(max-width: 640px) {
-  .ctz-hero-landmarks { display: none; }
+  .ctz-hero-landmark-wrap { display: none; }
 }
+
 
 /* ─── LANDMARK SHOWCASE SECTION (mid-page) ─────────────── */
 .ctz-landmarks-section {
