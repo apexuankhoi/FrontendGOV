@@ -45,6 +45,18 @@ const Login = () => {
           <h2>Chào mừng bạn quay trở lại</h2>
           <p>Đăng nhập để quản lý đội hình, cập nhật công trình, hoạt động và dữ liệu chiến dịch toàn quốc.</p>
           
+          {/* Landmark image collage */}
+          <div className="login-landmark-collage">
+            <div className="login-lm-main">
+              <img src="/landmark1.jpg" alt="Tượng đài Chiến thắng Buôn Ma Thuột" />
+              <span>Tượng đài Chiến thắng BMT</span>
+            </div>
+            <div className="login-lm-side">
+              <img src="/landmark2.jpg" alt="Tháp Nghênh Phong" />
+              <span>Tháp Nghênh Phong</span>
+            </div>
+          </div>
+
           <div className="auth-mxh-stats">
             <div className="auth-mxh-stat-box">
               <h3>100%</h3>

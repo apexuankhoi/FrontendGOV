@@ -286,3 +286,245 @@
   margin-bottom: 8px;
 }
 .ctz-cta-inner p { color: rgba(255,255,255,.65); font-size: .9rem; max-width: 500px; }
+
+/* ─── HERO LANDMARK COLLAGE (in hero right panel) ───────── */
+.ctz-hero-landmarks {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 0;
+}
+
+.ctz-landmark-main,
+.ctz-landmark-secondary {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0,0,0,.35);
+}
+
+.ctz-landmark-main img,
+.ctz-landmark-secondary img {
+  width: 100%;
+  height: 170px;
+  object-fit: cover;
+  display: block;
+  transition: transform .4s ease;
+}
+
+.ctz-landmark-main:hover img,
+.ctz-landmark-secondary:hover img {
+  transform: scale(1.06);
+}
+
+.ctz-landmark-caption {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  background: linear-gradient(transparent, rgba(0,0,0,.75));
+  color: #fff;
+  font-size: .7rem;
+  font-weight: 600;
+  padding: 20px 10px 8px;
+  text-align: center;
+  letter-spacing: .02em;
+}
+
+@media(max-width: 1024px) {
+  .ctz-hero-landmarks { grid-template-columns: 1fr 1fr; }
+  .ctz-landmark-main img, .ctz-landmark-secondary img { height: 130px; }
+}
+@media(max-width: 640px) {
+  .ctz-hero-landmarks { display: none; }
+}
+
+/* ─── LANDMARK SHOWCASE SECTION (mid-page) ─────────────── */
+.ctz-landmarks-section {
+  padding: 72px 0;
+  background: linear-gradient(180deg, #f8fafc 0%, #fff 100%);
+}
+
+.ctz-landmarks-header {
+  margin-bottom: 40px;
+}
+
+.ctz-landmarks-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+}
+
+.ctz-landmark-card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  overflow: hidden;
+  box-shadow: var(--sh-md);
+  transition: transform .25s, box-shadow .25s;
+}
+
+.ctz-landmark-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 48px rgba(15,23,42,.12);
+}
+
+.ctz-landmark-img-wrap {
+  position: relative;
+  overflow: hidden;
+}
+
+.ctz-landmark-img-wrap img {
+  width: 100%;
+  height: 280px;
+  object-fit: cover;
+  display: block;
+  transition: transform .5s ease;
+}
+
+.ctz-landmark-card:hover .ctz-landmark-img-wrap img {
+  transform: scale(1.05);
+}
+
+.ctz-landmark-overlay {
+  position: absolute;
+  top: 14px; left: 14px;
+}
+
+.ctz-landmark-tag {
+  background: rgba(15,23,42,.65);
+  backdrop-filter: blur(8px);
+  color: #fff;
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,.15);
+}
+
+.ctz-landmark-info {
+  padding: 22px 24px 26px;
+}
+
+.ctz-landmark-info h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--tx-1);
+  margin-bottom: 10px;
+  line-height: 1.35;
+}
+
+.ctz-landmark-info p {
+  font-size: .88rem;
+  color: var(--tx-3);
+  line-height: 1.7;
+}
+
+@media(max-width: 768px) {
+  .ctz-landmarks-grid { grid-template-columns: 1fr; }
+  .ctz-landmark-img-wrap img { height: 220px; }
+}
+
+/* ─── LOGIN PAGE LANDMARK COLLAGE ──────────────────────── */
+.login-landmark-collage {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 20px 0 0;
+  flex: 1;
+}
+
+.login-lm-main,
+.login-lm-side {
+  position: relative;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 6px 20px rgba(0,0,0,.3);
+}
+
+.login-lm-main img,
+.login-lm-side img {
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+  display: block;
+  transition: transform .4s;
+}
+
+.login-lm-main:hover img,
+.login-lm-side:hover img {
+  transform: scale(1.06);
+}
+
+.login-lm-main span,
+.login-lm-side span {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  background: linear-gradient(transparent, rgba(0,0,0,.8));
+  color: #fff;
+  font-size: .65rem;
+  font-weight: 600;
+  padding: 18px 8px 7px;
+  text-align: center;
+}
+
+/* ─── FOOTER LANDMARKS STRIP ────────────────────────────── */
+.footer-landmarks {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 28px 0 20px;
+  flex-wrap: wrap;
+}
+
+.footer-lm-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.footer-lm-item img {
+  width: 80px;
+  height: 52px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1.5px solid rgba(255,255,255,.15);
+  box-shadow: 0 4px 12px rgba(0,0,0,.3);
+  transition: transform .3s;
+}
+
+.footer-lm-item img:hover {
+  transform: scale(1.05);
+}
+
+.footer-lm-item span {
+  font-size: .78rem;
+  color: rgba(255,255,255,.6);
+  line-height: 1.4;
+  max-width: 160px;
+}
+
+.footer-lm-divider {
+  width: 1px;
+  height: 40px;
+  background: rgba(255,255,255,.15);
+  flex-shrink: 0;
+}
+
+.footer-lm-tagline {
+  margin-left: auto;
+}
+
+.footer-lm-tagline span {
+  font-size: .82rem;
+  color: rgba(255,255,255,.45);
+  font-style: italic;
+  letter-spacing: .03em;
+}
+
+@media(max-width: 640px) {
+  .footer-landmarks { gap: 16px; }
+  .footer-lm-tagline { margin-left: 0; width: 100%; }
+  .footer-lm-divider { display: none; }
+}
+

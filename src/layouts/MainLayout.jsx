@@ -51,6 +51,20 @@ const MainLayout = () => (
             </ul>
           </div>
         </div>
+        <div className="footer-landmarks">
+          <div className="footer-lm-item">
+            <img src="/landmark1.jpg" alt="Tượng đài Chiến thắng Buôn Ma Thuột" />
+            <span>Tượng đài Chiến thắng Buôn Ma Thuột</span>
+          </div>
+          <div className="footer-lm-divider" />
+          <div className="footer-lm-item">
+            <img src="/landmark2.jpg" alt="Tháp Nghênh Phong" />
+            <span>Tháp Nghênh Phong — Biểu tượng Tây Nguyên</span>
+          </div>
+          <div className="footer-lm-tagline">
+            <span>🌿 ĐẮk LẮk — Vùng đất anh hùng</span>
+          </div>
+        </div>
         <hr className="footer-hr" />
         <div className="footer-bottom">
           <span>© 2026 Webgov Đắk Lắk. All rights reserved.</span>

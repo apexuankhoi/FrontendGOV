@@ -101,13 +101,25 @@ const Home = () => {
               </div>
             </div>
 
-            {/* Right: Stats card */}
+            {/* Right: Landmark Images + Stats */}
             <div className="ctz-hero-right">
-              <div className="ctz-stat-grid">
+              {/* Landmark image collage */}
+              <div className="ctz-hero-landmarks">
+                <div className="ctz-landmark-main">
+                  <img src="/landmark1.jpg" alt="Tượng đài Chiến thắng Buôn Ma Thuột" />
+                  <div className="ctz-landmark-caption">Tượng đài Chiến thắng BMT</div>
+                </div>
+                <div className="ctz-landmark-secondary">
+                  <img src="/landmark2.jpg" alt="Tháp Nghênh Phong" />
+                  <div className="ctz-landmark-caption">Tháp Nghênh Phong</div>
+                </div>
+              </div>
+              {/* Stats below landmarks */}
+              <div className="ctz-stat-grid" style={{ marginTop: 16 }}>
                 {[
                   { val: stats.total, suf: '', lbl: 'Đội hình hoạt động', icon: Map },
                   { val: stats.volunteers, suf: '+', lbl: 'Tình nguyện viên', icon: Users },
-                  { val: stats.projects, suf: '', lbl: 'Công trình đã hoàn thành', icon: Hammer },
+                  { val: stats.projects, suf: '', lbl: 'Công trình hoàn thành', icon: Hammer },
                   { val: stats.beneficiaries, suf: '+', lbl: 'Người được hỗ trợ', icon: Heart },
                 ].map((s, i) => (
                   <div key={i} className="ctz-stat-box">
@@ -213,6 +225,49 @@ const Home = () => {
               <Link to="/doi-hinh" className="btn btn-outline">
                 Xem tất cả đội hình dạng danh sách <ArrowRight size={15} />
               </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════
+          BIỂU TƯỢNG ĐẮk LẮk — Landmark Showcase
+      ══════════════════════════════════════════════════════ */}
+      <section className="ctz-landmarks-section">
+        <div className="container">
+          <div className="ctz-landmarks-header">
+            <div>
+              <span className="section-label">Bản sắc vùng đất Tây Nguyên</span>
+              <h2 className="section-title" style={{ marginTop: 8 }}>Biểu tượng ĐẮk LẮk</h2>
+              <p style={{ color: 'var(--tx-3)', marginTop: 8, fontSize: '.95rem', maxWidth: 520, lineHeight: 1.7 }}>
+                Mảnh đất ĐẮk LẮk — nơi hội tụ những giá trị lịch sử và vẻ đẹp thiên nhiên không nơi nào có được.
+              </p>
+            </div>
+          </div>
+          <div className="ctz-landmarks-grid">
+            <div className="ctz-landmark-card">
+              <div className="ctz-landmark-img-wrap">
+                <img src="/landmark1.jpg" alt="Tượng đài Chiến thắng Buôn Ma Thuột" />
+                <div className="ctz-landmark-overlay">
+                  <div className="ctz-landmark-tag">Biểu tượng lịch sử</div>
+                </div>
+              </div>
+              <div className="ctz-landmark-info">
+                <h3>Tượng đài Chiến thắng Buôn Ma Thuột</h3>
+                <p>Biểu tượng hào hùng của chiến thắng Buôn Ma Thuột năm 1975 — điểm khởi đầu của Đại thắng mùa Xuân, giải phóng miền Nam, thống nhất đất nước.</p>
+              </div>
+            </div>
+            <div className="ctz-landmark-card">
+              <div className="ctz-landmark-img-wrap">
+                <img src="/landmark2.jpg" alt="Tháp Nghênh Phong" />
+                <div className="ctz-landmark-overlay">
+                  <div className="ctz-landmark-tag">Công trình văn hóa</div>
+                </div>
+              </div>
+              <div className="ctz-landmark-info">
+                <h3>Tháp Nghênh Phong</h3>
+                <p>Công trình kiến trúc độc đáo của Tây Nguyên — biểu tượng của sự phát triển văn hóa và du lịch tại điểm cuối dòng chảy của vùng đất Tây Nguyên huyền thoại.</p>
+              </div>
             </div>
           </div>
         </div>
