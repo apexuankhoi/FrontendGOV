@@ -160,22 +160,30 @@ const SupportRequest = () => {
               <span>Đoàn Thanh niên Đắk Lắk — Hỗ trợ bà con 24/7</span>
             </div>
 
-            {/* Title 2 dòng rõ ràng */}
+            {/* Title 2 dòng — dòng 1 trắng rõ, dòng 2 gradient xanh */}
             <h1 style={{
-              color: '#fff',
               fontSize: 'clamp(2.2rem, 5.5vw, 3.2rem)',
               fontWeight: 900,
-              lineHeight: 1.2,
+              lineHeight: 1.25,
               marginBottom: 20,
               letterSpacing: '-0.5px',
-              textShadow: '0 2px 24px rgba(0,0,0,0.4)',
             }}>
-              🆘 Gửi Yêu cầu <br />
+              {/* Dòng 1: trắng rõ, textShadow mạnh để thấy trên nền tối */}
               <span style={{
+                display: 'block',
+                color: '#FFFFFF',
+                textShadow: '0 0 30px rgba(0,0,0,0.8), 0 2px 8px rgba(0,0,0,0.9)',
+              }}>
+                🆘 Gửi Yêu cầu
+              </span>
+              {/* Dòng 2: gradient xanh lá → cyan */}
+              <span style={{
+                display: 'block',
                 background: 'linear-gradient(135deg, #6EE7B7 0%, #34D399 40%, #06B6D4 100%)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
                 backgroundClip: 'text',
+                filter: 'drop-shadow(0 0 12px rgba(52,211,153,0.5))',
               }}>
                 Hỗ trợ Bà con
               </span>
@@ -218,7 +226,7 @@ const SupportRequest = () => {
       </section>
 
       {/* ═══════════════ TAB SWITCHER ═══════════════ */}
-      <section className="section" style={{ background: 'var(--bg)', paddingTop: 0, marginTop: -20 }}>
+      <section className="section" style={{ background: 'var(--bg)', paddingTop: 24, marginTop: 0 }}>
         <div className="container" style={{ maxWidth: 700 }}>
           <div className="sr-tabs">
             <button className={`sr-tab ${tab === 'submit' ? 'active' : ''}`} onClick={() => setTab('submit')}>
