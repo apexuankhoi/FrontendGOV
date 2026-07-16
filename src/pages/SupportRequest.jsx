@@ -150,28 +150,29 @@ const SupportRequest = () => {
   return (
     <>
       {/* ═══════════════ HERO ═══════════════ */}
-      <section className="ctz-hero" style={{ minHeight: 'auto', padding: '60px 0 40px' }}>
+      <section className="ctz-hero" style={{ minHeight: 'auto', padding: '80px 0 60px' }}>
         <div className="container">
           <div style={{ textAlign: 'center', maxWidth: 680, margin: '0 auto' }}>
+
             {/* Badge */}
-            <div className="ctz-hero-badge" style={{ justifyContent: 'center', marginBottom: 18 }}>
+            <div className="ctz-hero-badge" style={{ justifyContent: 'center', marginBottom: 20 }}>
               <Heart size={14} />
-              <span>Đoàn Thanh niên Đắk Lắk — Tiếp nhận hỗ trợ 24/7</span>
+              <span>Đoàn Thanh niên Đắk Lắk — Hỗ trợ bà con 24/7</span>
             </div>
 
-            {/* Title lớn, đẹp */}
+            {/* Title 2 dòng rõ ràng */}
             <h1 style={{
               color: '#fff',
-              fontSize: 'clamp(2rem, 5vw, 3rem)',
+              fontSize: 'clamp(2.2rem, 5.5vw, 3.2rem)',
               fontWeight: 900,
-              lineHeight: 1.15,
-              marginBottom: 16,
+              lineHeight: 1.2,
+              marginBottom: 20,
               letterSpacing: '-0.5px',
-              textShadow: '0 2px 20px rgba(0,0,0,0.3)',
+              textShadow: '0 2px 24px rgba(0,0,0,0.4)',
             }}>
-              🆘 Yêu cầu{' '}
+              🆘 Gửi Yêu cầu <br />
               <span style={{
-                background: 'linear-gradient(135deg, #34D399, #06B6D4)',
+                background: 'linear-gradient(135deg, #6EE7B7 0%, #34D399 40%, #06B6D4 100%)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
                 backgroundClip: 'text',
@@ -180,19 +181,20 @@ const SupportRequest = () => {
               </span>
             </h1>
 
+            {/* Subtitle rõ */}
             <p style={{
-              color: 'rgba(255,255,255,.85)',
-              lineHeight: 1.75,
-              fontSize: '1.05rem',
-              maxWidth: 520,
-              margin: '0 auto 24px',
+              color: 'rgba(255,255,255,0.88)',
+              lineHeight: 1.8,
+              fontSize: '1rem',
+              maxWidth: 500,
+              margin: '0 auto 28px',
             }}>
-              Mô tả tình hình khó khăn — hệ thống tự động chuyển đến xã/phường phụ trách,
-              cử đoàn viên xuống hỗ trợ trong thời gian sớm nhất.
+              Mô tả tình hình khó khăn — xã/phường phụ trách sẽ tiếp nhận
+              và cử đoàn viên xuống hỗ trợ trong thời gian sớm nhất.
             </p>
 
-            {/* Mini stats */}
-            <div style={{ display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap' }}>
+            {/* Pills */}
+            <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
               {[
                 { icon: '⚡', label: 'Phản hồi nhanh' },
                 { icon: '🔍', label: 'Tra cứu realtime' },
@@ -200,22 +202,20 @@ const SupportRequest = () => {
               ].map(item => (
                 <div key={item.label} style={{
                   display: 'flex', alignItems: 'center', gap: 6,
-                  background: 'rgba(255,255,255,0.12)',
-                  backdropFilter: 'blur(8px)',
-                  border: '1px solid rgba(255,255,255,0.2)',
-                  borderRadius: 20, padding: '6px 14px',
-                  fontSize: '.82rem', color: 'rgba(255,255,255,.9)',
+                  background: 'rgba(255,255,255,0.13)',
+                  backdropFilter: 'blur(10px)',
+                  border: '1px solid rgba(255,255,255,0.22)',
+                  borderRadius: 20, padding: '7px 16px',
+                  fontSize: '.83rem', color: 'rgba(255,255,255,0.92)',
                   fontWeight: 500,
                 }}>
-                  <span>{item.icon}</span>
-                  <span>{item.label}</span>
+                  {item.icon} {item.label}
                 </div>
               ))}
             </div>
           </div>
         </div>
       </section>
-
 
       {/* ═══════════════ TAB SWITCHER ═══════════════ */}
       <section className="section" style={{ background: 'var(--bg)', paddingTop: 0, marginTop: -20 }}>
