@@ -32,6 +32,7 @@ const STATUS_MAP = {
 };
 
 const SupportRequest = () => {
+  const [user, setUser] = useState(null);
   const [tab, setTab] = useState('submit'); // 'submit' | 'track'
   const [communes, setCommunes] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -58,6 +59,20 @@ const SupportRequest = () => {
     api.get('/support-requests/communes')
       .then(r => setCommunes(r.data))
       .catch(() => { });
+
+    // Tự động fetch user và điền form nếu đã đăng nhập
+    const token = localStorage.getItem('token');
+    if (token) {
+      api.get('/auth/me').then(r => {
+        setUser(r.data);
+        setForm(prev => ({
+          ...prev,
+          senderName: r.data.username || prev.senderName,
+          senderPhone: r.data.phone || prev.senderPhone,
+          senderAddress: r.data.address || prev.senderAddress,
+        }));
+      }).catch(() => {});
+    }
   }, []);
 
   const handleChange = (field, value) => {
@@ -249,19 +264,27 @@ const SupportRequest = () => {
                   <div className="sr-field">
                     <label>Họ và tên <span className="required">*</span></label>
                     <input type="text" placeholder="Nguyễn Văn A" value={form.senderName}
-                      onChange={e => handleChange('senderName', e.target.value)} required />
+                      onChange={e => handleChange('senderName', e.target.value)} required 
+                      disabled={!!user} style={user ? {background: '#f8fafc', color: '#64748b', cursor: 'not-allowed'} : {}} />
                   </div>
                   <div className="sr-field">
                     <label>Số điện thoại <span className="required">*</span></label>
                     <input type="tel" placeholder="0901 234 567" value={form.senderPhone}
-                      onChange={e => handleChange('senderPhone', e.target.value)} required />
+                      onChange={e => handleChange('senderPhone', e.target.value)} required 
+                      disabled={!!user} style={user ? {background: '#f8fafc', color: '#64748b', cursor: 'not-allowed'} : {}} />
                   </div>
                 </div>
                 <div className="sr-field">
                   <label>Địa chỉ cụ thể (nếu có)</label>
                   <input type="text" placeholder="Thôn/Buôn, Xã, Huyện..." value={form.senderAddress}
-                    onChange={e => handleChange('senderAddress', e.target.value)} />
+                    onChange={e => handleChange('senderAddress', e.target.value)} 
+                    disabled={!!user} style={user ? {background: '#f8fafc', color: '#64748b', cursor: 'not-allowed'} : {}} />
                 </div>
+                {user && (
+                  <div style={{ fontSize: '0.85rem', color: '#10B981', display: 'flex', alignItems: 'center', gap: 6, marginTop: '-10px', marginBottom: 15 }}>
+                    <CheckCircle size={14} /> Thông tin được lấy tự động từ hồ sơ công dân của bạn.
+                  </div>
+                )}
               </div>
 
               {/* Chọn xã/phường */}
