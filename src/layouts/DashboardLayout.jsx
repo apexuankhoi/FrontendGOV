@@ -3,7 +3,7 @@ import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, Map, FileText, Users, LogOut,
   Globe, Menu, X, ChevronRight, UserCircle, Settings, Bot,
-  FileInput, FileOutput, CheckSquare, Activity, Briefcase, Bell, Zap, Database
+  FileInput, FileOutput, CheckSquare, Activity, Briefcase, Bell, Zap, Database, Heart, BarChart3
 } from 'lucide-react';
 import api, { API_URL } from '../lib/api';
 import { io } from 'socket.io-client';
@@ -45,6 +45,27 @@ const DashboardLayout = () => {
     // Lắng nghe sự kiện có thông báo mới (ví dụ từ backend gửi xuống)
     socket.on('newNotification', () => {
       fetchNotifications();
+    });
+
+    // ═══ P2: Lắng nghe yêu cầu hỗ trợ mới từ bà con ═══
+    socket.on('newSupportRequest', (data) => {
+      fetchNotifications();
+      // Hiển thị toast thông báo
+      try {
+        const { toast } = require('react-toastify');
+        toast.info(
+          `🆘 Yêu cầu hỗ trợ mới từ "${data.senderName}" — ${data.category || 'Khác'} — Gửi đến ${data.agencyName || 'xã'}`,
+          { autoClose: 8000, position: 'top-right' }
+        );
+      } catch(e) {}
+      // Phát sự kiện để SupportRequestsAdmin auto-refresh
+      window.dispatchEvent(new CustomEvent('newSupportRequest', { detail: data }));
+    });
+
+    // ═══ P2: Lắng nghe cập nhật trạng thái yêu cầu ═══
+    socket.on('supportRequestUpdated', (data) => {
+      fetchNotifications();
+      window.dispatchEvent(new CustomEvent('supportRequestUpdated', { detail: data }));
     });
 
     // Polling dự phòng (30s)
@@ -109,6 +130,8 @@ const DashboardLayout = () => {
             <div className="sidebar-sec">Chiến dịch 44 ngày</div>
             {can('ADMIN', 'SENIOR_ADMIN') && <SLink to="/dashboard/map" icon={Map} label="Quản lý Đội hình" />}
             <SLink to="/dashboard/campaigns" icon={CheckSquare} label="Báo cáo Tiến độ xã" />
+            <SLink to="/dashboard/support-requests" icon={Heart} label="Yêu cầu hỗ trợ" />
+            <SLink to="/dashboard/support-report" icon={BarChart3} label="Báo cáo hỗ trợ" />
 
             <div className="sidebar-sec">Nội dung</div>
             <SLink to="/dashboard/news" icon={FileText} label="Quản lý Tin tức"/>
@@ -124,6 +147,9 @@ const DashboardLayout = () => {
             <SLink to="/dashboard/eoffice/drive" icon={Database} label="Kho Dữ liệu chung"/>
             <SLink to="/dashboard/eoffice/ai-center" icon={Zap} label="Trung tâm AI"/>
             <SLink to="/dashboard/eoffice/report" icon={Bot} label="Báo cáo AI"/>
+            {can('COMMUNE_ADMIN') && (
+              <SLink to="/dashboard/support-requests" icon={Heart} label="Yêu cầu hỗ trợ"/>
+            )}
             {can('PROVINCE_ADMIN', 'ADMIN', 'SENIOR_ADMIN') && (
               <SLink to="/dashboard/eoffice/agencies-monitor" icon={Activity} label="Quản lý Tuyến dưới"/>
             )}
@@ -193,12 +219,12 @@ const DashboardLayout = () => {
                       notifications.items.map(n => (
                         <Link 
                           key={n.id} 
-                          to={n.type === 'task' ? '/dashboard/eoffice/tasks' : '/dashboard/eoffice/incoming'}
+                          to={n.type === 'task' ? '/dashboard/eoffice/tasks' : n.type === 'support' ? '/dashboard/support-requests' : '/dashboard/eoffice/incoming'}
                           className="notif-item"
                           onClick={() => setShowNotif(false)}
                         >
                           <div className={`notif-icon ${n.type}`}>
-                            {n.type === 'task' ? <CheckSquare size={14}/> : <FileInput size={14}/>}
+                            {n.type === 'task' ? <CheckSquare size={14}/> : n.type === 'support' ? <Heart size={14}/> : <FileInput size={14}/>}
                           </div>
                           <div>
                             <div className="notif-title">{n.title}</div>

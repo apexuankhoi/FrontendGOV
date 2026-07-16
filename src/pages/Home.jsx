@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import api from '../lib/api';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   Map, Users, Hammer, Heart, ArrowRight, Calendar,
   CheckCircle, ShieldCheck, Search, MessageCircle,
@@ -30,10 +30,10 @@ function getPos(team) {
 const QUICK_SERVICES = [
   { icon: '📝', title: 'Thủ tục hành chính', desc: 'Hỏi AI về giấy tờ, hồ sơ cần thiết', query: 'Tôi cần tư vấn về thủ tục hành chính' },
   { icon: '⚖️', title: 'Tư vấn pháp luật', desc: 'Tra cứu quy định, pháp lý địa phương', query: 'Tôi cần tư vấn pháp luật' },
+  { icon: '🆘', title: 'Gửi yêu cầu hỗ trợ', desc: 'Gửi yêu cầu để xã cử đoàn viên hỗ trợ', link: '/ho-tro' },
   { icon: '🌱', title: 'Tình nguyện viên', desc: 'Tham gia chiến dịch Mùa Hè Xanh', query: 'Làm thế nào để tham gia chiến dịch tình nguyện?' },
   { icon: '🏥', title: 'Y tế cộng đồng', desc: 'Thông tin y tế, sức khỏe tại địa bàn', query: 'Thông tin y tế cộng đồng tại Đắk Lắk' },
   { icon: '🏗️', title: 'Công trình thanh niên', desc: 'Theo dõi tiến độ các dự án', query: 'Các công trình thanh niên đang triển khai?' },
-  { icon: '📞', title: 'Đường dây hỗ trợ', desc: 'Liên hệ trực tiếp cán bộ địa phương', query: 'Số điện thoại liên hệ cơ quan địa phương?' },
 ];
 
 const Home = () => {
@@ -42,6 +42,7 @@ const Home = () => {
   const [stats, setStats] = useState({ total: 0, volunteers: 0, projects: 0, value: 0, beneficiaries: 0 });
   const [search, setSearch] = useState('');
   const mapRef = useRef(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     api.get('/teams?status=APPROVED').then(r => {
@@ -139,7 +140,7 @@ const Home = () => {
           <div className="ctz-services-grid">
             {QUICK_SERVICES.map((s, i) => (
               <button key={i} className="ctz-service-card anim" style={{ animationDelay: `${i * 60}ms` }}
-                onClick={() => handleQuickService(s.query)}>
+                onClick={() => s.link ? navigate(s.link) : handleQuickService(s.query)}>
                 <div className="ctz-service-icon">{s.icon}</div>
                 <div>
                   <div className="ctz-service-title">{s.title}</div>

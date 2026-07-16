@@ -16,6 +16,7 @@ const PublicNews      = lazy(() => import('./pages/PublicNews'));
 const PublicProfile   = lazy(() => import('./pages/PublicProfile'));
 const PublicCampaigns = lazy(() => import('./pages/PublicCampaigns'));
 const PersonalDrive   = lazy(() => import('./pages/PersonalDrive'));
+const SupportRequest  = lazy(() => import('./pages/SupportRequest'));
 
 // Dashboard Pages - Cán bộ mới cần tải đống JS này
 const Overview     = lazy(() => import('./pages/dashboard/Overview'));
@@ -25,6 +26,8 @@ const NewsAdmin    = lazy(() => import('./pages/dashboard/NewsAdmin'));
 const UsersList    = lazy(() => import('./pages/dashboard/UsersList'));
 const Profile      = lazy(() => import('./pages/dashboard/Profile'));
 const CampaignAdmin= lazy(() => import('./pages/dashboard/CampaignAdmin'));
+const SupportRequestsAdmin = lazy(() => import('./pages/dashboard/SupportRequestsAdmin'));
+const SupportReport = lazy(() => import('./pages/dashboard/SupportReport'));
 
 // eOffice Pages - Tính năng nâng cao, chỉ tải khi vào eOffice
 const EofficeDashboard  = lazy(() => import('./pages/dashboard/eoffice/EofficeDashboard'));
@@ -85,6 +88,7 @@ function App() {
             <Route path="/news" element={<PublicNews />} />
             <Route path="/tin-tuc" element={<PublicNews />} />
             <Route path="/profile" element={<PublicProfile />} />
+            <Route path="/ho-tro" element={<SupportRequest />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
           </Route>
@@ -98,6 +102,8 @@ function App() {
             <Route path="news" element={<NewsAdmin />} />
             <Route path="users" element={<ProtectedRoute allowedRoles={['SENIOR_ADMIN']}><UsersList /></ProtectedRoute>} />
             <Route path="campaigns" element={<ProtectedRoute allowedRoles={['PROVINCE_ADMIN', 'ADMIN', 'SENIOR_ADMIN']}><CampaignAdmin /></ProtectedRoute>} />
+            <Route path="support-requests" element={<SupportRequestsAdmin />} />
+            <Route path="support-report" element={<ProtectedRoute allowedRoles={['PROVINCE_ADMIN', 'ADMIN', 'SENIOR_ADMIN']}><SupportReport /></ProtectedRoute>} />
             <Route path="profile" element={<Profile />} />
 
             {/* AI eOffice */}
