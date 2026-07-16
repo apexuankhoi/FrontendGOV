@@ -151,7 +151,7 @@ const SupportRequest = () => {
     <>
       {/* ═══════════════ HERO ═══════════════ */}
       <section className="ctz-hero" style={{ minHeight: 'auto', padding: '80px 0 60px' }}>
-        <div className="container">
+        <div className="container" style={{ position: 'relative', zIndex: 1 }}>
           <div style={{ textAlign: 'center', maxWidth: 680, margin: '0 auto' }}>
 
             {/* Badge */}

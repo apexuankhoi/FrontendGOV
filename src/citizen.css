@@ -15,7 +15,7 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(150deg, rgba(10, 22, 40, 0.82) 0%, rgba(14, 42, 82, 0.75) 50%, rgba(13, 61, 110, 0.84) 100%);
+  background: linear-gradient(150deg, rgba(10, 22, 40, 0.55) 0%, rgba(14, 42, 82, 0.48) 50%, rgba(13, 61, 110, 0.55) 100%);
   pointer-events: none;
   z-index: 0;
 }
