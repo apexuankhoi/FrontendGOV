@@ -152,20 +152,70 @@ const SupportRequest = () => {
       {/* ═══════════════ HERO ═══════════════ */}
       <section className="ctz-hero" style={{ minHeight: 'auto', padding: '60px 0 40px' }}>
         <div className="container">
-          <div style={{ textAlign: 'center', maxWidth: 620, margin: '0 auto' }}>
-            <div className="ctz-hero-badge" style={{ justifyContent: 'center', marginBottom: 16 }}>
+          <div style={{ textAlign: 'center', maxWidth: 680, margin: '0 auto' }}>
+            {/* Badge */}
+            <div className="ctz-hero-badge" style={{ justifyContent: 'center', marginBottom: 18 }}>
               <Heart size={14} />
-              <span>Tiếp nhận hỗ trợ bà con</span>
+              <span>Đoàn Thanh niên Đắk Lắk — Tiếp nhận hỗ trợ 24/7</span>
             </div>
-            <h1 style={{ color: '#fff', fontSize: 'clamp(1.6rem, 4vw, 2.2rem)', fontWeight: 800, lineHeight: 1.3, marginBottom: 12 }}>
-              Gửi yêu cầu <span className="ctz-hero-accent">hỗ trợ</span>
+
+            {/* Title lớn, đẹp */}
+            <h1 style={{
+              color: '#fff',
+              fontSize: 'clamp(2rem, 5vw, 3rem)',
+              fontWeight: 900,
+              lineHeight: 1.15,
+              marginBottom: 16,
+              letterSpacing: '-0.5px',
+              textShadow: '0 2px 20px rgba(0,0,0,0.3)',
+            }}>
+              🆘 Yêu cầu{' '}
+              <span style={{
+                background: 'linear-gradient(135deg, #34D399, #06B6D4)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+              }}>
+                Hỗ trợ Bà con
+              </span>
             </h1>
-            <p style={{ color: 'rgba(255,255,255,.8)', lineHeight: 1.7, fontSize: '.95rem', maxWidth: 480, margin: '0 auto' }}>
-              Mô tả tình hình khó khăn của bạn, hệ thống sẽ tự động chuyển đến xã/phường phụ trách để cử đoàn viên hỗ trợ nhanh nhất.
+
+            <p style={{
+              color: 'rgba(255,255,255,.85)',
+              lineHeight: 1.75,
+              fontSize: '1.05rem',
+              maxWidth: 520,
+              margin: '0 auto 24px',
+            }}>
+              Mô tả tình hình khó khăn — hệ thống tự động chuyển đến xã/phường phụ trách,
+              cử đoàn viên xuống hỗ trợ trong thời gian sớm nhất.
             </p>
+
+            {/* Mini stats */}
+            <div style={{ display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap' }}>
+              {[
+                { icon: '⚡', label: 'Phản hồi nhanh' },
+                { icon: '🔍', label: 'Tra cứu realtime' },
+                { icon: '🛡️', label: 'Không cần đăng nhập' },
+              ].map(item => (
+                <div key={item.label} style={{
+                  display: 'flex', alignItems: 'center', gap: 6,
+                  background: 'rgba(255,255,255,0.12)',
+                  backdropFilter: 'blur(8px)',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  borderRadius: 20, padding: '6px 14px',
+                  fontSize: '.82rem', color: 'rgba(255,255,255,.9)',
+                  fontWeight: 500,
+                }}>
+                  <span>{item.icon}</span>
+                  <span>{item.label}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
+
 
       {/* ═══════════════ TAB SWITCHER ═══════════════ */}
       <section className="section" style={{ background: 'var(--bg)', paddingTop: 0, marginTop: -20 }}>
