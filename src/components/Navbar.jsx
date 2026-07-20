@@ -54,6 +54,7 @@ const Navbar = () => {
           <Link to="/chien-dich" className={`nav-link ${isActive('/chien-dich')}`}>Chiến dịch 44 ngày</Link>
           <Link to="/doi-hinh" className={`nav-link ${isActive('/doi-hinh')}`}>Đội hình</Link>
           <Link to="/ho-tro" className={`nav-link ${isActive('/ho-tro')}`}>Yêu cầu hỗ trợ</Link>
+          <Link to="/dang-ky-website" className={`nav-link ${isActive('/dang-ky-website')}`} style={{ color: '#0ea5e9', fontWeight: 700 }}>🌐 SmartWeb</Link>
           <Link to="/tin-tuc" className={`nav-link ${isActive('/tin-tuc')}`}>Tin tức</Link>
         </nav>
 
@@ -144,6 +145,7 @@ const Navbar = () => {
         <Link to="/chien-dich" className={`nav-link ${isActive('/chien-dich')}`} onClick={() => setMobileOpen(false)}>Chiến dịch</Link>
         <Link to="/doi-hinh" className={`nav-link ${isActive('/doi-hinh')}`} onClick={() => setMobileOpen(false)}>Đội hình tình nguyện</Link>
         <Link to="/ho-tro" className={`nav-link ${isActive('/ho-tro')}`} onClick={() => setMobileOpen(false)}>Yêu cầu hỗ trợ</Link>
+        <Link to="/dang-ky-website" className={`nav-link ${isActive('/dang-ky-website')}`} onClick={() => setMobileOpen(false)} style={{ color: '#0ea5e9', fontWeight: 700 }}>🌐 Đăng ký Website SmartWeb</Link>
         <Link to="/tin-tuc" className={`nav-link ${isActive('/tin-tuc')}`} onClick={() => setMobileOpen(false)}>Tin tức chiến dịch</Link>
         <hr style={{ border: 'none', borderTop: '1px solid var(--border)', margin: '6px 0' }} />
         {!token ? (

@@ -71,7 +71,10 @@ const PublicCampaigns = () => {
   const canReport = ['COMMUNE_ADMIN', 'PROVINCE_ADMIN', 'SENIOR_ADMIN'].includes(role);
   
   const [stats, setStats] = useState({
-    vneid: 12450, qr: 5230, digitalSkills: 0, publicServices: 0, activeAgencies: 102, totalAgencies: 102
+    vneid: 0, qr: 0, digitalSkills: 0, publicServices: 0,
+    smartwebCount: 0, websitesCreated: 0, volunteers: 0,
+    youthTrained: 0, trainingClasses: 0, digitalProducts: 0,
+    activeAgencies: 0, totalAgencies: 102
   });
   
   const [selectedCommune, setSelectedCommune] = useState('');
@@ -294,31 +297,36 @@ const PublicCampaigns = () => {
                 )}
 
                 <div className="card">
-                  <h3 style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}><BarChart3 size={20} color="var(--amber-600)"/> Bảng Tổng hợp Lũy kế (Toàn Tỉnh)</h3>
+                  <h3 style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}><BarChart3 size={20} color="var(--amber-600)"/>Bảng Tổng hợp Lũy kế (Toàn Tỉnh)</h3>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 20 }}>
-                    <div style={{ background: '#EFF6FF', padding: 16, borderRadius: 'var(--r-md)', textAlign: 'center' }}>
-                      <div style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--blue-600)' }}>{stats.vneid.toLocaleString('vi-VN')}</div>
-                      <div style={{ fontSize: '.8rem', color: 'var(--tx-2)', fontWeight: 600 }}>Lượt hỗ trợ VNeID</div>
-                    </div>
-                    <div style={{ background: '#F0FDF4', padding: 16, borderRadius: 'var(--r-md)', textAlign: 'center' }}>
-                      <div style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--green-600)' }}>{stats.qr.toLocaleString('vi-VN')}</div>
-                      <div style={{ fontSize: '.8rem', color: 'var(--tx-2)', fontWeight: 600 }}>Hộ kinh doanh QR</div>
-                    </div>
-                    <div style={{ background: '#FEF2F2', padding: 16, borderRadius: 'var(--r-md)', textAlign: 'center' }}>
-                      <div style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--danger)' }}>{stats.activeAgencies}/{stats.totalAgencies}</div>
-                      <div style={{ fontSize: '.8rem', color: 'var(--tx-2)', fontWeight: 600 }}>Đội hình ra quân</div>
-                    </div>
-                    <div style={{ background: '#FAF5FF', padding: 16, borderRadius: 'var(--r-md)', textAlign: 'center' }}>
-                      <div style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--purple-600)' }}>
-                        {Math.round((stats.activeAgencies / stats.totalAgencies) * 100) || 0}%
+                    {[
+                      { val: stats.digitalSkills?.toLocaleString('vi-VN'), label: 'Lượt HT kỹ năng số', color: 'var(--blue-600)', bg: '#EFF6FF', icon: '💻' },
+                      { val: stats.vneid?.toLocaleString('vi-VN'), label: 'Lượt hỗ trợ VNeID', color: 'var(--green-600)', bg: '#F0FDF4', icon: '🪪' },
+                      { val: stats.qr?.toLocaleString('vi-VN'), label: 'Hộ kinh doanh QR', color: 'var(--amber-600)', bg: '#FFFBEB', icon: '📱' },
+                      { val: stats.publicServices?.toLocaleString('vi-VN'), label: 'DVC trực tuyến', color: '#9333EA', bg: '#FAF5FF', icon: '🏛️' },
+                      { val: (stats.smartwebCount || 0).toLocaleString('vi-VN'), label: 'Đăng ký SmartWeb', color: '#1a3a6b', bg: '#EEF2FF', icon: '🌐' },
+                      { val: (stats.websitesCreated || 0).toLocaleString('vi-VN'), label: 'Website active', color: '#059669', bg: '#ECFDF5', icon: '🚀' },
+                    ].map((s, i) => (
+                      <div key={i} style={{ background: s.bg, padding: 14, borderRadius: 'var(--r-md)', textAlign: 'center' }}>
+                        <div style={{ fontSize: '1.2rem', marginBottom: 4 }}>{s.icon}</div>
+                        <div style={{ fontSize: '1.6rem', fontWeight: 800, color: s.color }}>{s.val || 0}</div>
+                        <div style={{ fontSize: '.78rem', color: 'var(--tx-2)', fontWeight: 600 }}>{s.label}</div>
                       </div>
-                      <div style={{ fontSize: '.8rem', color: 'var(--tx-2)', fontWeight: 600 }}>Tiến độ toàn chiến dịch</div>
-                    </div>
+                    ))}
+                  </div>
+                  {/* Tiến độ xã ra quân */}
+                  <div style={{ background: '#FEF2F2', padding: 14, borderRadius: 'var(--r-md)', textAlign: 'center', marginBottom: 12 }}>
+                    <div style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--danger)' }}>{stats.activeAgencies}/{stats.totalAgencies}</div>
+                    <div style={{ fontSize: '.8rem', color: 'var(--tx-2)', fontWeight: 600 }}>Đội hình đã ra quân</div>
                   </div>
                   <div style={{ height: 8, background: 'var(--border)', borderRadius: 4, overflow: 'hidden' }}>
-                    <div style={{ width: `${Math.round((stats.activeAgencies / stats.totalAgencies) * 100) || 0}%`, height: '100%', background: 'var(--blue-600)' }} />
+                    <div style={{ width: `${Math.round((stats.activeAgencies/stats.totalAgencies)*100)||0}%`, height: '100%', background: 'linear-gradient(90deg, #1a3a6b, #0ea5e9)', transition: 'width 1s' }} />
+                  </div>
+                  <div style={{ textAlign: 'center', marginTop: 6, fontSize: '.78rem', color: 'var(--tx-3)', fontWeight: 600 }}>
+                    {Math.round((stats.activeAgencies/stats.totalAgencies)*100)||0}% tiến độ toàn chiến dịch
                   </div>
                 </div>
+
               </div>
             </div>
           )}

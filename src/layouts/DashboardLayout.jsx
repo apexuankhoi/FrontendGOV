@@ -3,7 +3,7 @@ import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, Map, FileText, Users, LogOut,
   Globe, Menu, X, ChevronRight, UserCircle, Settings, Bot,
-  FileInput, FileOutput, CheckSquare, Activity, Briefcase, Bell, Zap, Database, Heart, BarChart3
+  FileInput, FileOutput, CheckSquare, Activity, Briefcase, Bell, Zap, Database, Heart, BarChart3, ClipboardList, QrCode, Target
 } from 'lucide-react';
 import api, { API_URL } from '../lib/api';
 import { io } from 'socket.io-client';
@@ -129,7 +129,10 @@ const DashboardLayout = () => {
           {can('PROVINCE_ADMIN', 'ADMIN', 'SENIOR_ADMIN') && (<>
             <div className="sidebar-sec">Chiến dịch 44 ngày</div>
             {can('ADMIN', 'SENIOR_ADMIN') && <SLink to="/dashboard/map" icon={Map} label="Quản lý Đội hình" />}
+            <SLink to="/dashboard/dti-report" icon={Target} label="Báo cáo Tổng kết DTI" />
             <SLink to="/dashboard/campaigns" icon={CheckSquare} label="Báo cáo Tiến độ xã" />
+            <SLink to="/dashboard/smartweb" icon={Globe} label="SmartWeb Tiểu thương" />
+            <SLink to="/dashboard/qr-manager" icon={QrCode} label="🔳 QR Điểm Hỗ trợ" />
             <SLink to="/dashboard/support-requests" icon={Heart} label="Yêu cầu hỗ trợ" />
             <SLink to="/dashboard/support-report" icon={BarChart3} label="Báo cáo hỗ trợ" />
 
@@ -148,7 +151,11 @@ const DashboardLayout = () => {
             <SLink to="/dashboard/eoffice/ai-center" icon={Zap} label="Trung tâm AI"/>
             <SLink to="/dashboard/eoffice/report" icon={Bot} label="Báo cáo AI"/>
             {can('COMMUNE_ADMIN') && (
-              <SLink to="/dashboard/support-requests" icon={Heart} label="Yêu cầu hỗ trợ"/>
+              <>
+                <SLink to="/dashboard/my-report" icon={ClipboardList} label="📋 Báo cáo của tôi"/>
+                <SLink to="/dashboard/support-requests" icon={Heart} label="Yêu cầu hỗ trợ"/>
+                <SLink to="/dashboard/smartweb" icon={Globe} label="SmartWeb Xã tôi"/>
+              </>
             )}
             {can('PROVINCE_ADMIN', 'ADMIN', 'SENIOR_ADMIN') && (
               <SLink to="/dashboard/eoffice/agencies-monitor" icon={Activity} label="Quản lý Tuyến dưới"/>

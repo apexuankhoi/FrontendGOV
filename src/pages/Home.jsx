@@ -40,6 +40,7 @@ const Home = () => {
   const [teams, setTeams] = useState([]);
   const [news, setNews] = useState([]);
   const [stats, setStats] = useState({ total: 0, volunteers: 0, projects: 0, value: 0, beneficiaries: 0 });
+  const [swStats, setSwStats] = useState({ total: 0, active: 0 });
   const [search, setSearch] = useState('');
   const mapRef = useRef(null);
   const navigate = useNavigate();
@@ -57,6 +58,7 @@ const Home = () => {
       setStats(s);
     }).catch(() => { });
     api.get('/news').then(r => setNews(r.data.slice(0, 3))).catch(() => { });
+    api.get('/smartweb/public-stats').then(r => setSwStats(r.data)).catch(() => { });
   }, []);
 
   const handleQuickService = (query) => {
@@ -281,6 +283,61 @@ const Home = () => {
                   {q} →
                 </button>
               ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════
+          SMARTWEB SHOWCASE
+      ══════════════════════════════════════════════════════ */}
+      <section className="ctz-section" style={{ background: 'var(--surface-0)', padding: '80px 0' }}>
+        <div className="container">
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 40, alignItems: 'center' }}>
+            <div>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: '#EFF6FF', color: '#1D4ED8', padding: '6px 14px', borderRadius: 20, fontWeight: 700, fontSize: '.85rem', marginBottom: 20 }}>
+                <Globe size={16} /> Chiến dịch 44 ngày đêm
+              </div>
+              <h2 style={{ fontSize: '2.4rem', color: '#0F172A', marginBottom: 20, lineHeight: 1.2 }}>
+                Mỗi tiểu thương <br/><span style={{ color: '#1D4ED8' }}>một Website .VN</span>
+              </h2>
+              <p style={{ color: 'var(--tx-2)', fontSize: '1.1rem', marginBottom: 30, lineHeight: 1.6 }}>
+                Hỗ trợ 100% chi phí đăng ký tên miền .VN và xây dựng website bán hàng chuẩn thương mại điện tử cho các hộ kinh doanh, tiểu thương trên địa bàn tỉnh Đắk Lắk.
+              </p>
+              
+              <div style={{ display: 'flex', gap: 24, marginBottom: 36 }}>
+                <div>
+                  <div style={{ fontSize: '2.5rem', fontWeight: 900, color: '#10B981', lineHeight: 1 }}>{swStats.total}+</div>
+                  <div style={{ fontSize: '.9rem', color: 'var(--tx-3)', fontWeight: 600, marginTop: 4 }}>Tiểu thương đăng ký</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: '2.5rem', fontWeight: 900, color: '#F59E0B', lineHeight: 1 }}>{swStats.active}+</div>
+                  <div style={{ fontSize: '.9rem', color: 'var(--tx-3)', fontWeight: 600, marginTop: 4 }}>Website hoạt động</div>
+                </div>
+              </div>
+
+              <Link to="/dang-ky-website" className="btn btn-primary btn-lg" style={{ display: 'inline-flex', alignItems: 'center', gap: 10, padding: '16px 32px', fontSize: '1.05rem' }}>
+                Đăng ký Website miễn phí <ArrowRight size={18} />
+              </Link>
+            </div>
+            
+            <div style={{ position: 'relative' }}>
+              <div style={{ position: 'absolute', top: -20, right: -20, width: 200, height: 200, background: '#1D4ED820', borderRadius: '50%', filter: 'blur(40px)', zIndex: 0 }} />
+              <div style={{ position: 'absolute', bottom: -20, left: -20, width: 200, height: 200, background: '#10B98120', borderRadius: '50%', filter: 'blur(40px)', zIndex: 0 }} />
+              
+              <div style={{ background: 'white', borderRadius: 24, padding: 32, boxShadow: 'var(--sh-xl)', position: 'relative', zIndex: 1, border: '1px solid var(--border)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
+                  <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#EF4444' }} />
+                  <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#F59E0B' }} />
+                  <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#10B981' }} />
+                </div>
+                <div style={{ background: '#F8FAFC', borderRadius: 16, height: 240, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px dashed var(--border-2)' }}>
+                  <div style={{ textAlign: 'center', color: 'var(--tx-4)' }}>
+                    <Globe size={48} style={{ opacity: 0.5, margin: '0 auto 12px' }} />
+                    <div style={{ fontWeight: 600 }}>SmartWeb Demo Preview</div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>

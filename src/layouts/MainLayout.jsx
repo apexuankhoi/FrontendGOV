@@ -38,6 +38,7 @@ const MainLayout = () => (
               <li><Link to="/chien-dich">Thông tin Chiến dịch</Link></li>
               <li><Link to="/doi-hinh">Đội hình tình nguyện</Link></li>
               <li><Link to="/ho-tro">Yêu cầu hỗ trợ</Link></li>
+              <li><Link to="/dang-ky-website" style={{ color: '#4ade80', fontWeight: 600 }}>🌐 Đăng ký Website SmartWeb</Link></li>
               <li><Link to="/tin-tuc">Tin tức chiến dịch</Link></li>
               <li><Link to="/register">Đăng ký tài khoản</Link></li>
             </ul>

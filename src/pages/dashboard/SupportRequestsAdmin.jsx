@@ -35,7 +35,7 @@ const URGENCY_MAP = {
 const SupportRequestsAdmin = () => {
   const [data, setData] = useState({ requests: [], total: 0, stats: {} });
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState({ status: '', category: '', page: 1 });
+  const [filter, setFilter] = useState({ status: '', category: '', search: '', page: 1 });
   const [selected, setSelected] = useState(null);
   const [actionModal, setActionModal] = useState(null); // 'assign' | 'resolve' | 'reject'
   const [actionForm, setActionForm] = useState({ assignedTo: '', assignedPhone: '', resolution: '', rejectionReason: '', volunteersCount: '', hoursWorked: '', materialsUsed: '', beneficiariesCount: '', satisfactionRating: 5, reportNotes: '' });
@@ -47,6 +47,7 @@ const SupportRequestsAdmin = () => {
       const params = new URLSearchParams();
       if (filter.status) params.set('status', filter.status);
       if (filter.category) params.set('category', filter.category);
+      if (filter.search) params.set('search', filter.search);
       params.set('page', filter.page);
       params.set('limit', 15);
 
@@ -135,8 +136,18 @@ const SupportRequestsAdmin = () => {
         display: 'flex', gap: 10, marginBottom: 18, flexWrap: 'wrap', alignItems: 'center',
         background: '#fff', padding: '12px 16px', borderRadius: 12, border: '1px solid var(--border)'
       }}>
-        <Filter size={16} color="var(--tx-3)" />
-        <select
+        <div style={{ display: 'flex', alignItems: 'center', border: '1px solid var(--border)', borderRadius: 8, padding: '6px 12px', background: '#f8fafc', flex: 1, minWidth: 200 }}>
+          <Search size={16} color="var(--tx-3)" style={{ marginRight: 8 }} />
+          <input 
+            type="text" 
+            placeholder="Tìm tên, SĐT hoặc mã..." 
+            value={filter.search}
+            onChange={e => setFilter(prev => ({ ...prev, search: e.target.value, page: 1 }))}
+            style={{ border: 'none', outline: 'none', background: 'transparent', width: '100%', fontSize: '.85rem' }}
+          />
+        </div>
+        <div style={{ display: 'flex', gap: 10 }}>
+          <select
           value={filter.status}
           onChange={e => setFilter(prev => ({ ...prev, status: e.target.value, page: 1 }))}
           style={{ padding: '7px 12px', borderRadius: 8, border: '1px solid var(--border)', fontSize: '.85rem', fontFamily: 'inherit', background: '#fff' }}
@@ -153,6 +164,7 @@ const SupportRequestsAdmin = () => {
           <option value="">Tất cả loại</option>
           {Object.entries(CATEGORY_MAP).map(([k, v]) => <option key={k} value={k}>{v.icon} {v.label}</option>)}
         </select>
+        </div>
 
         <div style={{ marginLeft: 'auto', fontSize: '.82rem', color: 'var(--tx-3)' }}>
           Tổng: <strong>{data.total}</strong> yêu cầu
