@@ -152,16 +152,27 @@ const Register = () => {
             <button type="button" onClick={() => setTab('ADMIN')} style={{flex: 1, padding: 10, border: 'none', borderRadius: 6, fontWeight: 600, background: tab === 'ADMIN' ? '#fff' : 'transparent', color: tab === 'ADMIN' ? '#0f172a' : '#64748b', boxShadow: tab === 'ADMIN' ? '0 2px 4px rgba(0,0,0,0.05)' : 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5}}><Shield size={16}/> Cán bộ</button>
           </div>
 
-          <form onSubmit={submit}>
+          <form onSubmit={submit} autoComplete="off">
             {tab === 'CITIZEN' && (
-              <div style={{ background: '#f8fafc', border: '1px dashed #cbd5e1', borderRadius: 8, padding: 15, marginBottom: 15 }}>
-                <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#0f172a', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 5 }}><Camera size={16} color="#3b82f6"/> Tải lên CCCD mặt trước (eKYC)</div>
-                <input type="file" accept="image/*" onChange={handleFrontImage} style={{ fontSize: '0.85rem', marginBottom: 10, width: '100%' }} />
-                {frontImage && <img src={frontImage} alt="CCCD" style={{ width: '100%', maxHeight: 150, objectFit: 'contain', borderRadius: 6, marginBottom: 10 }} />}
-                <button type="button" onClick={scanCCCD} disabled={scanning || !frontImage} style={{ width: '100%', padding: 10, background: '#e0f2fe', color: '#0369a1', border: 'none', borderRadius: 6, fontWeight: 600, cursor: 'pointer' }}>
-                  {scanning ? 'Đang nhận diện...' : 'Bắt đầu nhận diện AI'}
+              <div style={{ background: '#f8fafc', border: '1px dashed #cbd5e1', borderRadius: 12, padding: 20, marginBottom: 20 }}>
+                <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#0f172a', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}><Camera size={18} color="#3b82f6"/> Xác thực CCCD (eKYC)</div>
+                <label style={{ display: 'block', padding: '16px', background: '#fff', border: '1px solid #e2e8f0', borderRadius: 8, textAlign: 'center', cursor: 'pointer', marginBottom: 12, transition: 'all 0.2s' }}>
+                  <input type="file" accept="image/*" onChange={handleFrontImage} style={{ display: 'none' }} />
+                  {frontImage ? (
+                    <img src={frontImage} alt="CCCD" style={{ height: 120, objectFit: 'contain', margin: '0 auto', borderRadius: 4 }} />
+                  ) : (
+                    <div style={{ color: 'var(--tx-3)', fontSize: '0.85rem' }}>
+                      <div style={{ width: 40, height: 40, borderRadius: '50%', background: '#e0f2fe', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 8px' }}>
+                        <Camera size={20} color="#0284c7" />
+                      </div>
+                      <span style={{ fontWeight: 600, color: '#0f172a' }}>Nhấn để tải lên</span> ảnh mặt trước CCCD
+                    </div>
+                  )}
+                </label>
+                <button type="button" onClick={scanCCCD} disabled={scanning || !frontImage} style={{ width: '100%', padding: '12px', background: (scanning || !frontImage) ? '#94a3b8' : 'var(--primary)', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: (scanning || !frontImage) ? 'not-allowed' : 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8, transition: 'background 0.2s' }}>
+                  {scanning ? 'Đang nhận diện AI...' : 'Bắt đầu nhận diện AI'}
                 </button>
-                {ekycData && <div style={{ marginTop: 10, fontSize: '0.85rem', color: '#059669', fontWeight: 600 }}><CheckCircle size={14} style={{verticalAlign:'middle', marginRight:4}}/> Nhận diện thành công: {ekycData.fullName}</div>}
+                {ekycData && <div style={{ marginTop: 12, padding: '10px 14px', background: '#ecfdf5', borderRadius: 8, fontSize: '0.85rem', color: '#059669', fontWeight: 600, border: '1px solid #a7f3d0' }}><CheckCircle size={16} style={{verticalAlign:'middle', marginRight:6}}/> Đã nhận diện: {ekycData.fullName}</div>}
               </div>
             )}
 
@@ -185,7 +196,13 @@ const Register = () => {
                 </div>
                 <div className="auth-mxh-input-group" style={{ flex: 1, marginBottom: 0 }}>
                   <label>Thẻ Ngành</label>
-                  <input type="file" accept="image/*" onChange={handleTheNganhImage} required style={{ width: '100%', fontSize: '0.85rem' }} />
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', background: '#f8fafc', border: '1px dashed #cbd5e1', borderRadius: 8, cursor: 'pointer', fontSize: '0.85rem', color: 'var(--tx-3)', height: 42 }}>
+                    <input type="file" accept="image/*" onChange={handleTheNganhImage} required={!theNganhImage} style={{ display: 'none' }} />
+                    <Camera size={16} color="var(--primary)" />
+                    <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: theNganhImage ? 700 : 500, color: theNganhImage ? '#10B981' : 'inherit' }}>
+                      {theNganhImage ? '✅ Đã tải ảnh lên' : 'Tải lên Thẻ Cán bộ'}
+                    </span>
+                  </label>
                 </div>
               </div>
             )}
