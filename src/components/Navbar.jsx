@@ -51,11 +51,11 @@ const Navbar = () => {
         {/* Desktop nav links */}
         <nav className="nav-center">
           <Link to="/" className={`nav-link ${isActive('/')}`}>Trang chủ</Link>
-          <Link to="/chien-dich" className={`nav-link ${isActive('/chien-dich')}`}>Chiến dịch 44 ngày</Link>
+          <Link to="/chien-dich" className={`nav-link ${isActive('/chien-dich')}`}>Chiến dịch</Link>
           <Link to="/doi-hinh" className={`nav-link ${isActive('/doi-hinh')}`}>Đội hình</Link>
-          <Link to="/ho-tro" className={`nav-link ${isActive('/ho-tro')}`}>Yêu cầu hỗ trợ</Link>
-          <Link to="/dang-ky-website" className={`nav-link ${isActive('/dang-ky-website')}`} style={{ color: '#0ea5e9', fontWeight: 700 }}>🌐 SmartWeb</Link>
+          <Link to="/ho-tro" className={`nav-link ${isActive('/ho-tro')}`}>Hỗ trợ</Link>
           <Link to="/tin-tuc" className={`nav-link ${isActive('/tin-tuc')}`}>Tin tức</Link>
+          <Link to="/dang-ky-website" className="btn btn-sm" style={{ background: 'linear-gradient(135deg, #0284c7, #3b82f6)', color: '#fff', border: 'none', marginLeft: 10, borderRadius: 20 }}>🌐 SmartWeb</Link>
         </nav>
 
         {/* Desktop right */}
