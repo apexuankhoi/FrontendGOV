@@ -160,15 +160,6 @@ const Login = () => {
           <div className="auth-mxh-footer">
             Chưa có tài khoản? <Link to="/register">Đăng ký ngay</Link>
           </div>
-
-          {/* Quick Demo Logins */}
-          <div style={{ marginTop: 30, paddingTop: 20, borderTop: '1px dashed #cbd5e1' }}>
-            <div style={{ fontSize: '0.8rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', marginBottom: 10 }}>Trải nghiệm nhanh</div>
-            <div style={{ display: 'flex', gap: 10 }}>
-              <button type="button" onClick={() => setForm({ email: 'admin@daklak.gov.vn', password: '123456' })} style={{ flex: 1, padding: 8, fontSize: '0.85rem', background: '#f1f5f9', border: 'none', borderRadius: 6, cursor: 'pointer', fontWeight: 600 }}>Cán bộ</button>
-              <button type="button" onClick={() => setForm({ email: 'nguoidan@gmail.com', password: '123456' })} style={{ flex: 1, padding: 8, fontSize: '0.85rem', background: '#f1f5f9', border: 'none', borderRadius: 6, cursor: 'pointer', fontWeight: 600 }}>Người dân</button>
-            </div>
-          </div>
         </div>
       </div>
     </div>
