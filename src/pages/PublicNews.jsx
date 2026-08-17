@@ -18,6 +18,22 @@ import {
 } from 'lucide-react';
 import { toast } from 'react-toastify';
 
+import imgTnv1 from '../assets/anhtnv/1786950558107_3758955030588213305_3758955030588213305_e1234173d3ee1ca25eed820610715d72.jpg';
+import imgTnv2 from '../assets/anhtnv/1786950558137_3758955030588213305_3758955030588213305_918a0743d1ea9cfa4d6df33bde0b5710.jpg';
+import imgTnv3 from '../assets/anhtnv/1786950558152_3758955030588213305_3758955030588213305_162780b94639efb2778239795a097b00.jpg';
+import imgTnv4 from '../assets/anhtnv/1786950558164_3758955030588213305_3758955030588213305_14d1c29b70d3565300901c07e6ab5dea.jpg';
+import imgTnv5 from '../assets/anhtnv/1786950558175_3758955030588213305_3758955030588213305_56dcb88f9f8f81d00013f14631ba9514.jpg';
+
+const TNV_IMAGES = [imgTnv1, imgTnv2, imgTnv3, imgTnv4, imgTnv5];
+const DEFAULT_IMAGE = imgTnv1;
+
+const getArticleImage = (item, idx = 0) => {
+  if (item?.imageUrl && !item.imageUrl.includes('unsplash.com')) {
+    return item.imageUrl;
+  }
+  return TNV_IMAGES[idx % TNV_IMAGES.length];
+};
+
 const CATEGORIES = [
   { id: 'ALL', label: '🌟 Tất cả tin tức' },
   { id: 'Chiến dịch 44 ngày đêm', label: '🚀 Chiến dịch 44 ngày đêm' },
@@ -27,8 +43,6 @@ const CATEGORIES = [
   { id: 'Tập huấn & Đào tạo', label: '🎓 Tập huấn & Đào tạo' },
   { id: 'Chuyển đổi số', label: '💻 Chuyển đổi số' }
 ];
-
-const DEFAULT_IMAGE = 'https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=1200&q=80';
 
 const PublicNews = () => {
   const [news, setNews] = useState([]);
@@ -179,7 +193,7 @@ const PublicNews = () => {
               >
                 <div className="news-featured-img-wrap">
                   <img 
-                    src={featuredArticle.imageUrl || DEFAULT_IMAGE} 
+                    src={getArticleImage(featuredArticle, 0)} 
                     alt={featuredArticle.title}
                     onError={(e) => { e.target.src = DEFAULT_IMAGE; }}
                   />
@@ -260,7 +274,7 @@ const PublicNews = () => {
                     >
                       <div className="news-card-thumb-wrap">
                         <img 
-                          src={item.imageUrl || DEFAULT_IMAGE} 
+                          src={getArticleImage(item, idx + 1)} 
                           alt={item.title}
                           onError={(e) => { e.target.src = DEFAULT_IMAGE; }}
                         />
@@ -333,7 +347,7 @@ const PublicNews = () => {
 
             {/* Cover Image */}
             <img 
-              src={selectedArticle.imageUrl || DEFAULT_IMAGE} 
+              src={getArticleImage(selectedArticle, filteredNews.findIndex(n => (n._id && n._id === selectedArticle._id) || n.title === selectedArticle.title))} 
               alt={selectedArticle.title}
               className="news-modal-cover"
               onError={(e) => { e.target.src = DEFAULT_IMAGE; }}

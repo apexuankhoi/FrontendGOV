@@ -11,6 +11,18 @@ import {
 } from 'lucide-react';
 import { toast } from 'react-toastify';
 
+import imgTnv1 from '../assets/anhtnv/1786950558107_3758955030588213305_3758955030588213305_e1234173d3ee1ca25eed820610715d72.jpg';
+import imgTnv2 from '../assets/anhtnv/1786950558137_3758955030588213305_3758955030588213305_918a0743d1ea9cfa4d6df33bde0b5710.jpg';
+import imgTnv3 from '../assets/anhtnv/1786950558152_3758955030588213305_3758955030588213305_162780b94639efb2778239795a097b00.jpg';
+import imgTnv4 from '../assets/anhtnv/1786950558164_3758955030588213305_3758955030588213305_14d1c29b70d3565300901c07e6ab5dea.jpg';
+import imgTnv5 from '../assets/anhtnv/1786950558175_3758955030588213305_3758955030588213305_56dcb88f9f8f81d00013f14631ba9514.jpg';
+
+const TNV_IMAGES = [imgTnv1, imgTnv2, imgTnv3, imgTnv4, imgTnv5];
+const getNewsImg = (item, idx = 0) => {
+  if (item?.imageUrl && !item.imageUrl.includes('unsplash.com')) return item.imageUrl;
+  return TNV_IMAGES[idx % TNV_IMAGES.length];
+};
+
 const CENTER = [12.6667, 108.0383];
 const DISTRICT_COORDS = {
   'TP Buôn Ma Thuột': [12.6667, 108.0383],
@@ -480,9 +492,9 @@ const Home = () => {
                 <Link to="/tin-tuc" key={n._id || i} className="news-card anim" style={{ animationDelay: `${i * 80}ms`, textDecoration: 'none', color: 'inherit' }}>
                   <div className="news-card-thumb-wrap">
                     <img 
-                      src={n.imageUrl || 'https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=1200&q=80'} 
+                      src={getNewsImg(n, i)} 
                       alt={n.title}
-                      onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=1200&q=80'; }}
+                      onError={(e) => { e.target.src = TNV_IMAGES[0]; }}
                     />
                     <div style={{ position: 'absolute', top: 12, left: 12, zIndex: 2 }}>
                       <span className="news-category-tag" style={{ background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(4px)', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
