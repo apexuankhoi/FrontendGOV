@@ -542,7 +542,7 @@ const PublicCampaigns = () => {
 
                   <div style={{ marginTop: 20, paddingTop: 16, borderTop: '1px solid var(--border)', textAlign: 'center' }}>
                     <span style={{ fontSize: '.82rem', color: 'var(--tx-3)', fontWeight: 600 }}>
-                      Cổng báo cáo hằng ngày mở từ 13:00 – 19:00 hằng ngày
+                      Cổng tiếp nhận & chỉnh sửa báo cáo mở từ 13:00 – 18:30 hằng ngày (Hạn chót: 18:30)
                     </span>
                   </div>
                 </div>

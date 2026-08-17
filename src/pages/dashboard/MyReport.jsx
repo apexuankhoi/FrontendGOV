@@ -171,6 +171,7 @@ const MyReport = () => {
   const [fetching, setFetching] = useState(true);
   const [submitted, setSubmitted] = useState(false);
   const [existingReport, setExistingReport] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
 
   const agencyName = (() => {
     try { return JSON.parse(localStorage.getItem('agency'))?.name || 'Đơn vị của bạn'; }
@@ -179,8 +180,8 @@ const MyReport = () => {
 
   const today = new Date();
   const todayStr = today.toLocaleDateString('vi-VN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-  const hour = today.getHours();
-  const isReportTime = hour >= 13 && hour < 19;
+  const currentMinutes = today.getHours() * 60 + today.getMinutes();
+  const isReportTime = currentMinutes >= 13 * 60 && currentMinutes <= 18 * 60 + 30; // 13:00 – 18:30 hằng ngày
 
   useEffect(() => {
     const fetchExisting = async () => {
@@ -217,9 +218,10 @@ const MyReport = () => {
       ALL_FIELDS.forEach(f => { body[f.key] = Number(form[f.key]) || 0; });
       Object.assign(body, extra);
       await api.post('/campaign/report', body);
-      toast.success('✅ Gửi báo cáo 11 chỉ tiêu thành công! Cảm ơn bạn đã báo cáo đúng hạn.');
+      toast.success('✅ Lưu & Cập nhật báo cáo 11 chỉ tiêu thành công! Số liệu đã được đồng bộ lên Tỉnh.');
       setSubmitted(true);
       setExistingReport(body);
+      setIsEditing(false);
     } catch (err) {
       toast.error(err.response?.data?.message || 'Lỗi khi gửi báo cáo');
     } finally {
@@ -264,23 +266,41 @@ const MyReport = () => {
         }
         <div style={{ flex: 1, minWidth: 240 }}>
           <div style={{ fontWeight: 700, color: isReportTime ? '#059669' : '#D97706', fontSize: '.95rem' }}>
-            {isReportTime ? '✅ Cổng nộp báo cáo đang MỞ (13:00 – 19:00 hằng ngày)' : '⏰ Cổng báo cáo mở từ 13:00 đến 19:00 hằng ngày'}
+            {isReportTime ? '✅ Cổng tiếp nhận & chỉnh sửa đang MỞ (13:00 – 18:30 hằng ngày)' : '⏰ Cổng báo cáo mở từ 13:00 đến 18:30 hằng ngày (Hạn chót: 18:30)'}
           </div>
           <div style={{ fontSize: '.84rem', color: 'var(--tx-2)', marginTop: 3, lineHeight: 1.4 }}>
-            Nhập số liệu lũy kế 11 tiêu chí trực tiếp lên app, tinh gọn, hạn chế giấy tờ văn bản. {existingReport ? 'Đơn vị đã nộp báo cáo hôm nay.' : 'Vui lòng hoàn thành trước 19h00.'}
+            Nhập số liệu lũy kế 11 tiêu chí trực tiếp lên app. {existingReport ? 'Đơn vị có thể chỉnh sửa lại số liệu đến 18:30.' : 'Vui lòng hoàn thành trước 18h30.'}
           </div>
         </div>
       </div>
 
-      {(submitted || existingReport) ? (
+      {(submitted || existingReport) && !isEditing ? (
         <div className="card" style={{ padding: '32px 24px', textAlign: 'center' }}>
           <div style={{ width: 68, height: 68, borderRadius: '50%', background: '#D1FAE5', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
             <CheckCircle size={36} color="#10B981" />
           </div>
           <h3 style={{ color: '#059669', marginBottom: 8, fontSize: '1.3rem' }}>Đã hoàn thành nộp báo cáo 11 chỉ tiêu hôm nay!</h3>
-          <p style={{ color: 'var(--tx-3)', marginBottom: 24, fontSize: '.92rem' }}>
-            Báo cáo của <strong>{agencyName}</strong> đã được đồng bộ lên trung tâm chỉ huy số cấp Tỉnh.
+          <p style={{ color: 'var(--tx-3)', marginBottom: 20, fontSize: '.92rem' }}>
+            Báo cáo của <strong>{agencyName}</strong> đã được ghi nhận và đồng bộ lên trung tâm chỉ huy số cấp Tỉnh.
           </p>
+
+          {/* Nút cho phép chỉnh sửa nếu đang trong khung giờ 13:00 - 18:30 */}
+          {isReportTime ? (
+            <div style={{ marginBottom: 24 }}>
+              <button 
+                type="button" 
+                onClick={() => setIsEditing(true)}
+                className="btn btn-primary"
+                style={{ padding: '10px 24px', fontWeight: 700, borderRadius: 10, display: 'inline-flex', alignItems: 'center', gap: 8 }}
+              >
+                ✏️ Chỉnh sửa / Bổ sung số liệu (Hạn chót 18:30)
+              </button>
+            </div>
+          ) : (
+            <div style={{ marginBottom: 20, fontSize: '.84rem', color: '#92400E', background: '#FEF3C7', padding: '8px 16px', borderRadius: 8, display: 'inline-block' }}>
+              ⏰ Đã hết khung giờ chỉnh sửa hôm nay (Hạn chót là 18:30). Cổng báo cáo sẽ mở lại lúc 13:00 ngày mai.
+            </div>
+          )}
 
           {existingReport && (
             <div>
@@ -352,6 +372,18 @@ const MyReport = () => {
         </div>
       ) : (
         <form onSubmit={handleSubmit}>
+          {/* BANNER KHI ĐANG CHỈNH SỬA */}
+          {existingReport && (
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#EFF6FF', border: '1px solid #BFDBFE', padding: '12px 18px', borderRadius: 12, marginBottom: 16, flexWrap: 'wrap', gap: 10 }}>
+              <div style={{ fontSize: '.88rem', color: '#1E40AF', fontWeight: 600 }}>
+                ✏️ Bạn đang ở chế độ <strong>Chỉnh sửa số liệu báo cáo đã nộp hôm nay</strong> (Cập nhật hợp lệ trước 18:30)
+              </div>
+              <button type="button" onClick={() => setIsEditing(false)} className="btn btn-ghost btn-sm" style={{ color: '#64748B', fontWeight: 600 }}>
+                Hủy chỉnh sửa
+              </button>
+            </div>
+          )}
+
           {/* KHUNG NHẬP 11 CHỈ TIÊU CHÍNH THỨC */}
           <div className="card" style={{ marginBottom: 20, borderTop: '4px solid var(--primary)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 10, marginBottom: 16 }}>
@@ -532,33 +564,47 @@ const MyReport = () => {
             </div>
           </div>
 
-          {/* NÚT NỘP BÁO CÁO */}
-          <button
-            type="submit"
-            disabled={loading || !isReportTime}
-            style={{
-              width: '100%',
-              padding: '16px 24px',
-              borderRadius: 14,
-              border: 'none',
-              background: (!isReportTime) ? 'var(--border)' : loading ? 'var(--tx-3)' : 'linear-gradient(135deg, #1a3a6b 0%, #0ea5e9 100%)',
-              color: 'white',
-              fontWeight: 800,
-              fontSize: '1.08rem',
-              cursor: (!isReportTime || loading) ? 'not-allowed' : 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 10,
-              boxShadow: isReportTime ? '0 4px 14px rgba(14, 165, 233, 0.4)' : 'none',
-              transition: 'all .3s ease'
-            }}
-          >
-            {loading ? <Loader2 size={22} className="spin" /> : <Send size={22} />}
-            {loading ? 'Đang gửi báo cáo 11 chỉ tiêu...'
-              : !isReportTime ? '⏰ Cổng mở từ 13:00 đến 19:00 hằng ngày'
-              : '📤 NỘP BÁO CÁO 11 CHỈ TIÊU CHIẾN DỊCH HÔM NAY'}
-          </button>
+          {/* NÚT NỘP / CẬP NHẬT BÁO CÁO */}
+          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+            {existingReport && isEditing && (
+              <button
+                type="button"
+                onClick={() => setIsEditing(false)}
+                className="btn btn-outline"
+                style={{ padding: '16px 28px', borderRadius: 14, fontWeight: 700 }}
+              >
+                Hủy
+              </button>
+            )}
+            <button
+              type="submit"
+              disabled={loading || !isReportTime}
+              style={{
+                flex: 1,
+                minWidth: 260,
+                padding: '16px 24px',
+                borderRadius: 14,
+                border: 'none',
+                background: (!isReportTime) ? 'var(--border)' : loading ? 'var(--tx-3)' : 'linear-gradient(135deg, #1a3a6b 0%, #0ea5e9 100%)',
+                color: 'white',
+                fontWeight: 800,
+                fontSize: '1.08rem',
+                cursor: (!isReportTime || loading) ? 'not-allowed' : 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 10,
+                boxShadow: isReportTime ? '0 4px 14px rgba(14, 165, 233, 0.4)' : 'none',
+                transition: 'all .3s ease'
+              }}
+            >
+              {loading ? <Loader2 size={22} className="spin" /> : <Send size={22} />}
+              {loading ? 'Đang lưu báo cáo 11 chỉ tiêu...'
+                : !isReportTime ? '⏰ Cổng mở từ 13:00 đến 18:30 hằng ngày'
+                : existingReport ? '💾 LƯU & CẬP NHẬT BÁO CÁO (TRƯỚC 18:30)'
+                : '📤 NỘP BÁO CÁO 11 CHỈ TIÊU CHIẾN DỊCH HÔM NAY'}
+            </button>
+          </div>
         </form>
       )}
     </div>
