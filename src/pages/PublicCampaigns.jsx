@@ -163,6 +163,8 @@ const PublicCampaigns = () => {
     mediaPosts: ''
   });
   
+  const [config, setConfig] = useState({ openTime: '13:00', closeTime: '18:30', alwaysOpen: false });
+
   const [loading, setLoading] = useState(false);
   
   useEffect(() => {
@@ -175,23 +177,32 @@ const PublicCampaigns = () => {
   
   const fetchStats = async () => {
     try {
-      const res = await api.get('/campaign/stats');
-      if (res.data) {
+      const [statsRes, cfgRes] = await Promise.allSettled([
+        api.get('/campaign/stats'),
+        api.get('/campaign/config')
+      ]);
+
+      if (cfgRes.status === 'fulfilled' && cfgRes.value.data) {
+        setConfig(cfgRes.value.data);
+      }
+
+      if (statsRes.status === 'fulfilled' && statsRes.value.data) {
+        const d = statsRes.value.data;
         setStats({
-          digitalSkills: res.data.digitalSkills || 0,
-          vneid: res.data.vneid || 0,
-          publicServices: res.data.publicServices || 0,
-          qr: res.data.qr || 0,
-          activeTeams: res.data.activeTeams || 0,
-          trainingClasses: res.data.trainingClasses || 0,
-          digitalModels: res.data.digitalModels || 0,
-          digitalProducts: res.data.digitalProducts || 0,
-          youthTrained: res.data.youthTrained || 0,
-          youthProjects: res.data.youthProjects || 0,
-          smartwebCount: res.data.smartwebCount || 0,
-          volunteers: res.data.volunteers || 0,
-          activeAgencies: res.data.activeAgencies || 0,
-          totalAgencies: res.data.totalAgencies || 102
+          digitalSkills: d.digitalSkills || 0,
+          vneid: d.vneid || 0,
+          publicServices: d.publicServices || 0,
+          qr: d.qr || 0,
+          activeTeams: d.activeTeams || 0,
+          trainingClasses: d.trainingClasses || 0,
+          digitalModels: d.digitalModels || 0,
+          digitalProducts: d.digitalProducts || 0,
+          youthTrained: d.youthTrained || 0,
+          youthProjects: d.youthProjects || 0,
+          smartwebCount: d.smartwebCount || 0,
+          volunteers: d.volunteers || 0,
+          activeAgencies: d.activeAgencies || 0,
+          totalAgencies: d.totalAgencies || 102
         });
       }
     } catch (err) {
@@ -542,7 +553,10 @@ const PublicCampaigns = () => {
 
                   <div style={{ marginTop: 20, paddingTop: 16, borderTop: '1px solid var(--border)', textAlign: 'center' }}>
                     <span style={{ fontSize: '.82rem', color: 'var(--tx-3)', fontWeight: 600 }}>
-                      Cổng tiếp nhận & chỉnh sửa báo cáo mở từ 13:00 – 18:30 hằng ngày (Hạn chót: 18:30)
+                      {config.alwaysOpen 
+                        ? '🟢 Cổng tiếp nhận & chỉnh sửa báo cáo mở 24/7 (Không giới hạn giờ)'
+                        : `⏰ Cổng tiếp nhận & chỉnh sửa báo cáo mở từ ${config.openTime || '13:00'} – ${config.closeTime || '18:30'} hằng ngày (Hạn chót: ${config.closeTime || '18:30'})`
+                      }
                     </span>
                   </div>
                 </div>

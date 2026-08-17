@@ -173,6 +173,9 @@ const MyReport = () => {
   const [existingReport, setExistingReport] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
 
+  // Cấu hình khung giờ báo cáo động từ Super Admin
+  const [config, setConfig] = useState({ openTime: '13:00', closeTime: '18:30', alwaysOpen: false, customNotice: '', isOpenNow: true });
+
   const agencyName = (() => {
     try { return JSON.parse(localStorage.getItem('agency'))?.name || 'Đơn vị của bạn'; }
     catch { return 'Đơn vị của bạn'; }
@@ -180,23 +183,41 @@ const MyReport = () => {
 
   const today = new Date();
   const todayStr = today.toLocaleDateString('vi-VN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-  const currentMinutes = today.getHours() * 60 + today.getMinutes();
-  const isReportTime = currentMinutes >= 13 * 60 && currentMinutes <= 18 * 60 + 30; // 13:00 – 18:30 hằng ngày
+
+  const isReportTime = (() => {
+    if (config.alwaysOpen) return true;
+    const now = new Date();
+    const curMin = now.getHours() * 60 + now.getMinutes();
+    const [oh, om] = (config.openTime || '13:00').split(':').map(Number);
+    const [ch, cm] = (config.closeTime || '18:30').split(':').map(Number);
+    const openMin = (isNaN(oh) ? 13 : oh) * 60 + (isNaN(om) ? 0 : om);
+    const closeMin = (isNaN(ch) ? 18 : ch) * 60 + (isNaN(cm) ? 30 : cm);
+    return curMin >= openMin && curMin <= closeMin;
+  })();
 
   useEffect(() => {
     const fetchExisting = async () => {
       setFetching(true);
       try {
-        const res = await api.get('/campaign/report');
-        if (res.data) {
-          setExistingReport(res.data);
+        const [repRes, cfgRes] = await Promise.allSettled([
+          api.get('/campaign/report'),
+          api.get('/campaign/config')
+        ]);
+
+        if (cfgRes.status === 'fulfilled' && cfgRes.value.data) {
+          setConfig(cfgRes.value.data);
+        }
+
+        if (repRes.status === 'fulfilled' && repRes.value.data) {
+          const data = repRes.value.data;
+          setExistingReport(data);
           const filled = {};
-          ALL_FIELDS.forEach(f => { filled[f.key] = String(res.data[f.key] || 0); });
+          ALL_FIELDS.forEach(f => { filled[f.key] = String(data[f.key] || 0); });
           setForm(filled);
           setExtra({
-            issues: res.data.issues || '',
-            proposals: res.data.proposals || '',
-            evidenceLinks: res.data.evidenceLinks || ''
+            issues: data.issues || '',
+            proposals: data.proposals || '',
+            evidenceLinks: data.evidenceLinks || ''
           });
         }
       } catch { /* No report yet */ }
@@ -266,10 +287,18 @@ const MyReport = () => {
         }
         <div style={{ flex: 1, minWidth: 240 }}>
           <div style={{ fontWeight: 700, color: isReportTime ? '#059669' : '#D97706', fontSize: '.95rem' }}>
-            {isReportTime ? '✅ Cổng tiếp nhận & chỉnh sửa đang MỞ (13:00 – 18:30 hằng ngày)' : '⏰ Cổng báo cáo mở từ 13:00 đến 18:30 hằng ngày (Hạn chót: 18:30)'}
+            {isReportTime 
+              ? `✅ Cổng tiếp nhận & chỉnh sửa đang MỞ (${config.alwaysOpen ? 'Luôn mở 24/7' : `${config.openTime || '13:00'} – ${config.closeTime || '18:30'} hằng ngày`})`
+              : `⏰ Cổng báo cáo mở từ ${config.openTime || '13:00'} đến ${config.closeTime || '18:30'} hằng ngày (Hạn chót: ${config.closeTime || '18:30'})`
+            }
           </div>
           <div style={{ fontSize: '.84rem', color: 'var(--tx-2)', marginTop: 3, lineHeight: 1.4 }}>
-            Nhập số liệu lũy kế 11 tiêu chí trực tiếp lên app. {existingReport ? 'Đơn vị có thể chỉnh sửa lại số liệu đến 18:30.' : 'Vui lòng hoàn thành trước 18h30.'}
+            Nhập số liệu lũy kế 11 tiêu chí trực tiếp lên hệ thống. {existingReport ? `Đơn vị có thể chỉnh sửa lại số liệu đến ${config.alwaysOpen ? 'bất kỳ lúc nào' : config.closeTime || '18:30'}.` : `Vui lòng hoàn thành trước ${config.alwaysOpen ? 'cuối ngày' : config.closeTime || '18:30'}.`}
+            {config.customNotice && (
+              <span style={{ display: 'block', color: 'var(--primary)', fontWeight: 600, marginTop: 4 }}>
+                📢 Lưu ý từ Tỉnh: {config.customNotice}
+              </span>
+            )}
           </div>
         </div>
       </div>
@@ -284,7 +313,7 @@ const MyReport = () => {
             Báo cáo của <strong>{agencyName}</strong> đã được ghi nhận và đồng bộ lên trung tâm chỉ huy số cấp Tỉnh.
           </p>
 
-          {/* Nút cho phép chỉnh sửa nếu đang trong khung giờ 13:00 - 18:30 */}
+          {/* Nút cho phép chỉnh sửa nếu đang trong khung giờ hợp lệ */}
           {isReportTime ? (
             <div style={{ marginBottom: 24 }}>
               <button 
@@ -293,12 +322,12 @@ const MyReport = () => {
                 className="btn btn-primary"
                 style={{ padding: '10px 24px', fontWeight: 700, borderRadius: 10, display: 'inline-flex', alignItems: 'center', gap: 8 }}
               >
-                ✏️ Chỉnh sửa / Bổ sung số liệu (Hạn chót 18:30)
+                ✏️ Chỉnh sửa / Bổ sung số liệu ({config.alwaysOpen ? 'Chế độ 24/7' : `Hạn chót ${config.closeTime || '18:30'}`})
               </button>
             </div>
           ) : (
             <div style={{ marginBottom: 20, fontSize: '.84rem', color: '#92400E', background: '#FEF3C7', padding: '8px 16px', borderRadius: 8, display: 'inline-block' }}>
-              ⏰ Đã hết khung giờ chỉnh sửa hôm nay (Hạn chót là 18:30). Cổng báo cáo sẽ mở lại lúc 13:00 ngày mai.
+              ⏰ Đã hết khung giờ chỉnh sửa hôm nay (Hạn chót là {config.closeTime || '18:30'}). Cổng báo cáo sẽ mở lại lúc {config.openTime || '13:00'} ngày mai.
             </div>
           )}
 
@@ -600,8 +629,8 @@ const MyReport = () => {
             >
               {loading ? <Loader2 size={22} className="spin" /> : <Send size={22} />}
               {loading ? 'Đang lưu báo cáo 11 chỉ tiêu...'
-                : !isReportTime ? '⏰ Cổng mở từ 13:00 đến 18:30 hằng ngày'
-                : existingReport ? '💾 LƯU & CẬP NHẬT BÁO CÁO (TRƯỚC 18:30)'
+                : !isReportTime ? `⏰ Cổng mở từ ${config.openTime || '13:00'} đến ${config.closeTime || '18:30'} hằng ngày`
+                : existingReport ? `💾 LƯU & CẬP NHẬT BÁO CÁO (${config.alwaysOpen ? 'CHẾ ĐỘ 24/7' : `TRƯỚC ${config.closeTime || '18:30'}`})`
                 : '📤 NỘP BÁO CÁO 11 CHỈ TIÊU CHIẾN DỊCH HÔM NAY'}
             </button>
           </div>

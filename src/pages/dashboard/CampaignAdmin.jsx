@@ -3,7 +3,8 @@ import { toast } from 'react-toastify';
 import api from '../../lib/api';
 import { 
   Map, FileSpreadsheet, RefreshCw, Loader2, TrendingUp, Globe, 
-  Sparkles, Award, CheckCircle2, ChevronRight, Filter
+  Sparkles, Award, CheckCircle2, ChevronRight, Filter,
+  Clock, Settings, X, Save, CheckCircle, AlertCircle
 } from 'lucide-react';
 
 const CampaignAdmin = () => {
@@ -12,6 +13,14 @@ const CampaignAdmin = () => {
   const [exporting, setExporting] = useState(false);
   const [filterDate, setFilterDate] = useState(new Date().toISOString().split('T')[0]);
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Cấu hình khung giờ báo cáo
+  const [showConfigModal, setShowConfigModal] = useState(false);
+  const [config, setConfig] = useState({ openTime: '13:00', closeTime: '18:30', alwaysOpen: false, customNotice: '', isOpenNow: true });
+  const [savingConfig, setSavingConfig] = useState(false);
+
+  const role = localStorage.getItem('role') || '';
+  const canConfig = ['SENIOR_ADMIN', 'ADMIN', 'PROVINCE_ADMIN'].includes(role);
 
   const fetchReports = async () => {
     setLoading(true);
@@ -24,7 +33,32 @@ const CampaignAdmin = () => {
     setLoading(false);
   };
 
-  useEffect(() => { fetchReports(); }, [filterDate]);
+  const fetchConfig = async () => {
+    try {
+      const res = await api.get('/campaign/config');
+      if (res.data) setConfig(res.data);
+    } catch { /* ignore */ }
+  };
+
+  useEffect(() => { 
+    fetchReports(); 
+    fetchConfig();
+  }, [filterDate]);
+
+  const handleSaveConfig = async (e) => {
+    e.preventDefault();
+    setSavingConfig(true);
+    try {
+      const res = await api.put('/campaign/config', config);
+      toast.success(res.data.message || '✅ Đã lưu cấu hình khung giờ thành công!');
+      setConfig(prev => ({ ...prev, ...res.data.config }));
+      setShowConfigModal(false);
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Lỗi cập nhật cấu hình');
+    } finally {
+      setSavingConfig(false);
+    }
+  };
 
   // Xuất Excel thật — gọi endpoint backend
   const handleExportExcel = async () => {
@@ -87,6 +121,17 @@ const CampaignAdmin = () => {
           </p>
         </div>
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+          {canConfig && (
+            <button 
+              className="btn btn-outline" 
+              onClick={() => setShowConfigModal(true)} 
+              style={{ display: 'flex', alignItems: 'center', gap: 6, borderColor: '#0284C7', color: '#0284C7', background: '#F0F9FF', fontWeight: 700 }}
+              title="Cấu hình giờ mở/đóng cổng nộp và chỉnh sửa báo cáo"
+            >
+              <Settings size={15} /> 
+              {config.alwaysOpen ? '🟢 Mở 24/7' : `⏰ Cổng: ${config.openTime || '13:00'} – ${config.closeTime || '18:30'}`}
+            </button>
+          )}
           <input 
             type="text" 
             className="form-input" 
@@ -244,6 +289,156 @@ const CampaignAdmin = () => {
           </div>
         )}
       </div>
+
+      {/* MODAL CẤU HÌNH KHUNG GIỜ NỘP & SỬA BÁO CÁO */}
+      {showConfigModal && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(15, 23, 42, 0.65)', backdropFilter: 'blur(4px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          zIndex: 9999, padding: 16
+        }}>
+          <div className="card" style={{
+            maxWidth: 520, width: '100%', padding: 24, borderRadius: 18,
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.25)', border: '1px solid var(--border)',
+            background: 'var(--surface-0)'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+              <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: 8, fontSize: '1.2rem', color: 'var(--primary)' }}>
+                <Clock size={22} /> Cấu hình Khung giờ Báo cáo
+              </h3>
+              <button 
+                onClick={() => setShowConfigModal(false)} 
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--tx-3)', padding: 4 }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveConfig}>
+              {/* Chế độ Always Open */}
+              <div style={{
+                background: config.alwaysOpen ? '#ECFDF5' : 'var(--surface-1)',
+                border: `1.5px solid ${config.alwaysOpen ? '#10B981' : 'var(--border)'}`,
+                padding: 16, borderRadius: 12, marginBottom: 20,
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12
+              }}>
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: '.95rem', color: config.alwaysOpen ? '#065F46' : 'var(--tx-1)' }}>
+                    🟢 Mở cổng 24/7 (Không giới hạn giờ)
+                  </div>
+                  <div style={{ fontSize: '.8rem', color: 'var(--tx-3)', marginTop: 2 }}>
+                    Cho phép các xã nộp và sửa báo cáo mọi lúc (Thích hợp khi chạy kiểm thử hoặc đợt cao điểm)
+                  </div>
+                </div>
+                <label style={{ position: 'relative', display: 'inline-block', width: 48, height: 26, flexShrink: 0, cursor: 'pointer' }}>
+                  <input 
+                    type="checkbox" 
+                    checked={!!config.alwaysOpen} 
+                    onChange={e => setConfig(c => ({ ...c, alwaysOpen: e.target.checked }))}
+                    style={{ opacity: 0, width: 0, height: 0 }}
+                  />
+                  <span style={{
+                    position: 'absolute', cursor: 'pointer', top: 0, left: 0, right: 0, bottom: 0,
+                    backgroundColor: config.alwaysOpen ? '#10B981' : '#CBD5E1',
+                    borderRadius: 34, transition: '.3s'
+                  }}>
+                    <span style={{
+                      position: 'absolute', content: '""', height: 20, width: 20, left: config.alwaysOpen ? 25 : 3, bottom: 3,
+                      backgroundColor: 'white', borderRadius: '50%', transition: '.3s',
+                      boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                    }} />
+                  </span>
+                </label>
+              </div>
+
+              {/* Cấu hình giờ nếu không bật Always Open */}
+              {!config.alwaysOpen && (
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 20 }}>
+                  <div>
+                    <label className="form-label" style={{ fontWeight: 600, fontSize: '.85rem', display: 'flex', alignItems: 'center', gap: 6 }}>
+                      🕒 Giờ Mở Cổng
+                    </label>
+                    <input 
+                      type="time" 
+                      className="form-input" 
+                      value={config.openTime || '13:00'} 
+                      onChange={e => setConfig(c => ({ ...c, openTime: e.target.value }))}
+                      required
+                      style={{ fontSize: '1.05rem', fontWeight: 700 }}
+                    />
+                    <span style={{ fontSize: '.75rem', color: 'var(--tx-3)', marginTop: 4, display: 'block' }}>
+                      Mặc định: 13:00 chiều
+                    </span>
+                  </div>
+
+                  <div>
+                    <label className="form-label" style={{ fontWeight: 600, fontSize: '.85rem', display: 'flex', alignItems: 'center', gap: 6 }}>
+                      ⏰ Giờ Đóng / Hạn Sửa
+                    </label>
+                    <input 
+                      type="time" 
+                      className="form-input" 
+                      value={config.closeTime || '18:30'} 
+                      onChange={e => setConfig(c => ({ ...c, closeTime: e.target.value }))}
+                      required
+                      style={{ fontSize: '1.05rem', fontWeight: 700 }}
+                    />
+                    <span style={{ fontSize: '.75rem', color: 'var(--tx-3)', marginTop: 4, display: 'block' }}>
+                      Mặc định: 18:30 tối
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {/* Thông báo tùy chỉnh cho các xã */}
+              <div style={{ marginBottom: 20 }}>
+                <label className="form-label" style={{ fontWeight: 600, fontSize: '.85rem' }}>
+                  📢 Thông báo / Ghi chú đặc biệt gửi tới các Xã (Tùy chọn)
+                </label>
+                <input 
+                  type="text" 
+                  className="form-input" 
+                  placeholder="Ví dụ: Hôm nay gia hạn nộp đến 20:00..."
+                  value={config.customNotice || ''}
+                  onChange={e => setConfig(c => ({ ...c, customNotice: e.target.value }))}
+                />
+              </div>
+
+              {/* Quy tắc hiệu lực */}
+              <div style={{
+                background: 'var(--surface-1)', padding: '12px 16px', borderRadius: 10,
+                marginBottom: 20, display: 'flex', alignItems: 'center', gap: 10, fontSize: '.85rem', border: '1px solid var(--border)'
+              }}>
+                <AlertCircle size={18} color="var(--primary)" style={{ flexShrink: 0 }} />
+                <div style={{ color: 'var(--tx-2)' }}>
+                  <strong>Quy tắc hiệu lực:</strong> Các đơn vị cấp Xã chỉ có thể gửi mới và chỉnh sửa số liệu báo cáo trong khoảng thời gian quy định ở trên.
+                </div>
+              </div>
+
+              {/* Action buttons */}
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+                <button 
+                  type="button" 
+                  className="btn btn-outline" 
+                  onClick={() => setShowConfigModal(false)}
+                >
+                  Đóng
+                </button>
+                <button 
+                  type="submit" 
+                  className="btn btn-primary" 
+                  disabled={savingConfig}
+                  style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+                >
+                  {savingConfig ? <Loader2 size={16} className="spin" /> : <Save size={16} />}
+                  {savingConfig ? 'Đang lưu...' : 'Lưu Cấu hình'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
