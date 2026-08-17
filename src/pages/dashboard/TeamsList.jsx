@@ -49,6 +49,16 @@ const TeamsList = () => {
     XLSX.writeFile(wb, "Bao_cao_Doi_hinh_Mua_He_Xanh.xlsx");
   };
 
+  const handleSyncFromReports = async () => {
+    try {
+      const res = await api.post('/teams/sync');
+      toast.success(res.data.message || 'Đã đồng bộ đội hình từ các báo cáo thành công!');
+      fetchTeams();
+    } catch {
+      toast.error('Lỗi khi đồng bộ dữ liệu đội hình');
+    }
+  };
+
   const filtered = filter === 'ALL' ? teams : teams.filter(t => t.status === filter);
 
   return (
@@ -56,10 +66,15 @@ const TeamsList = () => {
       <div className="page-header">
         <div className="action-row">
           <div>
-            <h2>Quản lý Đội hình</h2>
-            <p>Theo dõi và kiểm duyệt dữ liệu báo cáo từ các Xã</p>
+            <h2>Quản lý Đội hình Thanh niên số</h2>
+            <p>Mạng lưới Đội hình tự động đồng bộ từ Báo cáo 11 chỉ tiêu của các Xã/Phường</p>
           </div>
-          <div style={{ display: 'flex', gap: 10 }}>
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+            {['PROVINCE_ADMIN', 'SENIOR_ADMIN', 'ADMIN'].includes(role) && (
+              <button className="btn btn-sm" style={{ background: '#EFF6FF', color: '#1D4ED8', border: '1px solid #BFDBFE', fontWeight: 700 }} onClick={handleSyncFromReports}>
+                <RefreshCw size={15} /> Quét & Đồng bộ từ Báo cáo
+              </button>
+            )}
             <button className="btn btn-outline btn-sm" style={{ color: '#00A86B', borderColor: '#00A86B' }} onClick={handleExportExcel}>
               <Download size={15} /> Xuất Excel
             </button>

@@ -24,9 +24,9 @@ const PublicTeams = () => {
       <div className="container">
         {/* Header */}
         <div className="section-header">
-          <span className="section-label">Mùa Hè Xanh 2026</span>
-          <h2 className="section-title">Danh sách Đội hình Tình nguyện</h2>
-          <p className="section-desc">Các đơn vị đã được phê duyệt và đang hoạt động tại Đắk Lắk</p>
+          <span className="section-label">Chiến dịch 44 ngày đêm 2026</span>
+          <h2 className="section-title">Danh sách Đội hình Thanh niên số</h2>
+          <p className="section-desc">Mạng lưới 102 Đội hình Thanh niên số xung kích hỗ trợ người dân chuyển đổi số tại các xã, phường tỉnh Đắk Lắk</p>
         </div>
 
         {/* Search */}
@@ -35,7 +35,7 @@ const PublicTeams = () => {
           <input
             className="form-input"
             style={{ paddingLeft: 42 }}
-            placeholder="Tìm kiếm theo tên đội hình, huyện, trường..."
+            placeholder="Tìm kiếm theo tên đội hình, xã, huyện..."
             value={search}
             onChange={e => setSearch(e.target.value)}
           />
@@ -46,8 +46,8 @@ const PublicTeams = () => {
         ) : filtered.length === 0 ? (
           <div className="empty-state">
             <div className="empty-state-icon">🔍</div>
-            <h4>Không tìm thấy kết quả</h4>
-            <p>Thử tìm kiếm với từ khóa khác</p>
+            <h4>Chưa có đội hình nào</h4>
+            <p>Các đội hình sẽ tự động hiển thị khi cấp xã nộp báo cáo chiến dịch</p>
           </div>
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 24 }}>
@@ -71,13 +71,13 @@ const PublicTeams = () => {
                 )}
                 <div className="team-stats">
                   <div className="team-stat-item" style={{ color: 'var(--brand-blue)' }}>
-                    <Users size={15} /> {team.statistics?.volunteersCount || 0} SV
+                    <Users size={15} /> {team.statistics?.volunteersCount || 0} TNV
                   </div>
                   <div className="team-stat-item" style={{ color: 'var(--brand-green)' }}>
                     <Briefcase size={15} /> {team.statistics?.projectsCount || 0} Công trình
                   </div>
                   <div className="team-stat-item" style={{ color: 'var(--danger)' }}>
-                    <Heart size={15} /> {team.statistics?.beneficiaries || 0} Người
+                    <Heart size={15} /> {team.statistics?.beneficiaries || 0} Người tiếp cận
                   </div>
                 </div>
               </div>
