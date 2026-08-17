@@ -346,26 +346,58 @@ const Home = () => {
       {/* ══════════════════════════════════════════════════════
           TIN TỨC
       ══════════════════════════════════════════════════════ */}
+      {/* ══════════════════════════════════════════════════════
+          TIN TỨC & HOẠT ĐỘNG CHUYỂN ĐỔI SỐ
+      ══════════════════════════════════════════════════════ */}
       {news.length > 0 && (
-        <section className="section" style={{ background: 'var(--bg)' }}>
+        <section className="section" style={{ background: 'var(--bg)', padding: '70px 0' }}>
           <div className="container">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 36, flexWrap: 'wrap', gap: 14 }}>
               <div>
-                <span className="section-label">Cập nhật mới nhất</span>
-                <h2 className="section-title" style={{ marginTop: 8 }}>Tin tức Chiến dịch</h2>
+                <span className="section-label">Truyền thông & Hoạt động</span>
+                <h2 className="section-title" style={{ marginTop: 8 }}>Tin tức Chiến dịch Chuyển đổi số</h2>
+                <p style={{ color: 'var(--tx-3)', marginTop: 6, fontSize: '.95rem' }}>
+                  Cập nhật các hoạt động, mô hình số hóa nổi bật từ 102 xã, phường tỉnh Đắk Lắk
+                </p>
               </div>
-              <Link to="/tin-tuc" className="btn btn-ghost">Tất cả tin tức <ArrowRight size={15} /></Link>
+              <Link to="/tin-tuc" className="btn btn-outline" style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                Tất cả tin tức <ArrowRight size={16} />
+              </Link>
             </div>
             <div className="grid-3">
-              {news.map((n, i) => (
-                <div key={n._id} className="news-card anim" style={{ animationDelay: `${i * 80}ms` }}>
-                  <div className="news-card-accent" />
-                  <div className="news-card-body">
-                    <div className="news-date"><Calendar size={12} />{new Date(n.createdAt).toLocaleDateString('vi-VN')}</div>
-                    <h3 className="news-title">{n.title}</h3>
-                    <p className="news-excerpt">{n.content}</p>
+              {news.slice(0, 3).map((n, i) => (
+                <Link to="/tin-tuc" key={n._id || i} className="news-card anim" style={{ animationDelay: `${i * 80}ms`, textDecoration: 'none', color: 'inherit' }}>
+                  <div className="news-card-thumb-wrap">
+                    <img 
+                      src={n.imageUrl || 'https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=1200&q=80'} 
+                      alt={n.title}
+                      onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=1200&q=80'; }}
+                    />
+                    <div style={{ position: 'absolute', top: 12, left: 12, zIndex: 2 }}>
+                      <span className="news-category-tag" style={{ background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(4px)', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+                        {n.category || 'Chiến dịch 44 ngày'}
+                      </span>
+                    </div>
                   </div>
-                </div>
+                  <div className="news-card-body">
+                    <div className="news-date">
+                      <Calendar size={12} />
+                      {new Date(n.createdAt).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                    </div>
+                    <h3 className="news-title" style={{ fontSize: '1.05rem', fontWeight: 700, lineHeight: 1.4, marginBottom: 8 }}>
+                      {n.title}
+                    </h3>
+                    <p className="news-excerpt" style={{ fontSize: '0.85rem', color: '#64748B', lineHeight: 1.55 }}>
+                      {n.summary || n.content}
+                    </p>
+                    <div style={{ marginTop: 'auto', paddingTop: 14, borderTop: '1px solid #F1F5F9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontSize: '0.78rem', color: '#64748B', fontWeight: 600 }}>Chi tiết</span>
+                      <span style={{ color: '#1D4ED8', fontSize: '0.82rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }}>
+                        Đọc thêm <ArrowRight size={13} />
+                      </span>
+                    </div>
+                  </div>
+                </Link>
               ))}
             </div>
           </div>
