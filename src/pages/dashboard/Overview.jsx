@@ -102,14 +102,20 @@ const Overview = () => {
     { name: 'Chờ duyệt', value: pending.length },
   ].filter(d => d.value > 0);
 
-  // Chỉ tiêu toàn tỉnh (ước tính dựa trên trung bình các nhóm × số xã)
+  // 11 Chỉ tiêu toàn tỉnh chính thức
   const TARGET = {
-    digitalSkills: 102 * 900,  // ≈91800
-    vneid: 102 * 500,          // ≈51000
-    qr: 102 * 90,              // ≈9180
-    publicServices: 102 * 300, // ≈30600
-    smartweb: 102 * 20,        // ≈2040
-    activeAgencies: 102,
+    digitalSkills:   100000, // 1. Kỹ năng số
+    vneid:           50000,  // 2. VNeID mức 2
+    publicServices:  30000,  // 3. DVC trực tuyến
+    qr:              10000,  // 4. QR thanh toán
+    activeTeams:     102,    // 5. Đội hình TN số
+    trainingClasses: 500,    // 6. Lớp tập huấn KNS
+    digitalModels:   102,    // 7. Mô hình CĐS
+    digitalProducts: 1000,   // 8. SP OCOP số hóa
+    youthTrained:    20000,  // 9. TN tập huấn AI
+    youthProjects:   102,    // 10. Công trình TN CĐS
+    smartweb:        102,    // 11. Website SmartWeb
+    activeAgencies:  102,
   };
 
   const cs = campaignStats || {};
@@ -121,7 +127,7 @@ const Overview = () => {
       <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
         <div>
           <h2>Dashboard Tổng quan</h2>
-          <p>Chiến dịch 44 ngày đêm — Thanh niên Đắk Lắk tiên phong chuyển đổi số</p>
+          <p>Chiến dịch 44 ngày đêm — Đánh giá tiến độ 11 chỉ tiêu Chuyển đổi số</p>
         </div>
         <div style={{ display: 'flex', gap: 10 }}>
           <button className="btn btn-outline" onClick={fetchAll} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -176,11 +182,11 @@ const Overview = () => {
         {[
           { icon: Map,        val: teams.length,                    label: 'Tổng đội hình',      color: '#1a3a6b' },
           { icon: CheckCircle,val: approved.length,                 label: 'Đã duyệt',           color: '#10B981' },
-          { icon: Clock,      val: pending.length,                  label: 'Chờ duyệt',          color: '#F59E0B' },
-          { icon: Users,      val: (cs.volunteers||totalVolunteers).toLocaleString(), label: 'Tình nguyện viên', color: '#9333EA' },
-          { icon: Smartphone, val: (cs.digitalSkills||0).toLocaleString(), label: 'Lượt HT kỹ năng số', color: '#0EA5E9' },
-          { icon: QrCode,     val: (cs.qr||0).toLocaleString(),     label: 'Hộ KD hỗ trợ QR',   color: '#F97316' },
-          { icon: Globe,      val: (sw.total||0).toLocaleString(),  label: 'ĐK SmartWeb',        color: '#6366F1' },
+          { icon: Users,      val: (cs.volunteers||totalVolunteers).toLocaleString('vi-VN'), label: 'Tình nguyện viên', color: '#9333EA' },
+          { icon: Smartphone, val: (cs.digitalSkills||0).toLocaleString('vi-VN'), label: '1. Kỹ năng số', color: '#0EA5E9' },
+          { icon: Landmark,   val: (cs.vneid||0).toLocaleString('vi-VN'), label: '2. VNeID mức 2', color: '#16A34A' },
+          { icon: QrCode,     val: (cs.qr||0).toLocaleString('vi-VN'),     label: '4. Hộ KD dùng QR', color: '#F97316' },
+          { icon: Globe,      val: (cs.smartwebCount||sw.total||0).toLocaleString('vi-VN'),  label: '11. SmartWeb', color: '#6366F1' },
           { icon: TrendingUp, val: (cs.activeAgencies||0)+'/'+cs.totalAgencies, label: 'Xã đã báo cáo', color: '#DC2626' },
         ].map((s, i) => (
           <div key={i} className="stat-card animate-up" style={{ animationDelay: `${i * 60}ms` }}>
@@ -198,17 +204,23 @@ const Overview = () => {
       </div>
 
       {/* ════ TIẾN ĐỘ THỰC TẾ vs CHỈ TIÊU ════ */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, marginBottom: 24 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 24, marginBottom: 24 }}>
         <div className="card animate-up delay-2">
           <h4 style={{ marginBottom: 20, display: 'flex', alignItems: 'center', gap: 8 }}>
-            <TrendingUp size={18} color="#1a3a6b" /> Tiến độ thực tế vs Chỉ tiêu
+            <TrendingUp size={18} color="#1a3a6b" /> Tiến độ 11 Chỉ tiêu Thực tế vs Mục tiêu
           </h4>
-          <ProgressBar value={cs.digitalSkills||0} max={TARGET.digitalSkills} color="#0EA5E9" label="💻 Kỹ năng số" />
-          <ProgressBar value={cs.vneid||0} max={TARGET.vneid} color="#10B981" label="🪪 VNeID" />
-          <ProgressBar value={cs.qr||0} max={TARGET.qr} color="#F59E0B" label="📱 QR Thanh toán" />
-          <ProgressBar value={cs.publicServices||0} max={TARGET.publicServices} color="#6366F1" label="🏛️ DVC Trực tuyến" />
-          <ProgressBar value={sw.total||0} max={TARGET.smartweb} color="#1a3a6b" label="🌐 SmartWeb" />
-          <ProgressBar value={cs.activeAgencies||0} max={TARGET.activeAgencies} color="#DC2626" label="🏘️ Xã đã ra quân" />
+          <ProgressBar value={cs.digitalSkills||0} max={TARGET.digitalSkills} color="#0EA5E9" label="💻 1. Kỹ năng số" />
+          <ProgressBar value={cs.vneid||0} max={TARGET.vneid} color="#10B981" label="🪪 2. VNeID mức 2" />
+          <ProgressBar value={cs.publicServices||0} max={TARGET.publicServices} color="#6366F1" label="🏛️ 3. DVC Trực tuyến" />
+          <ProgressBar value={cs.qr||0} max={TARGET.qr} color="#F59E0B" label="📱 4. QR Thanh toán" />
+          <ProgressBar value={cs.activeTeams||0} max={TARGET.activeTeams} color="#2563EB" label="🏃 5. Đội hình TN số" />
+          <ProgressBar value={cs.trainingClasses||0} max={TARGET.trainingClasses} color="#0D9488" label="📚 6. Lớp/Điểm HD KNS" />
+          <ProgressBar value={cs.digitalModels||0} max={TARGET.digitalModels} color="#E11D48" label="🏪 7. Mô hình điểm CĐS" />
+          <ProgressBar value={cs.digitalProducts||0} max={TARGET.digitalProducts} color="#EA580C" label="🛒 8. SP OCOP số hóa" />
+          <ProgressBar value={cs.youthTrained||0} max={TARGET.youthTrained} color="#4F46E5" label="🤖 9. TN học AI" />
+          <ProgressBar value={cs.youthProjects||0} max={TARGET.youthProjects} color="#9333EA" label="⚡ 10. Công trình TN CĐS" />
+          <ProgressBar value={cs.smartwebCount||sw.total||0} max={TARGET.smartweb} color="#1a3a6b" label="🌐 11. Website SmartWeb" />
+          <ProgressBar value={cs.activeAgencies||0} max={TARGET.activeAgencies} color="#DC2626" label="🏘️ Xã/Phường ra quân" />
         </div>
 
         <div className="card animate-up delay-3">

@@ -172,18 +172,25 @@ const AgenciesMonitor = () => {
                             📊 Chi tiết báo cáo chiến dịch hôm nay — {a.name}
                           </div>
                           {hasReport && ts ? (
-                            <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+                            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
                               {[
-                                { icon: '👥', label: 'TNV', val: ts.volunteers },
-                                { icon: '💻', label: 'KN Số', val: ts.digitalSkills },
-                                { icon: '🪪', label: 'VNeID', val: ts.vneidSupport },
-                                { icon: '📱', label: 'QR', val: ts.qrSupport },
-                                { icon: '🌐', label: 'SmartWeb ĐK', val: ts.smartwebCount || 0 },
+                                { icon: '💻', label: '1. KN Số', val: ts.digitalSkills },
+                                { icon: '🪪', label: '2. VNeID', val: ts.vneidSupport },
+                                { icon: '🏛️', label: '3. DVC', val: ts.publicServices || 0 },
+                                { icon: '📱', label: '4. QR KD', val: ts.qrSupport },
+                                { icon: '🏃', label: '5. Đội hình', val: ts.activeTeams || 0 },
+                                { icon: '📚', label: '6. Lớp TH', val: ts.trainingClasses || 0 },
+                                { icon: '🏪', label: '7. Mô hình', val: ts.digitalModels || 0 },
+                                { icon: '🛒', label: '8. SP OCOP', val: ts.digitalProducts || 0 },
+                                { icon: '🤖', label: '9. TN AI', val: ts.youthTrained || 0 },
+                                { icon: '⚡', label: '10. C.Trình', val: ts.youthProjects || 0 },
+                                { icon: '🌐', label: '11. Web SW', val: ts.smartwebCount || 0 },
+                                { icon: '👥', label: 'TNV', val: ts.volunteers || 0 },
                               ].map((s, j) => (
-                                <div key={j} style={{ background: 'white', padding: '8px 16px', borderRadius: 10, border: '1px solid var(--border)', textAlign: 'center', minWidth: 80 }}>
-                                  <div style={{ fontSize: '1.2rem' }}>{s.icon}</div>
-                                  <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#1a3a6b' }}>{s.val}</div>
-                                  <div style={{ fontSize: '.72rem', color: 'var(--tx-3)' }}>{s.label}</div>
+                                <div key={j} style={{ background: 'white', padding: '8px 12px', borderRadius: 10, border: '1px solid var(--border)', textAlign: 'center', minWidth: 72 }}>
+                                  <div style={{ fontSize: '1.1rem' }}>{s.icon}</div>
+                                  <div style={{ fontSize: '1rem', fontWeight: 800, color: '#1a3a6b' }}>{(s.val || 0).toLocaleString('vi-VN')}</div>
+                                  <div style={{ fontSize: '.7rem', color: 'var(--tx-3)', fontWeight: 600 }}>{s.label}</div>
                                 </div>
                               ))}
                             </div>

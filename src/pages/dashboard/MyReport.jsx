@@ -3,26 +3,166 @@ import api from '../../lib/api';
 import { toast } from 'react-toastify';
 import {
   Send, CheckCircle, Loader2, ClipboardList,
-  AlertCircle, Clock, Info, Globe
+  AlertCircle, Clock, Info, Globe, Smartphone, Landmark,
+  ShieldCheck, ShoppingCart, Award, Sparkles, ExternalLink, HelpCircle
 } from 'lucide-react';
 
-const FIELDS = [
-  { key: 'activeTeams',     label: 'Số đội hình ra quân',        placeholder: '0', icon: '🏃', hint: 'Tổng số đội hình hoạt động trong ngày' },
-  { key: 'volunteers',      label: 'Số tình nguyện viên',         placeholder: '0', icon: '👥', hint: 'Tổng lượt đoàn viên/TNV tham gia' },
-  { key: 'digitalSkills',   label: 'Hỗ trợ kỹ năng số',          placeholder: '0', icon: '💻', hint: 'Số người được hỗ trợ kỹ năng số' },
-  { key: 'vneidSupport',    label: 'Hỗ trợ VNeID',               placeholder: '0', icon: '🪪', hint: 'Số người được hỗ trợ cài VNeID' },
-  { key: 'publicServices',  label: 'Dịch vụ công trực tuyến',    placeholder: '0', icon: '🏛️', hint: 'Số hồ sơ DVC trực tuyến được hỗ trợ' },
-  { key: 'qrSupport',       label: 'Hỗ trợ thanh toán QR',       placeholder: '0', icon: '📱', hint: 'Số tiểu thương/hộ dân được hỗ trợ QR' },
-  { key: 'smartwebCount',   label: 'Đăng ký website SmartWeb',   placeholder: '0', icon: '🌐', hint: 'Số tiểu thương đăng ký website .VN SmartWeb' },
-  { key: 'websitesCreated', label: 'Website đã được tạo/active', placeholder: '0', icon: '✅', hint: 'Số website đã kích hoạt và hoạt động' },
-  { key: 'trainingClasses', label: 'Lớp tập huấn số',            placeholder: '0', icon: '📚', hint: 'Số lớp/buổi tập huấn kỹ năng số' },
-  { key: 'digitalProducts', label: 'Sản phẩm số địa phương',     placeholder: '0', icon: '🛒', hint: 'Số sản phẩm địa phương đưa lên nền tảng số' },
-  { key: 'youthTrained',    label: 'Thanh niên tập huấn AI',     placeholder: '0', icon: '🤖', hint: 'Số thanh niên được tập huấn AI' },
-  { key: 'safetyCampaigns', label: 'Chiến dịch an toàn số',      placeholder: '0', icon: '🛡️', hint: 'Số buổi tuyên truyền phòng chống lừa đảo' },
-  { key: 'mediaPosts',      label: 'Bài đăng truyền thông',      placeholder: '0', icon: '📣', hint: 'Số bài đăng MXH về chiến dịch' },
+// 11 CHỈ TIÊU CHÍNH THỨC CỦA CHIẾN DỊCH (THEO VĂN BẢN HƯỚNG DẪN)
+const CORE_CRITERIA = [
+  {
+    index: 1,
+    key: 'digitalSkills',
+    label: '1. Tiếp cận kỹ năng số cộng đồng',
+    shortLabel: 'Tiếp cận KN số',
+    targetHint: 'Toàn tỉnh: 100.000 lượt (trực tiếp ≥ 50.000)',
+    placeholder: '0',
+    unit: 'lượt người',
+    icon: '💻',
+    color: '#0284C7',
+    bg: '#E0F2FE',
+    desc: 'Hỗ trợ, tuyên truyền cho người dân tiếp cận kỹ năng số, smartphone, DV số'
+  },
+  {
+    index: 2,
+    key: 'vneidSupport',
+    label: '2. Kích hoạt VNeID mức 2 & tiện ích',
+    shortLabel: 'VNeID mức 2',
+    targetHint: 'Toàn tỉnh: 50.000 lượt',
+    placeholder: '0',
+    unit: 'lượt người',
+    icon: '🪪',
+    color: '#16A34A',
+    bg: '#DCFCE7',
+    desc: 'Đăng ký, kích hoạt, sử dụng tài khoản định danh VNeID mức 2 và tiện ích số'
+  },
+  {
+    index: 3,
+    key: 'publicServices',
+    label: '3. Hỗ trợ Dịch vụ công trực tuyến',
+    shortLabel: 'DVC trực tuyến',
+    targetHint: 'Toàn tỉnh: 30.000 lượt',
+    placeholder: '0',
+    unit: 'lượt / hồ sơ',
+    icon: '🏛️',
+    color: '#7C3AED',
+    bg: '#EDE9FE',
+    desc: 'Hỗ trợ người dân tạo tài khoản, nộp và tra cứu hồ sơ thủ tục hành chính trực tuyến'
+  },
+  {
+    index: 4,
+    key: 'qrSupport',
+    label: '4. Hộ KD / tiểu thương dùng QR',
+    shortLabel: 'Thanh toán QR',
+    targetHint: 'Toàn tỉnh: 10.000 hộ',
+    placeholder: '0',
+    unit: 'hộ kinh doanh',
+    icon: '📱',
+    color: '#D97706',
+    bg: '#FEF3C7',
+    desc: 'Tạo mã QR thanh toán không tiền mặt, công cụ bán hàng số cho tiểu thương'
+  },
+  {
+    index: 5,
+    key: 'activeTeams',
+    label: '5. Đội hình "Thanh niên số"',
+    shortLabel: 'Đội hình TN số',
+    targetHint: 'Toàn tỉnh: 102 đội hình (100% xã ≥ 1)',
+    placeholder: '0',
+    unit: 'đội hình',
+    icon: '🏃',
+    color: '#2563EB',
+    bg: '#DBEAFE',
+    desc: 'Thành lập và duy trì đội hình Thanh niên số ra quân hoạt động tại xã/phường'
+  },
+  {
+    index: 6,
+    key: 'trainingClasses',
+    label: '6. Lớp / Điểm tập huấn kỹ năng số',
+    shortLabel: 'Lớp/Điểm HD',
+    targetHint: 'Toàn tỉnh: 500 lớp/điểm',
+    placeholder: '0',
+    unit: 'lớp / điểm',
+    icon: '📚',
+    color: '#0D9488',
+    bg: '#CCFBF1',
+    desc: 'Tổ chức các lớp tập huấn, điểm cố định/lưu động hướng dẫn kỹ năng số cộng đồng'
+  },
+  {
+    index: 7,
+    key: 'digitalModels',
+    label: '7. Mô hình điểm Chuyển đổi số',
+    shortLabel: 'Mô hình điểm CĐS',
+    targetHint: 'Toàn tỉnh: 102 mô hình (chợ số, tuyến phố KDTM...)',
+    placeholder: '0',
+    unit: 'mô hình',
+    icon: '🏪',
+    color: '#E11D48',
+    bg: '#FFE4E6',
+    desc: 'Chợ số, tuyến phố không tiền mặt, thôn/buôn số, KDC an toàn số, điểm DVC'
+  },
+  {
+    index: 8,
+    key: 'digitalProducts',
+    label: '8. Số hóa sản phẩm OCOP / địa phương',
+    shortLabel: 'Sản phẩm số hóa',
+    targetHint: 'Toàn tỉnh: 1.000 sản phẩm',
+    placeholder: '0',
+    unit: 'sản phẩm',
+    icon: '🛒',
+    color: '#EA580C',
+    bg: '#FFEDD5',
+    desc: 'Quảng bá, đưa lên sàn TMĐT, MXH các sản phẩm OCOP, nông sản địa phương'
+  },
+  {
+    index: 9,
+    key: 'youthTrained',
+    label: '9. Đoàn viên tập huấn AI & an toàn số',
+    shortLabel: 'ĐVTN học AI',
+    targetHint: 'Toàn tỉnh: 20.000 đoàn viên',
+    placeholder: '0',
+    unit: 'đoàn viên',
+    icon: '🤖',
+    color: '#4F46E5',
+    bg: '#EEF2FF',
+    desc: 'Tập huấn trí tuệ nhân tạo (AI), kỹ năng số và an toàn thông tin cho ĐVTN'
+  },
+  {
+    index: 10,
+    key: 'youthProjects',
+    label: '10. Công trình thanh niên CĐS',
+    shortLabel: 'Công trình CĐS',
+    targetHint: 'Toàn tỉnh: 102 công trình (100% cơ sở Đoàn ≥ 1)',
+    placeholder: '0',
+    unit: 'công trình',
+    icon: '⚡',
+    color: '#9333EA',
+    bg: '#FAF5FF',
+    desc: '100% Đoàn cấp xã/phường hoàn thành ít nhất 01 công trình thanh niên chuyển đổi số'
+  },
+  {
+    index: 11,
+    key: 'smartwebCount',
+    label: '11. Xây dựng website AI.VN SmartWeb',
+    shortLabel: 'Web SmartWeb',
+    targetHint: 'Toàn tỉnh: 102 website (AI.VN SmartWeb / CĐS)',
+    placeholder: '0',
+    unit: 'website',
+    icon: '🌐',
+    color: '#1E40AF',
+    bg: '#EFF6FF',
+    desc: 'Tạo website thông qua nền tảng AI.VN SmartWeb cho HKD, HTX, thanh niên khởi nghiệp'
+  }
 ];
 
-const emptyForm = () => Object.fromEntries(FIELDS.map(f => [f.key, '']));
+// CHỈ TIÊU PHỤ TRỢ BỔ SUNG
+const AUX_FIELDS = [
+  { key: 'volunteers', label: 'Tình nguyện viên tham gia', placeholder: '0', unit: 'lượt người', icon: '👥', hint: 'Lượt đoàn viên, thanh niên ra quân' },
+  { key: 'safetyCampaigns', label: 'Chiến dịch an toàn số', placeholder: '0', unit: 'buổi', icon: '🛡️', hint: 'Tuyên truyền phòng chống lừa đảo trực tuyến' },
+  { key: 'mediaPosts', label: 'Bài đăng truyền thông', placeholder: '0', unit: 'tin bài', icon: '📣', hint: 'Tin bài, video clip trên mạng xã hội' },
+];
+
+const ALL_FIELDS = [...CORE_CRITERIA, ...AUX_FIELDS];
+const emptyForm = () => Object.fromEntries(ALL_FIELDS.map(f => [f.key, '']));
 
 const MyReport = () => {
   const [form, setForm] = useState(emptyForm());
@@ -49,9 +189,8 @@ const MyReport = () => {
         const res = await api.get('/campaign/report');
         if (res.data) {
           setExistingReport(res.data);
-          // Pre-fill form với data hiện tại
           const filled = {};
-          FIELDS.forEach(f => { filled[f.key] = String(res.data[f.key] || 0); });
+          ALL_FIELDS.forEach(f => { filled[f.key] = String(res.data[f.key] || 0); });
           setForm(filled);
           setExtra({
             issues: res.data.issues || '',
@@ -75,11 +214,12 @@ const MyReport = () => {
     setLoading(true);
     try {
       const body = {};
-      FIELDS.forEach(f => { body[f.key] = Number(form[f.key]) || 0; });
+      ALL_FIELDS.forEach(f => { body[f.key] = Number(form[f.key]) || 0; });
       Object.assign(body, extra);
       await api.post('/campaign/report', body);
-      toast.success('✅ Gửi báo cáo thành công! Cảm ơn bạn đã báo cáo đúng hạn.');
+      toast.success('✅ Gửi báo cáo 11 chỉ tiêu thành công! Cảm ơn bạn đã báo cáo đúng hạn.');
       setSubmitted(true);
+      setExistingReport(body);
     } catch (err) {
       toast.error(err.response?.data?.message || 'Lỗi khi gửi báo cáo');
     } finally {
@@ -90,134 +230,334 @@ const MyReport = () => {
   if (fetching) {
     return (
       <div style={{ textAlign: 'center', padding: 80 }}>
-        <Loader2 size={32} className="spin" />
-        <p style={{ marginTop: 12, color: 'var(--tx-3)' }}>Đang kiểm tra báo cáo...</p>
+        <Loader2 size={36} className="spin" style={{ color: 'var(--primary)' }} />
+        <p style={{ marginTop: 14, color: 'var(--tx-3)', fontWeight: 500 }}>Đang kiểm tra dữ liệu báo cáo...</p>
       </div>
     );
   }
 
   return (
-    <div className="animate-up">
-      <div className="page-header" style={{ marginBottom: 24 }}>
+    <div className="animate-up" style={{ paddingBottom: 40 }}>
+      {/* Header */}
+      <div className="page-header" style={{ marginBottom: 20 }}>
         <div>
-          <h2 style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <ClipboardList size={24} color="var(--primary)" />
-            Báo cáo chiến dịch hằng ngày
+          <h2 style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+            <ClipboardList size={26} color="var(--primary)" />
+            Báo cáo 11 Chỉ tiêu Chiến dịch CĐS
           </h2>
-          <p style={{ color: 'var(--tx-3)', fontSize: '.9rem' }}>
+          <p style={{ color: 'var(--tx-3)', fontSize: '.92rem', marginTop: 4 }}>
             {agencyName} — {todayStr}
           </p>
         </div>
       </div>
 
-      {/* Thông báo giờ nộp */}
+      {/* Thông báo giờ nộp & hướng dẫn */}
       <div style={{
         background: isReportTime ? '#D1FAE5' : '#FEF3C7',
         border: `1px solid ${isReportTime ? '#10B981' : '#F59E0B'}`,
-        borderRadius: 12, padding: '12px 18px', marginBottom: 24,
-        display: 'flex', alignItems: 'center', gap: 12
+        borderRadius: 14, padding: '14px 20px', marginBottom: 24,
+        display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap'
       }}>
         {isReportTime
-          ? <CheckCircle size={20} color="#10B981" />
-          : <Clock size={20} color="#F59E0B" />
+          ? <CheckCircle size={24} color="#10B981" style={{ flexShrink: 0 }} />
+          : <Clock size={24} color="#F59E0B" style={{ flexShrink: 0 }} />
         }
-        <div>
-          <div style={{ fontWeight: 700, color: isReportTime ? '#059669' : '#D97706', fontSize: '.9rem' }}>
-            {isReportTime ? '✅ Hệ thống đang mở cổng báo cáo (18:00 – 20:00)' : '⏰ Cổng báo cáo mở từ 18:00 đến 20:00 hằng ngày'}
+        <div style={{ flex: 1, minWidth: 240 }}>
+          <div style={{ fontWeight: 700, color: isReportTime ? '#059669' : '#D97706', fontSize: '.95rem' }}>
+            {isReportTime ? '✅ Cổng nộp báo cáo đang MỞ (18:00 – 20:00 hằng ngày)' : '⏰ Cổng báo cáo mở từ 18:00 đến 20:00 hằng ngày'}
           </div>
-          <div style={{ fontSize: '.82rem', color: 'var(--tx-3)', marginTop: 2 }}>
-            Hệ thống cho phép nộp báo cáo một lần mỗi ngày. {existingReport ? 'Bạn đã nộp báo cáo hôm nay.' : 'Bạn chưa nộp báo cáo hôm nay.'}
+          <div style={{ fontSize: '.84rem', color: 'var(--tx-2)', marginTop: 3, lineHeight: 1.4 }}>
+            Nhập số liệu lũy kế 11 tiêu chí trực tiếp lên app, tinh gọn, hạn chế giấy tờ văn bản. {existingReport ? 'Đơn vị đã nộp báo cáo hôm nay.' : 'Vui lòng hoàn thành trước 20h00.'}
           </div>
         </div>
       </div>
 
       {(submitted || existingReport) ? (
-        <div className="card" style={{ textAlign: 'center', padding: 48 }}>
-          <div style={{ width: 72, height: 72, borderRadius: '50%', background: '#D1FAE5', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+        <div className="card" style={{ padding: '32px 24px', textAlign: 'center' }}>
+          <div style={{ width: 68, height: 68, borderRadius: '50%', background: '#D1FAE5', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
             <CheckCircle size={36} color="#10B981" />
           </div>
-          <h3 style={{ color: '#059669', marginBottom: 8 }}>Đã nộp báo cáo hôm nay!</h3>
-          <p style={{ color: 'var(--tx-3)', marginBottom: 24 }}>
-            Báo cáo của {agencyName} đã được ghi nhận. Cổng báo cáo tiếp theo mở vào 18:00 ngày mai.
+          <h3 style={{ color: '#059669', marginBottom: 8, fontSize: '1.3rem' }}>Đã hoàn thành nộp báo cáo 11 chỉ tiêu hôm nay!</h3>
+          <p style={{ color: 'var(--tx-3)', marginBottom: 24, fontSize: '.92rem' }}>
+            Báo cáo của <strong>{agencyName}</strong> đã được đồng bộ lên trung tâm chỉ huy số cấp Tỉnh.
           </p>
+
           {existingReport && (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 12, maxWidth: 700, margin: '0 auto', textAlign: 'left' }}>
-              {FIELDS.slice(0, 8).map(f => (
-                <div key={f.key} style={{ background: 'var(--surface-1)', borderRadius: 10, padding: '10px 14px' }}>
-                  <div style={{ fontSize: '1.1rem' }}>{f.icon}</div>
-                  <div style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--primary)' }}>{existingReport[f.key] || 0}</div>
-                  <div style={{ fontSize: '.78rem', color: 'var(--tx-3)' }}>{f.label}</div>
+            <div>
+              <div style={{ fontSize: '.9rem', fontWeight: 700, color: 'var(--primary)', marginBottom: 14, textAlign: 'left' }}>
+                📊 KẾT QUẢ 11 CHỈ TIÊU ĐÃ NỘP:
+              </div>
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
+                gap: 12,
+                textAlign: 'left'
+              }}>
+                {CORE_CRITERIA.map(c => (
+                  <div key={c.key} style={{
+                    background: c.bg,
+                    borderRadius: 12,
+                    padding: '12px 16px',
+                    border: `1px solid ${c.color}30`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: 12
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <span style={{ fontSize: '1.3rem' }}>{c.icon}</span>
+                      <div>
+                        <div style={{ fontSize: '.78rem', color: 'var(--tx-2)', fontWeight: 600 }}>{c.label}</div>
+                        <div style={{ fontSize: '.7rem', color: 'var(--tx-3)' }}>{c.unit}</div>
+                      </div>
+                    </div>
+                    <div style={{ fontSize: '1.4rem', fontWeight: 800, color: c.color }}>
+                      {(existingReport[c.key] || 0).toLocaleString('vi-VN')}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Phụ trợ */}
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+                gap: 12,
+                marginTop: 14,
+                textAlign: 'left'
+              }}>
+                {AUX_FIELDS.map(f => (
+                  <div key={f.key} style={{ background: 'var(--surface-1)', borderRadius: 10, padding: '10px 14px', border: '1px solid var(--border)' }}>
+                    <div style={{ fontSize: '.75rem', color: 'var(--tx-3)' }}>{f.icon} {f.label}</div>
+                    <div style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--primary)', marginTop: 2 }}>
+                      {(existingReport[f.key] || 0).toLocaleString('vi-VN')}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {(existingReport.issues || existingReport.proposals || existingReport.evidenceLinks) && (
+                <div style={{ marginTop: 20, textAlign: 'left', background: 'var(--surface-0)', padding: 16, borderRadius: 12, border: '1px solid var(--border)' }}>
+                  {existingReport.issues && <div style={{ fontSize: '.85rem', marginBottom: 6 }}>🔴 <strong>Khó khăn:</strong> {existingReport.issues}</div>}
+                  {existingReport.proposals && <div style={{ fontSize: '.85rem', marginBottom: 6 }}>💡 <strong>Đề xuất:</strong> {existingReport.proposals}</div>}
+                  {existingReport.evidenceLinks && (
+                    <div style={{ fontSize: '.85rem' }}>
+                      🔗 <strong>Minh chứng:</strong> <a href={existingReport.evidenceLinks} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary)' }}>{existingReport.evidenceLinks}</a>
+                    </div>
+                  )}
                 </div>
-              ))}
+              )}
             </div>
           )}
         </div>
       ) : (
         <form onSubmit={handleSubmit}>
-          {/* Phụ lục 2 — Số liệu chỉ tiêu */}
+          {/* KHUNG NHẬP 11 CHỈ TIÊU CHÍNH THỨC */}
+          <div className="card" style={{ marginBottom: 20, borderTop: '4px solid var(--primary)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 10, marginBottom: 16 }}>
+              <div>
+                <h3 style={{ fontSize: '1.2rem', color: 'var(--primary-dark)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <Sparkles size={20} color="var(--primary)" /> 11 CHỈ TIÊU CHIẾN DỊCH CHUYỂN ĐỔI SỐ
+                </h3>
+                <p style={{ color: 'var(--tx-3)', fontSize: '.86rem', marginTop: 4 }}>
+                  Nhập số liệu <strong>lũy kế</strong> từ ngày đầu ra quân đến hôm nay. Điền số <strong>0</strong> nếu chưa triển khai.
+                </p>
+              </div>
+              <span style={{
+                background: 'var(--primary)', color: 'white', fontSize: '.75rem',
+                padding: '4px 12px', borderRadius: 20, fontWeight: 700
+              }}>
+                11 TIÊU CHÍ CHÍNH THỨC
+              </span>
+            </div>
+
+            {/* LƯỚI 11 CHỈ TIÊU - RESPONSIVE CHO PC & MOBILE */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+              gap: 16
+            }}>
+              {CORE_CRITERIA.map((c) => {
+                return (
+                  <div 
+                    key={c.key} 
+                    style={{
+                      background: 'var(--surface-0)',
+                      border: `1.5px solid ${form[c.key] && Number(form[c.key]) > 0 ? c.color : 'var(--border)'}`,
+                      borderRadius: 14,
+                      padding: 16,
+                      transition: 'all .2s ease',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between',
+                      position: 'relative'
+                    }}
+                  >
+                    <div>
+                      {/* Tiêu đề chỉ tiêu */}
+                      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8, marginBottom: 8 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <span style={{
+                            width: 32, height: 32, borderRadius: 8, background: c.bg,
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem', flexShrink: 0
+                          }}>
+                            {c.icon}
+                          </span>
+                          <div>
+                            <span style={{ fontSize: '.9rem', fontWeight: 700, color: 'var(--tx-1)' }}>
+                              {c.label}
+                            </span>
+                          </div>
+                        </div>
+                        <span style={{
+                          fontSize: '.68rem', fontWeight: 700, padding: '2px 8px', borderRadius: 10,
+                          background: c.bg, color: c.color, flexShrink: 0
+                        }}>
+                          #{c.index}
+                        </span>
+                      </div>
+
+                      {/* Mô tả giải thích */}
+                      <p style={{ fontSize: '.78rem', color: 'var(--tx-3)', margin: '0 0 12px', lineHeight: 1.4 }}>
+                        {c.desc}
+                      </p>
+                    </div>
+
+                    {/* Ô nhập liệu và đơn vị */}
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <input
+                          type="text"
+                          inputMode="numeric"
+                          pattern="[0-9]*"
+                          value={form[c.key]}
+                          onChange={e => handleChange(c.key, e.target.value)}
+                          placeholder="0"
+                          className="form-input"
+                          style={{
+                            fontSize: '1.15rem',
+                            fontWeight: 800,
+                            color: c.color,
+                            padding: '10px 14px',
+                            borderRadius: 10
+                          }}
+                        />
+                        <span style={{ fontSize: '.8rem', color: 'var(--tx-2)', fontWeight: 600, minWidth: 70, textAlign: 'right' }}>
+                          {c.unit}
+                        </span>
+                      </div>
+
+                      <div style={{ fontSize: '.7rem', color: 'var(--tx-3)', marginTop: 6, fontStyle: 'italic' }}>
+                        🎯 {c.targetHint}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* SỐ LIỆU BỔ TRỢ */}
           <div className="card" style={{ marginBottom: 20 }}>
-            <h4 style={{ marginBottom: 6, display: 'flex', alignItems: 'center', gap: 8, color: 'var(--primary)' }}>
-              <Info size={18} /> Phụ lục 2 — Số liệu chỉ tiêu
+            <h4 style={{ marginBottom: 14, color: 'var(--primary-dark)', display: 'flex', alignItems: 'center', gap: 8, fontSize: '1.05rem' }}>
+              <Award size={18} color="var(--amber-600)" /> Số liệu Bổ trợ & Hoạt động thực tế
             </h4>
-            <p style={{ color: 'var(--tx-3)', fontSize: '.85rem', marginBottom: 20 }}>
-              Điền số liệu lũy kế từ đầu chiến dịch đến <strong>hôm nay</strong> (không phải chỉ trong ngày).
-            </p>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 14 }}>
-              {FIELDS.map(f => (
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
+              gap: 14
+            }}>
+              {AUX_FIELDS.map(f => (
                 <div key={f.key}>
-                  <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '.86rem', fontWeight: 600 }}>
                     <span>{f.icon}</span> {f.label}
-                    {(f.key === 'smartwebCount' || f.key === 'websitesCreated') && (
-                      <span style={{ background: '#1a3a6b', color: 'white', fontSize: '.65rem', padding: '2px 7px', borderRadius: 10, fontWeight: 700 }}>MỚI</span>
-                    )}
                   </label>
-                  <input
-                    type="text" inputMode="numeric" pattern="[0-9]*"
-                    value={form[f.key]}
-                    onChange={e => handleChange(f.key, e.target.value)}
-                    placeholder={f.placeholder}
-                    className="form-input"
-                    title={f.hint}
-                  />
-                  <div style={{ fontSize: '.73rem', color: 'var(--tx-3)', marginTop: 3 }}>{f.hint}</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      value={form[f.key]}
+                      onChange={e => handleChange(f.key, e.target.value)}
+                      placeholder={f.placeholder}
+                      className="form-input"
+                      style={{ fontWeight: 700 }}
+                    />
+                    <span style={{ fontSize: '.78rem', color: 'var(--tx-3)', minWidth: 60 }}>{f.unit}</span>
+                  </div>
+                  <div style={{ fontSize: '.72rem', color: 'var(--tx-3)', marginTop: 3 }}>{f.hint}</div>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Khó khăn & Đề xuất */}
-          <div className="card" style={{ marginBottom: 20 }}>
-            <h4 style={{ marginBottom: 16, color: 'var(--primary)' }}>📝 Khó khăn & Đề xuất</h4>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+          {/* KHÓ KHĂN, ĐỀ XUẤT & MINH CHỨNG */}
+          <div className="card" style={{ marginBottom: 24 }}>
+            <h4 style={{ marginBottom: 14, color: 'var(--primary-dark)', fontSize: '1.05rem' }}>
+              📝 Minh chứng, Khó khăn & Đề xuất
+            </h4>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16 }}>
               <div>
-                <label className="form-label">Khó khăn vướng mắc</label>
-                <textarea value={extra.issues} onChange={e => setExtra(x => ({ ...x, issues: e.target.value }))}
-                  className="form-input" rows={3} placeholder="Mô tả các khó khăn trong ngày..." />
+                <label className="form-label">Khó khăn, vướng mắc trong ngày</label>
+                <textarea
+                  value={extra.issues}
+                  onChange={e => setExtra(x => ({ ...x, issues: e.target.value }))}
+                  className="form-input"
+                  rows={3}
+                  placeholder="Mô tả khó khăn về địa bàn, người dân, hạ tầng mạng, thiết bị..."
+                />
               </div>
               <div>
-                <label className="form-label">Đề xuất, kiến nghị</label>
-                <textarea value={extra.proposals} onChange={e => setExtra(x => ({ ...x, proposals: e.target.value }))}
-                  className="form-input" rows={3} placeholder="Đề xuất hỗ trợ, giải pháp..." />
+                <label className="form-label">Đề xuất, kiến nghị gửi Tỉnh Đoàn</label>
+                <textarea
+                  value={extra.proposals}
+                  onChange={e => setExtra(x => ({ ...x, proposals: e.target.value }))}
+                  className="form-input"
+                  rows={3}
+                  placeholder="Đề xuất hỗ trợ tài liệu, tập huấn, nhân lực hỗ trợ..."
+                />
               </div>
             </div>
             <div style={{ marginTop: 14 }}>
-              <label className="form-label">Link minh chứng (ảnh, video, bài đăng MXH...)</label>
-              <input value={extra.evidenceLinks} onChange={e => setExtra(x => ({ ...x, evidenceLinks: e.target.value }))}
-                className="form-input" placeholder="https://drive.google.com/... hoặc https://fb.com/..." />
+              <label className="form-label">Link thư mục minh chứng (Google Drive / Bài viết Facebook / Báo đài)</label>
+              <input
+                value={extra.evidenceLinks}
+                onChange={e => setExtra(x => ({ ...x, evidenceLinks: e.target.value }))}
+                className="form-input"
+                placeholder="https://drive.google.com/drive/folders/... hoặc https://facebook.com/..."
+              />
+              <div style={{ fontSize: '.75rem', color: 'var(--tx-3)', marginTop: 4 }}>
+                Đính kèm link Google Drive chứa hình ảnh, video ra quân thực tế của xã/phường để Tỉnh nghiệm thu.
+              </div>
             </div>
           </div>
 
-          <button type="submit" disabled={loading || !isReportTime} style={{
-            width: '100%', padding: '16px', borderRadius: 14, border: 'none',
-            background: (!isReportTime) ? 'var(--border)' : loading ? 'var(--tx-3)' : 'linear-gradient(135deg, #1a3a6b, #0ea5e9)',
-            color: 'white', fontWeight: 700, fontSize: '1.05rem',
-            cursor: (!isReportTime || loading) ? 'not-allowed' : 'pointer',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10
-          }}>
-            {loading ? <Loader2 size={20} className="spin" /> : <Send size={20} />}
-            {loading ? 'Đang gửi báo cáo...'
-              : !isReportTime ? '⏰ Chưa đến giờ báo cáo (18:00 – 20:00)'
-              : '📤 Nộp báo cáo chiến dịch hôm nay'}
+          {/* NÚT NỘP BÁO CÁO */}
+          <button
+            type="submit"
+            disabled={loading || !isReportTime}
+            style={{
+              width: '100%',
+              padding: '16px 24px',
+              borderRadius: 14,
+              border: 'none',
+              background: (!isReportTime) ? 'var(--border)' : loading ? 'var(--tx-3)' : 'linear-gradient(135deg, #1a3a6b 0%, #0ea5e9 100%)',
+              color: 'white',
+              fontWeight: 800,
+              fontSize: '1.08rem',
+              cursor: (!isReportTime || loading) ? 'not-allowed' : 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 10,
+              boxShadow: isReportTime ? '0 4px 14px rgba(14, 165, 233, 0.4)' : 'none',
+              transition: 'all .3s ease'
+            }}
+          >
+            {loading ? <Loader2 size={22} className="spin" /> : <Send size={22} />}
+            {loading ? 'Đang gửi báo cáo 11 chỉ tiêu...'
+              : !isReportTime ? '⏰ Cổng mở từ 18:00 đến 20:00 hằng ngày'
+              : '📤 NỘP BÁO CÁO 11 CHỈ TIÊU CHIẾN DỊCH HÔM NAY'}
           </button>
         </form>
       )}
