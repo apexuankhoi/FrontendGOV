@@ -6,7 +6,7 @@ import {
 } from 'recharts';
 import {
   Map, Users, Hammer, Clock, CheckCircle, Printer,
-  Globe, QrCode, Smartphone, Shield, TrendingUp, Zap, RefreshCw
+  Globe, QrCode, Smartphone, Shield, TrendingUp, Zap, RefreshCw, Landmark
 } from 'lucide-react';
 
 const COLORS = ['#1a3a6b', '#10B981', '#F59E0B', '#9333EA', '#EF4444'];

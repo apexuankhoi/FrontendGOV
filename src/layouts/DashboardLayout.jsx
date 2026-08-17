@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import {
   LayoutDashboard, Map, FileText, Users, LogOut,
   Globe, Menu, X, ChevronRight, UserCircle, Settings, Bot,
@@ -52,7 +53,6 @@ const DashboardLayout = () => {
       fetchNotifications();
       // Hiển thị toast thông báo
       try {
-        const { toast } = require('react-toastify');
         toast.info(
           `🆘 Yêu cầu hỗ trợ mới từ "${data.senderName}" — ${data.category || 'Khác'} — Gửi đến ${data.agencyName || 'xã'}`,
           { autoClose: 8000, position: 'top-right' }
