@@ -30,7 +30,7 @@ const CHECKLIST_ITEMS = [
   "Tập huấn AI & kỹ năng số cho đoàn viên thanh niên (Chỉ tiêu 9)",
   "Thực hiện ít nhất 01 công trình thanh niên chuyển đổi số (Chỉ tiêu 10)",
   "Hỗ trợ tạo website AI.VN SmartWeb cho HKD, HTX (Chỉ tiêu 11)",
-  "Báo cáo số liệu 11 chỉ tiêu hằng ngày trước 20h00 trực tiếp trên app"
+  "Báo cáo số liệu 11 chỉ tiêu hằng ngày trước 19h00 trực tiếp trên app"
 ];
 
 // CHỈ TIÊU TOÀN TỈNH
@@ -542,7 +542,7 @@ const PublicCampaigns = () => {
 
                   <div style={{ marginTop: 20, paddingTop: 16, borderTop: '1px solid var(--border)', textAlign: 'center' }}>
                     <span style={{ fontSize: '.82rem', color: 'var(--tx-3)', fontWeight: 600 }}>
-                      Cổng báo cáo hằng ngày mở từ 18:00 – 20:00 hằng ngày
+                      Cổng báo cáo hằng ngày mở từ 13:00 – 19:00 hằng ngày
                     </span>
                   </div>
                 </div>

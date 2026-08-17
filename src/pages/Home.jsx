@@ -6,8 +6,10 @@ import { Link, useNavigate } from 'react-router-dom';
 import {
   Map, Users, Hammer, Heart, ArrowRight, Calendar,
   CheckCircle, ShieldCheck, Search, MessageCircle,
-  FileText, ChevronRight, Star, Globe, Phone, Mail
+  FileText, ChevronRight, Star, Globe, Phone, Mail,
+  Download, BookOpen, Sparkles, FolderDown, FileDown, Bot, Layers
 } from 'lucide-react';
+import { toast } from 'react-toastify';
 
 const CENTER = [12.6667, 108.0383];
 const DISTRICT_COORDS = {
@@ -36,12 +38,109 @@ const QUICK_SERVICES = [
   { icon: '🏗️', title: 'Công trình thanh niên', desc: 'Theo dõi tiến độ các dự án', query: 'Các công trình thanh niên đang triển khai?' },
 ];
 
+// Danh mục tài liệu tham khảo chính thức
+const DOC_CATEGORIES = [
+  { id: 'ALL', label: '🌟 Tất cả tài liệu' },
+  { id: 'HUONG_DAN', label: '📘 Cẩm nang 11 Chỉ tiêu' },
+  { id: 'VAN_BAN', label: '📜 Văn bản Chỉ đạo' },
+  { id: 'CONG_NGHE', label: '🤖 AI & Kỹ năng số' },
+  { id: 'TRUYEN_THONG', label: '🎨 Nhận diện & Media' },
+];
+
+const REFERENCE_DOCUMENTS = [
+  {
+    id: 1,
+    title: 'Sổ tay Hướng dẫn 11 Chỉ tiêu Chiến dịch 44 ngày đêm Chuyển đổi số 2026',
+    categoryType: 'HUONG_DAN',
+    categoryName: 'Cẩm nang Hướng dẫn',
+    fileType: 'PDF',
+    size: '4.2 MB',
+    agency: 'Ban Chỉ đạo CĐS Tỉnh',
+    date: '17/08/2026',
+    desc: 'Cẩm nang chi tiết từng bước triển khai 11 chỉ tiêu số hóa: tiếp cận kỹ năng số, kích hoạt VNeID mức 2, DVC trực tuyến, thanh toán QR và lập Đội hình Thanh niên số.',
+    color: '#DC2626',
+    bg: '#FEF2F2',
+    badge: 'Tài liệu Trọng tâm'
+  },
+  {
+    id: 2,
+    title: 'Kế hoạch số 44/KH-UBND: Phát động Chiến dịch 44 ngày đêm Thanh niên Đắk Lắk tiên phong CĐS',
+    categoryType: 'VAN_BAN',
+    categoryName: 'Văn bản Chỉ đạo',
+    fileType: 'PDF',
+    size: '1.8 MB',
+    agency: 'UBND Tỉnh Đắk Lắk',
+    date: '15/08/2026',
+    desc: 'Văn bản chỉ đạo chính thức của UBND tỉnh ban hành về mục tiêu, lộ trình, phân công nhiệm vụ cho các sở ban ngành và UBND 102 xã/phường/thị trấn.',
+    color: '#DC2626',
+    bg: '#FEF2F2',
+    badge: 'Văn bản Tỉnh'
+  },
+  {
+    id: 3,
+    title: 'Giáo trình Tập huấn Trí tuệ Nhân tạo (AI) cho Cán bộ Đoàn & Cơ sở năm 2026',
+    categoryType: 'CONG_NGHE',
+    categoryName: 'AI & Kỹ năng số',
+    fileType: 'DOCX',
+    size: '2.5 MB',
+    agency: 'Tổ Công nghệ số Cộng đồng',
+    date: '16/08/2026',
+    desc: 'Tài liệu thực hành các công cụ AI: tự động hóa báo cáo, soạn thảo văn bản, thiết kế infographic truyền thông và giải đáp công dân trực tuyến 24/7.',
+    color: '#2563EB',
+    bg: '#EFF6FF',
+    badge: 'Ứng dụng AI'
+  },
+  {
+    id: 4,
+    title: 'Hướng dẫn Kích hoạt VNeID Mức 2 & Nộp hồ sơ Dịch vụ công Quốc gia Toàn trình',
+    categoryType: 'HUONG_DAN',
+    categoryName: 'Dân sinh & DVC',
+    fileType: 'PDF',
+    size: '3.1 MB',
+    agency: 'Công an Tỉnh & Tỉnh Đoàn',
+    date: '12/08/2026',
+    desc: 'Bộ infographic và hướng dẫn người dân tự tích hợp CCCD gắn chip, thẻ BHYT, GPLX và tra cứu thông tin hành chính trên điện thoại thông minh.',
+    color: '#16A34A',
+    bg: '#F0FDF4',
+    badge: 'Phổ cập Dân sinh'
+  },
+  {
+    id: 5,
+    title: 'Bộ Nhận diện Thương hiệu & Ấn phẩm Truyền thông Chiến dịch 44 ngày đêm',
+    categoryType: 'TRUYEN_THONG',
+    categoryName: 'Nhận diện & Media',
+    fileType: 'ZIP',
+    size: '15.4 MB',
+    agency: 'Ban Tuyên giáo Tỉnh Đoàn',
+    date: '14/08/2026',
+    desc: 'Trọn bộ File thiết kế gốc Logo, Banner sân khấu ra quân, Standee tuyên truyền, Khung Avatar Facebook và mẫu bài viết truyền thông chiến dịch.',
+    color: '#D97706',
+    bg: '#FEF3C7',
+    badge: 'Ấn phẩm số'
+  },
+  {
+    id: 6,
+    title: 'Sổ tay 5 Bước Đăng ký & Vận hành Website AI.VN SmartWeb cho Tiểu thương, HTX',
+    categoryType: 'CONG_NGHE',
+    categoryName: 'Kinh tế số & OCOP',
+    fileType: 'PDF',
+    size: '2.0 MB',
+    agency: 'Trung tâm Hỗ trợ Khởi nghiệp',
+    date: '10/08/2026',
+    desc: 'Cẩm nang tạo gian hàng số, nhận tài trợ tên miền .VN miễn phí, đưa nông sản OCOP lên bản đồ số và tích hợp thanh toán mã QR tự động.',
+    color: '#9333EA',
+    bg: '#FAF5FF',
+    badge: 'Kinh tế số'
+  }
+];
+
 const Home = () => {
   const [teams, setTeams] = useState([]);
   const [news, setNews] = useState([]);
   const [stats, setStats] = useState({ total: 0, volunteers: 0, projects: 0, value: 0, beneficiaries: 0 });
   const [swStats, setSwStats] = useState({ total: 0, active: 0 });
   const [search, setSearch] = useState('');
+  const [docCategory, setDocCategory] = useState('ALL');
   const mapRef = useRef(null);
   const navigate = useNavigate();
 
@@ -67,10 +166,22 @@ const Home = () => {
     window.dispatchEvent(event);
   };
 
+  const handleDownloadDoc = (doc) => {
+    toast.success(`📥 Đang tải xuống "${doc.title}"...`);
+  };
+
+  const handleAskAiAboutDoc = (doc) => {
+    handleQuickService(`Tóm tắt nội dung chính và hướng dẫn thực hiện theo tài liệu: "${doc.title}"`);
+  };
+
   const filteredTeams = teams.filter(t =>
     !search ||
     t.name?.toLowerCase().includes(search.toLowerCase()) ||
     t.location?.district?.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const filteredDocs = REFERENCE_DOCUMENTS.filter(d =>
+    docCategory === 'ALL' || d.categoryType === docCategory
   );
 
   return (
@@ -403,6 +514,117 @@ const Home = () => {
           </div>
         </section>
       )}
+
+      {/* ══════════════════════════════════════════════════════
+          TÀI LIỆU & CẨM NANG THAM KHẢO CHUYỂN ĐỔI SỐ
+      ══════════════════════════════════════════════════════ */}
+      <section className="ctz-docs-section">
+        <div className="container">
+          <div className="ctz-docs-header">
+            <div>
+              <span className="section-label" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                <FolderDown size={14} /> Tài nguyên & Văn bản biểu mẫu
+              </span>
+              <h2 className="section-title" style={{ marginTop: 8 }}>
+                Tài liệu & Cẩm nang Tham khảo
+              </h2>
+              <p style={{ color: 'var(--tx-3)', marginTop: 6, fontSize: '.95rem', maxWidth: 640 }}>
+                Tổng hợp văn bản chỉ đạo, cẩm nang 11 chỉ tiêu, giáo trình AI, tài liệu tập huấn và bộ nhận diện truyền thông phục vụ cơ sở.
+              </p>
+            </div>
+            <Link to="/dashboard/eoffice/shared-drive" className="btn btn-outline" style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+              <FileDown size={16} /> Kho dữ liệu số đầy đủ <ArrowRight size={15} />
+            </Link>
+          </div>
+
+          {/* Filter Tabs */}
+          <div className="ctz-docs-filter-wrap">
+            {DOC_CATEGORIES.map(cat => (
+              <button
+                key={cat.id}
+                className={`ctz-doc-filter-btn ${docCategory === cat.id ? 'active' : ''}`}
+                onClick={() => setDocCategory(cat.id)}
+              >
+                {cat.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Documents Grid */}
+          <div className="ctz-docs-grid">
+            {filteredDocs.map((doc, idx) => (
+              <div key={doc.id || idx} className="ctz-doc-card anim" style={{ animationDelay: `${idx * 60}ms` }}>
+                <div>
+                  <div className="ctz-doc-top">
+                    <div className="ctz-doc-icon-box" style={{ background: doc.bg, color: doc.color }}>
+                      {doc.fileType}
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
+                        <span style={{
+                          fontSize: '0.72rem',
+                          fontWeight: 700,
+                          padding: '2px 8px',
+                          borderRadius: 6,
+                          background: doc.bg,
+                          color: doc.color
+                        }}>
+                          {doc.categoryName}
+                        </span>
+                        {doc.badge && (
+                          <span style={{
+                            fontSize: '0.7rem',
+                            fontWeight: 700,
+                            color: '#D97706',
+                            background: '#FEF3C7',
+                            padding: '2px 6px',
+                            borderRadius: 4
+                          }}>
+                            ★ {doc.badge}
+                          </span>
+                        )}
+                      </div>
+                      <h3 className="ctz-doc-title">
+                        {doc.title}
+                      </h3>
+                    </div>
+                  </div>
+
+                  <p className="ctz-doc-desc">
+                    {doc.desc}
+                  </p>
+                </div>
+
+                <div>
+                  <div className="ctz-doc-meta">
+                    <span>🏢 {doc.agency}</span>
+                    <span>•</span>
+                    <span>📅 {doc.date}</span>
+                    <span>•</span>
+                    <span>💾 {doc.size}</span>
+                  </div>
+
+                  <div className="ctz-doc-actions">
+                    <button
+                      className="ctz-doc-btn-download"
+                      onClick={() => handleDownloadDoc(doc)}
+                    >
+                      <Download size={15} /> Tải tài liệu ({doc.fileType})
+                    </button>
+                    <button
+                      className="ctz-doc-btn-ai"
+                      onClick={() => handleAskAiAboutDoc(doc)}
+                      title="Hỏi AI tóm tắt nội dung tài liệu này"
+                    >
+                      <Bot size={15} color="#1D4ED8" /> Hỏi AI
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* ══════════════════════════════════════════════════════
           CTA — Đăng ký tài khoản

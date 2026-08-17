@@ -53,9 +53,10 @@ const Navbar = () => {
           <Link to="/" className={`nav-link ${isActive('/')}`}>Trang chủ</Link>
           <Link to="/chien-dich" className={`nav-link ${isActive('/chien-dich')}`}>Chiến dịch</Link>
           <Link to="/doi-hinh" className={`nav-link ${isActive('/doi-hinh')}`}>Đội hình</Link>
+          <Link to="/tai-lieu" className={`nav-link ${isActive('/tai-lieu')}`}>Tài liệu</Link>
           <Link to="/ho-tro" className={`nav-link ${isActive('/ho-tro')}`}>Hỗ trợ</Link>
           <Link to="/tin-tuc" className={`nav-link ${isActive('/tin-tuc')}`}>Tin tức</Link>
-          <Link to="/dang-ky-website" className="btn btn-sm" style={{ background: 'linear-gradient(135deg, #0284c7, #3b82f6)', color: '#fff', border: 'none', marginLeft: 10, borderRadius: 20 }}>🌐 SmartWeb</Link>
+          <Link to="/dang-ky-website" className="btn btn-sm" style={{ background: 'linear-gradient(135deg, #0284c7, #3b82f6)', color: '#fff', border: 'none', marginLeft: 6, borderRadius: 20 }}>🌐 SmartWeb</Link>
         </nav>
 
         {/* Desktop right */}
@@ -144,6 +145,7 @@ const Navbar = () => {
         <Link to="/" className={`nav-link ${isActive('/')}`} onClick={() => setMobileOpen(false)}>Trang chủ</Link>
         <Link to="/chien-dich" className={`nav-link ${isActive('/chien-dich')}`} onClick={() => setMobileOpen(false)}>Chiến dịch</Link>
         <Link to="/doi-hinh" className={`nav-link ${isActive('/doi-hinh')}`} onClick={() => setMobileOpen(false)}>Đội hình tình nguyện</Link>
+        <Link to="/tai-lieu" className={`nav-link ${isActive('/tai-lieu')}`} onClick={() => setMobileOpen(false)}>Tài liệu tham khảo</Link>
         <Link to="/ho-tro" className={`nav-link ${isActive('/ho-tro')}`} onClick={() => setMobileOpen(false)}>Yêu cầu hỗ trợ</Link>
         <Link to="/dang-ky-website" className={`nav-link ${isActive('/dang-ky-website')}`} onClick={() => setMobileOpen(false)} style={{ color: '#0ea5e9', fontWeight: 700 }}>🌐 Đăng ký Website SmartWeb</Link>
         <Link to="/tin-tuc" className={`nav-link ${isActive('/tin-tuc')}`} onClick={() => setMobileOpen(false)}>Tin tức chiến dịch</Link>

@@ -13,6 +13,7 @@ const Login           = lazy(() => import('./pages/Login'));
 const Register        = lazy(() => import('./pages/Register'));
 const PublicTeams     = lazy(() => import('./pages/PublicTeams'));
 const PublicNews      = lazy(() => import('./pages/PublicNews'));
+const PublicDocuments = lazy(() => import('./pages/PublicDocuments'));
 const PublicProfile   = lazy(() => import('./pages/PublicProfile'));
 const PublicCampaigns = lazy(() => import('./pages/PublicCampaigns'));
 const PersonalDrive   = lazy(() => import('./pages/PersonalDrive'));
@@ -92,6 +93,7 @@ function App() {
             <Route path="/doi-hinh" element={<PublicTeams />} />
             <Route path="/news" element={<PublicNews />} />
             <Route path="/tin-tuc" element={<PublicNews />} />
+            <Route path="/tai-lieu" element={<PublicDocuments />} />
             <Route path="/profile" element={<PublicProfile />} />
             <Route path="/ho-tro" element={<SupportRequest />} />
             <Route path="/dang-ky-website" element={<SmartwebRegister />} />

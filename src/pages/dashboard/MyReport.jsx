@@ -180,7 +180,7 @@ const MyReport = () => {
   const today = new Date();
   const todayStr = today.toLocaleDateString('vi-VN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
   const hour = today.getHours();
-  const isReportTime = hour >= 18 && hour < 20;
+  const isReportTime = hour >= 13 && hour < 19;
 
   useEffect(() => {
     const fetchExisting = async () => {
@@ -264,10 +264,10 @@ const MyReport = () => {
         }
         <div style={{ flex: 1, minWidth: 240 }}>
           <div style={{ fontWeight: 700, color: isReportTime ? '#059669' : '#D97706', fontSize: '.95rem' }}>
-            {isReportTime ? '✅ Cổng nộp báo cáo đang MỞ (18:00 – 20:00 hằng ngày)' : '⏰ Cổng báo cáo mở từ 18:00 đến 20:00 hằng ngày'}
+            {isReportTime ? '✅ Cổng nộp báo cáo đang MỞ (13:00 – 19:00 hằng ngày)' : '⏰ Cổng báo cáo mở từ 13:00 đến 19:00 hằng ngày'}
           </div>
           <div style={{ fontSize: '.84rem', color: 'var(--tx-2)', marginTop: 3, lineHeight: 1.4 }}>
-            Nhập số liệu lũy kế 11 tiêu chí trực tiếp lên app, tinh gọn, hạn chế giấy tờ văn bản. {existingReport ? 'Đơn vị đã nộp báo cáo hôm nay.' : 'Vui lòng hoàn thành trước 20h00.'}
+            Nhập số liệu lũy kế 11 tiêu chí trực tiếp lên app, tinh gọn, hạn chế giấy tờ văn bản. {existingReport ? 'Đơn vị đã nộp báo cáo hôm nay.' : 'Vui lòng hoàn thành trước 19h00.'}
           </div>
         </div>
       </div>
@@ -556,7 +556,7 @@ const MyReport = () => {
           >
             {loading ? <Loader2 size={22} className="spin" /> : <Send size={22} />}
             {loading ? 'Đang gửi báo cáo 11 chỉ tiêu...'
-              : !isReportTime ? '⏰ Cổng mở từ 18:00 đến 20:00 hằng ngày'
+              : !isReportTime ? '⏰ Cổng mở từ 13:00 đến 19:00 hằng ngày'
               : '📤 NỘP BÁO CÁO 11 CHỈ TIÊU CHIẾN DỊCH HÔM NAY'}
           </button>
         </form>

@@ -4,7 +4,8 @@ import { toast } from 'react-toastify';
 import {
   LayoutDashboard, Map, FileText, Users, LogOut,
   Globe, Menu, X, ChevronRight, UserCircle, Settings, Bot,
-  FileInput, FileOutput, CheckSquare, Activity, Briefcase, Bell, Zap, Database, Heart, BarChart3, ClipboardList, QrCode, Target
+  FileInput, FileOutput, CheckSquare, Activity, Briefcase, Bell, Zap, Database, Heart, 
+  BarChart3, ClipboardList, QrCode, Target, Sparkles, Folder, ChevronsUpDown, ShieldCheck
 } from 'lucide-react';
 import api, { API_URL } from '../lib/api';
 import { io } from 'socket.io-client';
@@ -23,8 +24,18 @@ const DashboardLayout = () => {
   const [showNotif, setShowNotif] = useState(false);
   const [notifications, setNotifications] = useState({ unreadCount: 0, items: [] });
   const [onlineUsers, setOnlineUsers] = useState(1);
-  const notifRef = useRef(null);
+  
+  // Quản lý trạng thái đóng/mở của các nhóm danh mục
+  const [expandedGroups, setExpandedGroups] = useState({
+    campaign: true,
+    eoffice: true,
+    ai: false,
+    support: false,
+    news: false,
+    system: false
+  });
 
+  const notifRef = useRef(null);
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const role     = localStorage.getItem('role') || '';
@@ -39,42 +50,72 @@ const DashboardLayout = () => {
   useEffect(() => {
     fetchNotifications();
 
-    // Kết nối Socket.IO
     const socket = io(API_URL);
     socket.on('onlineUsers', (count) => setOnlineUsers(count));
     
-    // Lắng nghe sự kiện có thông báo mới (ví dụ từ backend gửi xuống)
     socket.on('newNotification', () => {
       fetchNotifications();
     });
 
-    // ═══ P2: Lắng nghe yêu cầu hỗ trợ mới từ bà con ═══
     socket.on('newSupportRequest', (data) => {
       fetchNotifications();
-      // Hiển thị toast thông báo
       try {
         toast.info(
           `🆘 Yêu cầu hỗ trợ mới từ "${data.senderName}" — ${data.category || 'Khác'} — Gửi đến ${data.agencyName || 'xã'}`,
           { autoClose: 8000, position: 'top-right' }
         );
       } catch(e) {}
-      // Phát sự kiện để SupportRequestsAdmin auto-refresh
       window.dispatchEvent(new CustomEvent('newSupportRequest', { detail: data }));
     });
 
-    // ═══ P2: Lắng nghe cập nhật trạng thái yêu cầu ═══
     socket.on('supportRequestUpdated', (data) => {
       fetchNotifications();
       window.dispatchEvent(new CustomEvent('supportRequestUpdated', { detail: data }));
     });
 
-    // Polling dự phòng (30s)
     const interval = setInterval(fetchNotifications, 30000);
     return () => {
       clearInterval(interval);
       socket.disconnect();
     };
   }, []);
+
+  // Tự động mở danh mục tương ứng khi người dùng truy cập trang con
+  useEffect(() => {
+    if (
+      pathname.startsWith('/dashboard/campaigns') || 
+      pathname.startsWith('/dashboard/my-report') || 
+      pathname.startsWith('/dashboard/dti-report') || 
+      pathname.startsWith('/dashboard/map') || 
+      pathname.startsWith('/dashboard/smartweb') || 
+      pathname.startsWith('/dashboard/qr-manager')
+    ) {
+      setExpandedGroups(prev => ({ ...prev, campaign: true }));
+    } else if (
+      pathname.startsWith('/dashboard/eoffice/incoming') || 
+      pathname.startsWith('/dashboard/eoffice/outgoing') || 
+      pathname.startsWith('/dashboard/eoffice/tasks') || 
+      pathname.startsWith('/dashboard/eoffice/drive') || 
+      pathname.startsWith('/dashboard/eoffice/agencies-monitor') || 
+      pathname === '/dashboard/eoffice'
+    ) {
+      setExpandedGroups(prev => ({ ...prev, eoffice: true }));
+    } else if (
+      pathname.startsWith('/dashboard/eoffice/ai-center') || 
+      pathname.startsWith('/dashboard/eoffice/report')
+    ) {
+      setExpandedGroups(prev => ({ ...prev, ai: true }));
+    } else if (
+      pathname.startsWith('/dashboard/support-requests') || 
+      pathname.startsWith('/dashboard/support-report')
+    ) {
+      setExpandedGroups(prev => ({ ...prev, support: true }));
+    } else if (pathname.startsWith('/dashboard/news')) {
+      setExpandedGroups(prev => ({ ...prev, news: true }));
+    } else if (pathname.startsWith('/dashboard/users') || pathname.startsWith('/dashboard/profile')) {
+      setExpandedGroups(prev => ({ ...prev, system: true }));
+    }
+  }, [pathname]);
 
   // Đóng dropdown khi click ra ngoài
   useEffect(() => {
@@ -86,14 +127,70 @@ const DashboardLayout = () => {
   }, []);
 
   const logout = () => { localStorage.clear(); navigate('/login'); };
-  const can    = (...roles) => roles.includes(role);
+  const can = (...roles) => roles.includes(role);
+
+  const toggleGroup = (groupId) => {
+    setExpandedGroups(prev => ({
+      ...prev,
+      [groupId]: !prev[groupId]
+    }));
+  };
+
+  const toggleAllGroups = () => {
+    const allOpen = Object.values(expandedGroups).every(v => v);
+    setExpandedGroups({
+      campaign: !allOpen,
+      eoffice: !allOpen,
+      ai: !allOpen,
+      support: !allOpen,
+      news: !allOpen,
+      system: !allOpen
+    });
+  };
+
   const SLink = ({ to, icon: Icon, label, exact }) => {
     const isActive = exact ? pathname === to : (pathname === to || (to !== '/dashboard' && pathname.startsWith(to)));
     return (
       <Link to={to} className={`sidebar-link ${isActive ? 'active' : ''}`} onClick={() => setOpen(false)}>
-        <Icon size={17}/><span>{label}</span>
-        {isActive && <ChevronRight size={13} style={{ marginLeft: 'auto', opacity: .4 }}/>}
+        <Icon size={16}/><span>{label}</span>
+        {isActive && <ChevronRight size={13} style={{ marginLeft: 'auto', opacity: .6 }}/>}
       </Link>
+    );
+  };
+
+  // Accordion Group Component
+  const NavGroup = ({ id, label, icon: Icon, children, badgeCount }) => {
+    const isOpen = !!expandedGroups[id];
+    
+    // Kiểm tra xem nhóm này có chứa route hiện tại không
+    const hasActiveChild = React.Children.toArray(children).some(child => {
+      if (!child || !child.props) return false;
+      const to = child.props.to;
+      return pathname === to || (to !== '/dashboard' && pathname.startsWith(to));
+    });
+
+    return (
+      <div className="sidebar-group">
+        <button 
+          type="button"
+          className={`sidebar-group-btn ${hasActiveChild ? 'has-active' : ''}`}
+          onClick={() => toggleGroup(id)}
+        >
+          <div className="sidebar-group-btn-left">
+            <Icon size={17} />
+            <span>{label}</span>
+          </div>
+          <div className="sidebar-group-btn-right">
+            {badgeCount && <span className="sidebar-group-count">{badgeCount}</span>}
+            <ChevronRight size={14} className={`sidebar-group-chevron ${isOpen ? 'open' : ''}`} />
+          </div>
+        </button>
+        {isOpen && (
+          <div className="sidebar-submenu">
+            {children}
+          </div>
+        )}
+      </div>
     );
   };
 
@@ -101,7 +198,7 @@ const DashboardLayout = () => {
   const handleTouchEnd = (e) => {
     if (!touchStart) return;
     const touchEnd = e.changedTouches[0].clientX;
-    if (touchStart - touchEnd > 50) setOpen(false); // Vuốt trái để đóng
+    if (touchStart - touchEnd > 50) setOpen(false);
   };
 
   return (
@@ -111,10 +208,10 @@ const DashboardLayout = () => {
 
       {/* Sidebar */}
       <aside className={`sidebar ${open ? 'open' : ''}`}>
-        <div className="sidebar-logo" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '24px 0 16px' }}>
-          <img src="/logo.png" alt="Webgov Logo" style={{ height: 50, width: 50, objectFit: 'contain', marginBottom: 8 }} />
-          <span className="t1" style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--primary-dark)' }}>Webgov</span>
-          <span className="t2" style={{ opacity: 0.7, fontSize: '0.8rem', fontWeight: 600 }}>
+        <div className="sidebar-logo" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '22px 0 14px' }}>
+          <img src="/logo.png" alt="Webgov Logo" style={{ height: 46, width: 46, objectFit: 'contain', marginBottom: 6 }} />
+          <span className="t1" style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--primary-dark)' }}>Webgov</span>
+          <span className="t2" style={{ opacity: 0.75, fontSize: '0.78rem', fontWeight: 600 }}>
             {(() => { 
               if (role === 'SENIOR_ADMIN' || role === 'ADMIN') return 'Tỉnh Đắk Lắk';
               try { return JSON.parse(localStorage.getItem('agency'))?.name || 'Tỉnh Đắk Lắk'; } catch { return 'Tỉnh Đắk Lắk'; } 
@@ -122,55 +219,85 @@ const DashboardLayout = () => {
           </span>
         </div>
 
+        {/* Quick Collapse/Expand Toggle */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 14px 2px' }}>
+          <span className="sidebar-sec" style={{ padding: 0 }}>Menu Chức năng</span>
+          <button 
+            onClick={toggleAllGroups} 
+            title="Đóng / Mở tất cả danh mục"
+            style={{ background: 'none', border: 'none', color: 'var(--tx-3)', fontSize: '0.72rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 3, fontWeight: 600 }}
+          >
+            <ChevronsUpDown size={12} /> Thu gọn
+          </button>
+        </div>
+
         <nav className="sidebar-body">
-          <div className="sidebar-sec">Tổng quan</div>
-          <SLink to="/dashboard" icon={LayoutDashboard} label="Dashboard" exact />
+          {/* 1. TỔNG QUAN */}
+          <SLink to="/dashboard" icon={LayoutDashboard} label="Dashboard Tổng quan" exact />
 
-          {can('PROVINCE_ADMIN', 'ADMIN', 'SENIOR_ADMIN') && (<>
-            <div className="sidebar-sec">Chiến dịch 44 ngày</div>
-            {can('ADMIN', 'SENIOR_ADMIN') && <SLink to="/dashboard/map" icon={Map} label="Quản lý Đội hình" />}
-            <SLink to="/dashboard/dti-report" icon={Target} label="Báo cáo Tổng kết DTI" />
-            <SLink to="/dashboard/campaigns" icon={CheckSquare} label="Báo cáo Tiến độ xã" />
-            <SLink to="/dashboard/smartweb" icon={Globe} label="SmartWeb Tiểu thương" />
-            <SLink to="/dashboard/qr-manager" icon={QrCode} label="🔳 QR Điểm Hỗ trợ" />
-            <SLink to="/dashboard/support-requests" icon={Heart} label="Yêu cầu hỗ trợ" />
-            <SLink to="/dashboard/support-report" icon={BarChart3} label="Báo cáo hỗ trợ" />
-
-            <div className="sidebar-sec">Nội dung</div>
-            <SLink to="/dashboard/news" icon={FileText} label="Quản lý Tin tức"/>
-          </>)}
-
-          {/* AI EOFFICE chỉ dành cho Cán bộ Tỉnh và Cán bộ Xã */}
-          {can('PROVINCE_ADMIN', 'COMMUNE_ADMIN') && (<>
-            <div className="sidebar-sec">AI EOFFICE</div>
-            <SLink to="/dashboard/eoffice" icon={Briefcase} label="Dashboard eOffice" exact />
-            <SLink to="/dashboard/eoffice/incoming" icon={FileInput} label="Văn bản đến"/>
-            <SLink to="/dashboard/eoffice/outgoing" icon={FileOutput} label="Văn bản đi"/>
-            <SLink to="/dashboard/eoffice/tasks" icon={CheckSquare} label="Quản lý Công việc"/>
-            <SLink to="/dashboard/eoffice/drive" icon={Database} label="Kho Dữ liệu chung"/>
-            <SLink to="/dashboard/eoffice/ai-center" icon={Zap} label="Trung tâm AI"/>
-            <SLink to="/dashboard/eoffice/report" icon={Bot} label="Báo cáo AI"/>
+          {/* 2. CHIẾN DỊCH 44 NGÀY ĐÊM (CĐS ĐẮK LẮK) */}
+          <NavGroup id="campaign" label="Chiến dịch 44 ngày" icon={Target}>
             {can('COMMUNE_ADMIN') && (
-              <>
-                <SLink to="/dashboard/my-report" icon={ClipboardList} label="📋 Báo cáo của tôi"/>
-                <SLink to="/dashboard/support-requests" icon={Heart} label="Yêu cầu hỗ trợ"/>
-                <SLink to="/dashboard/smartweb" icon={Globe} label="SmartWeb Xã tôi"/>
-              </>
+              <SLink to="/dashboard/my-report" icon={ClipboardList} label="📋 Báo cáo 11 chỉ tiêu"/>
             )}
             {can('PROVINCE_ADMIN', 'ADMIN', 'SENIOR_ADMIN') && (
-              <SLink to="/dashboard/eoffice/agencies-monitor" icon={Activity} label="Quản lý Tuyến dưới"/>
+              <>
+                <SLink to="/dashboard/campaigns" icon={CheckSquare} label="Tiến độ 102 Xã/Phường"/>
+                <SLink to="/dashboard/dti-report" icon={Target} label="Báo cáo Tổng kết DTI"/>
+                {can('ADMIN', 'SENIOR_ADMIN') && <SLink to="/dashboard/map" icon={Map} label="Quản lý Đội hình"/>}
+                <SLink to="/dashboard/qr-manager" icon={QrCode} label="QR Điểm Hỗ trợ"/>
+              </>
             )}
-          </>)}
+            <SLink to="/dashboard/smartweb" icon={Globe} label={can('COMMUNE_ADMIN') ? "SmartWeb Xã tôi" : "SmartWeb Tiểu thương"}/>
+          </NavGroup>
 
-          {can('SENIOR_ADMIN') && (<>
-            <div className="sidebar-sec">Hệ thống</div>
-            <SLink to="/dashboard/users"  icon={Users}    label="Quản lý Tài khoản"/>
-          </>)}
+          {/* 3. VĂN PHÒNG ĐIỆN TỬ (AI E-OFFICE) */}
+          {can('PROVINCE_ADMIN', 'COMMUNE_ADMIN', 'ADMIN', 'SENIOR_ADMIN') && (
+            <NavGroup id="eoffice" label="Văn phòng eOffice" icon={Briefcase}>
+              <SLink to="/dashboard/eoffice" icon={Briefcase} label="Dashboard eOffice" exact />
+              <SLink to="/dashboard/eoffice/incoming" icon={FileInput} label="Văn bản đến"/>
+              <SLink to="/dashboard/eoffice/outgoing" icon={FileOutput} label="Văn bản đi"/>
+              <SLink to="/dashboard/eoffice/tasks" icon={CheckSquare} label="Quản lý Công việc"/>
+              <SLink to="/dashboard/eoffice/drive" icon={Database} label="Kho Dữ liệu chung"/>
+              {can('PROVINCE_ADMIN', 'ADMIN', 'SENIOR_ADMIN') && (
+                <SLink to="/dashboard/eoffice/agencies-monitor" icon={Activity} label="Quản lý Tuyến dưới"/>
+              )}
+            </NavGroup>
+          )}
 
-          <div className="sidebar-sec">Cá nhân</div>
-          <SLink to="/dashboard/profile" icon={UserCircle} label="Hồ sơ cá nhân"/>
+          {/* 4. TRUNG TÂM TRÍ TUỆ NHÂN TẠO (AI) */}
+          {can('PROVINCE_ADMIN', 'COMMUNE_ADMIN', 'ADMIN', 'SENIOR_ADMIN') && (
+            <NavGroup id="ai" label="Trung tâm AI" icon={Sparkles}>
+              <SLink to="/dashboard/eoffice/ai-center" icon={Zap} label="Trợ lý & Công cụ AI"/>
+              <SLink to="/dashboard/eoffice/report" icon={Bot} label="Báo cáo tự động AI"/>
+            </NavGroup>
+          )}
+
+          {/* 5. DÂN SINH & YÊU CẦU HỖ TRỢ */}
+          <NavGroup id="support" label="Dân sinh & Hỗ trợ" icon={Heart}>
+            <SLink to="/dashboard/support-requests" icon={Heart} label="Yêu cầu hỗ trợ"/>
+            {can('PROVINCE_ADMIN', 'ADMIN', 'SENIOR_ADMIN') && (
+              <SLink to="/dashboard/support-report" icon={BarChart3} label="Thống kê Báo cáo"/>
+            )}
+          </NavGroup>
+
+          {/* 6. TRUYỀN THÔNG & TIN TỨC */}
+          {can('PROVINCE_ADMIN', 'ADMIN', 'SENIOR_ADMIN') && (
+            <NavGroup id="news" label="Truyền thông" icon={FileText}>
+              <SLink to="/dashboard/news" icon={FileText} label="Quản lý Tin tức"/>
+            </NavGroup>
+          )}
+
+          {/* 7. HỆ THỐNG & CÁ NHÂN */}
+          <NavGroup id="system" label="Cài đặt & Cá nhân" icon={Settings}>
+            {can('SENIOR_ADMIN') && (
+              <SLink to="/dashboard/users" icon={Users} label="Quản lý Tài khoản"/>
+            )}
+            <SLink to="/dashboard/profile" icon={UserCircle} label="Hồ sơ cá nhân"/>
+          </NavGroup>
         </nav>
 
+        {/* Footer */}
         <div className="sidebar-footer">
           <div className="sidebar-user">
             <div className="sidebar-avatar">{username.charAt(0).toUpperCase()}</div>
@@ -180,10 +307,10 @@ const DashboardLayout = () => {
             </div>
           </div>
           <Link to="/" className="sidebar-link" onClick={() => setOpen(false)}>
-            <Globe size={17}/><span>Về trang Public</span>
+            <Globe size={16}/><span>Về trang Public</span>
           </Link>
           <button className="sidebar-link" style={{ border: 'none', background: 'none', width: '100%', color: 'var(--danger)', cursor: 'pointer' }} onClick={logout}>
-            <LogOut size={17}/><span>Đăng xuất</span>
+            <LogOut size={16}/><span>Đăng xuất</span>
           </button>
         </div>
       </aside>
@@ -201,7 +328,6 @@ const DashboardLayout = () => {
           </div>
           
           <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
-            {/* User Online Status (SYNC-03) */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.85rem', color: 'var(--tx-2)', background: 'var(--surface-2)', padding: '6px 12px', borderRadius: 20 }}>
               <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--success)', boxShadow: '0 0 5px var(--success)' }} />
               {onlineUsers} Online
