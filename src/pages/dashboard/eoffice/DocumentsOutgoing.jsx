@@ -3,7 +3,8 @@ import api from '../../../lib/api';
 import { toast } from 'react-toastify';
 import Swal from 'sweetalert2';
 import { getFileUrl, downloadFile } from '../../../utils/fileHelper';
-import { FileOutput, Search, Plus, Eye, Trash2, RefreshCw, Bot, X, Save, Calendar, Building2, User, FileText, AlertTriangle, Shield, Sparkles, Send } from 'lucide-react';
+import { FileOutput, Search, Plus, Eye, Trash2, RefreshCw, Bot, X, Save, Calendar, Building2, User, FileText, AlertTriangle, Shield, Sparkles, Send, BookOpen } from 'lucide-react';
+import EofficeGuideModal from '../../../components/EofficeGuideModal';
 
 const CATEGORIES = ['Công văn', 'Báo cáo', 'Kế hoạch', 'Tờ trình', 'Thông báo', 'Quyết định', 'Giấy mời', 'Chỉ thị', 'Hướng dẫn', 'Khác'];
 const URGENCIES = ['Thường', 'Khẩn', 'Thượng khẩn', 'Hỏa tốc'];
@@ -23,6 +24,7 @@ const DocumentsOutgoing = () => {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [showGuide, setShowGuide] = useState(false);
 
   // Modal states
   const [showForm, setShowForm] = useState(false);
@@ -191,6 +193,13 @@ const DocumentsOutgoing = () => {
           <p>Quản lý văn bản đã ban hành — Tổng: {total} văn bản</p>
         </div>
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+          <button 
+            className="btn btn-outline" 
+            onClick={() => setShowGuide(true)} 
+            style={{ display: 'flex', alignItems: 'center', gap: 6, borderColor: '#0284C7', color: '#0284C7', background: '#F0F9FF', fontWeight: 700 }}
+          >
+            <BookOpen size={15} /> 📖 Hướng dẫn Quy trình
+          </button>
           <button className="btn btn-ghost btn-sm" onClick={fetchDocs}><RefreshCw size={15} /> Tải lại</button>
           {canCreate && (
             <button className="btn btn-outline" style={{ display: 'flex', alignItems: 'center', gap: 6, borderColor: 'var(--brand-blue)', color: 'var(--brand-blue)' }} onClick={() => { setForm({ ...emptyForm }); setAiPrompt(''); setShowAiDraft(true); }}>
@@ -586,6 +595,13 @@ const DocumentsOutgoing = () => {
           </div>
         </div>
       )}
+
+      {/* Modal Hướng dẫn eOffice */}
+      <EofficeGuideModal
+        isOpen={showGuide}
+        onClose={() => setShowGuide(false)}
+        defaultTab="outgoing"
+      />
     </div>
   );
 };

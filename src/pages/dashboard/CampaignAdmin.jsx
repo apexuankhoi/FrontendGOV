@@ -4,7 +4,7 @@ import api from '../../lib/api';
 import { 
   Map, FileSpreadsheet, RefreshCw, Loader2, TrendingUp, Globe, 
   Sparkles, Award, CheckCircle2, ChevronRight, Filter,
-  Clock, Settings, X, Save, CheckCircle, AlertCircle
+  Clock, Settings, X, Save, CheckCircle, AlertCircle, Zap, Moon
 } from 'lucide-react';
 
 const CampaignAdmin = () => {
@@ -16,7 +16,15 @@ const CampaignAdmin = () => {
 
   // Cấu hình khung giờ báo cáo
   const [showConfigModal, setShowConfigModal] = useState(false);
-  const [config, setConfig] = useState({ openTime: '13:00', closeTime: '18:30', alwaysOpen: false, customNotice: '', isOpenNow: true });
+  const [config, setConfig] = useState({ 
+    openTime: '13:00', 
+    closeTime: '18:30', 
+    editDeadline: '19:00',
+    alwaysOpen: false, 
+    customNotice: '', 
+    isOpenNow: true,
+    canEditNow: true 
+  });
   const [savingConfig, setSavingConfig] = useState(false);
 
   const role = localStorage.getItem('role') || '';
@@ -57,6 +65,17 @@ const CampaignAdmin = () => {
       toast.error(err.response?.data?.message || 'Lỗi cập nhật cấu hình');
     } finally {
       setSavingConfig(false);
+    }
+  };
+
+  // Quick preset helper
+  const applyPreset = (preset) => {
+    if (preset === 'DEFAULT') {
+      setConfig(c => ({ ...c, openTime: '13:00', closeTime: '18:30', editDeadline: '19:00', alwaysOpen: false }));
+    } else if (preset === 'EVENING') {
+      setConfig(c => ({ ...c, openTime: '13:00', closeTime: '21:00', editDeadline: '22:00', alwaysOpen: false }));
+    } else if (preset === '24/7') {
+      setConfig(c => ({ ...c, alwaysOpen: true }));
     }
   };
 
@@ -113,7 +132,7 @@ const CampaignAdmin = () => {
       {/* Page Header */}
       <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
         <div>
-          <h2 style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+          <h2 style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', margin: 0 }}>
             <Map size={26} color="var(--primary)" /> Quản lý Báo cáo 11 Chỉ tiêu
           </h2>
           <p style={{ color: 'var(--tx-3)', fontSize: '.9rem', marginTop: 4 }}>
@@ -129,7 +148,7 @@ const CampaignAdmin = () => {
               title="Cấu hình giờ mở/đóng cổng nộp và chỉnh sửa báo cáo"
             >
               <Settings size={15} /> 
-              {config.alwaysOpen ? '🟢 Mở 24/7' : `⏰ Cổng: ${config.openTime || '13:00'} – ${config.closeTime || '18:30'}`}
+              {config.alwaysOpen ? '🟢 Mở 24/7' : `⏰ Cổng: ${config.openTime || '13:00'} – ${config.closeTime || '18:30'} (Sửa đến ${config.editDeadline || config.closeTime || '19:00'})`}
             </button>
           )}
           <input 
@@ -294,41 +313,100 @@ const CampaignAdmin = () => {
       {showConfigModal && (
         <div style={{
           position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-          background: 'rgba(15, 23, 42, 0.65)', backdropFilter: 'blur(4px)',
+          background: 'rgba(15, 23, 42, 0.75)', backdropFilter: 'blur(6px)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           zIndex: 9999, padding: 16
         }}>
-          <div className="card" style={{
-            maxWidth: 520, width: '100%', padding: 24, borderRadius: 18,
-            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.25)', border: '1px solid var(--border)',
-            background: 'var(--surface-0)'
+          <div style={{
+            maxWidth: 580, width: '100%', padding: '24px 28px', borderRadius: 20,
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.45)', border: '1px solid #E2E8F0',
+            background: '#FFFFFF', color: '#0F172A', maxHeight: '92vh', overflowY: 'auto'
           }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-              <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: 8, fontSize: '1.2rem', color: 'var(--primary)' }}>
-                <Clock size={22} /> Cấu hình Khung giờ Báo cáo
-              </h3>
+            {/* Modal Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18, borderBottom: '1px solid #E2E8F0', paddingBottom: 14 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ width: 38, height: 38, borderRadius: 10, background: '#EFF6FF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Clock size={22} color="#1D4ED8" />
+                </div>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 800, color: '#1E3A8A' }}>
+                    Cấu hình Khung giờ Báo cáo
+                  </h3>
+                  <p style={{ margin: '2px 0 0', fontSize: '.8rem', color: '#64748B' }}>
+                    Thiết lập giờ mở cổng, giờ đóng và hạn chót chỉnh sửa cho 102 Xã/Phường
+                  </p>
+                </div>
+              </div>
               <button 
+                type="button"
                 onClick={() => setShowConfigModal(false)} 
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--tx-3)', padding: 4 }}
+                style={{ background: '#F1F5F9', border: 'none', borderRadius: '50%', cursor: 'pointer', color: '#64748B', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background .2s' }}
               >
-                <X size={20} />
+                <X size={18} />
               </button>
             </div>
 
             <form onSubmit={handleSaveConfig}>
-              {/* Chế độ Always Open */}
+              {/* Quick Presets */}
+              <div style={{ marginBottom: 16 }}>
+                <label style={{ fontSize: '.78rem', fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '.04em', display: 'block', marginBottom: 6 }}>
+                  ⚡ Chọn nhanh mẫu cấu hình
+                </label>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+                  <button
+                    type="button"
+                    onClick={() => applyPreset('DEFAULT')}
+                    style={{
+                      padding: '8px 10px', borderRadius: 10, border: '1.5px solid #E2E8F0', background: (!config.alwaysOpen && config.closeTime === '18:30') ? '#EFF6FF' : '#F8FAFC',
+                      borderColor: (!config.alwaysOpen && config.closeTime === '18:30') ? '#3B82F6' : '#E2E8F0',
+                      cursor: 'pointer', textAlign: 'left', transition: 'all .2s'
+                    }}
+                  >
+                    <div style={{ fontWeight: 700, fontSize: '.82rem', color: '#1E40AF' }}>⚡ Chuẩn chiến dịch</div>
+                    <div style={{ fontSize: '.72rem', color: '#64748B', marginTop: 2 }}>13:00 – 18:30 (Sửa 19:00)</div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => applyPreset('EVENING')}
+                    style={{
+                      padding: '8px 10px', borderRadius: 10, border: '1.5px solid #E2E8F0', background: (!config.alwaysOpen && config.closeTime === '21:00') ? '#EFF6FF' : '#F8FAFC',
+                      borderColor: (!config.alwaysOpen && config.closeTime === '21:00') ? '#3B82F6' : '#E2E8F0',
+                      cursor: 'pointer', textAlign: 'left', transition: 'all .2s'
+                    }}
+                  >
+                    <div style={{ fontWeight: 700, fontSize: '.82rem', color: '#7C3AED' }}>🌙 Gia hạn đợt tối</div>
+                    <div style={{ fontSize: '.72rem', color: '#64748B', marginTop: 2 }}>13:00 – 21:00 (Sửa 22:00)</div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => applyPreset('24/7')}
+                    style={{
+                      padding: '8px 10px', borderRadius: 10, border: '1.5px solid #E2E8F0', background: config.alwaysOpen ? '#ECFDF5' : '#F8FAFC',
+                      borderColor: config.alwaysOpen ? '#10B981' : '#E2E8F0',
+                      cursor: 'pointer', textAlign: 'left', transition: 'all .2s'
+                    }}
+                  >
+                    <div style={{ fontWeight: 700, fontSize: '.82rem', color: '#059669' }}>🟢 Mở tự do 24/7</div>
+                    <div style={{ fontSize: '.72rem', color: '#64748B', marginTop: 2 }}>Không giới hạn giờ</div>
+                  </button>
+                </div>
+              </div>
+
+              {/* Chế độ Always Open Switch Card */}
               <div style={{
-                background: config.alwaysOpen ? '#ECFDF5' : 'var(--surface-1)',
-                border: `1.5px solid ${config.alwaysOpen ? '#10B981' : 'var(--border)'}`,
-                padding: 16, borderRadius: 12, marginBottom: 20,
+                background: config.alwaysOpen ? '#ECFDF5' : '#F8FAFC',
+                border: `1.5px solid ${config.alwaysOpen ? '#10B981' : '#E2E8F0'}`,
+                padding: '14px 16px', borderRadius: 12, marginBottom: 18,
                 display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12
               }}>
                 <div>
-                  <div style={{ fontWeight: 700, fontSize: '.95rem', color: config.alwaysOpen ? '#065F46' : 'var(--tx-1)' }}>
-                    🟢 Mở cổng 24/7 (Không giới hạn giờ)
+                  <div style={{ fontWeight: 800, fontSize: '.92rem', color: config.alwaysOpen ? '#065F46' : '#1E293B' }}>
+                    🟢 Chế độ mở cổng 24/7 (Không giới hạn)
                   </div>
-                  <div style={{ fontSize: '.8rem', color: 'var(--tx-3)', marginTop: 2 }}>
-                    Cho phép các xã nộp và sửa báo cáo mọi lúc (Thích hợp khi chạy kiểm thử hoặc đợt cao điểm)
+                  <div style={{ fontSize: '.78rem', color: '#64748B', marginTop: 2 }}>
+                    Bật chế độ này để các xã có thể nộp và sửa báo cáo bất cứ lúc nào trong ngày.
                   </div>
                 </div>
                 <label style={{ position: 'relative', display: 'inline-block', width: 48, height: 26, flexShrink: 0, cursor: 'pointer' }}>
@@ -352,76 +430,116 @@ const CampaignAdmin = () => {
                 </label>
               </div>
 
-              {/* Cấu hình giờ nếu không bật Always Open */}
-              {!config.alwaysOpen && (
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 20 }}>
+              {/* 3 Input Khung giờ chi tiết */}
+              <div style={{
+                background: config.alwaysOpen ? '#F1F5F9' : '#FFFFFF',
+                opacity: config.alwaysOpen ? 0.6 : 1,
+                border: '1px solid #E2E8F0',
+                borderRadius: 14,
+                padding: 16,
+                marginBottom: 18,
+                pointerEvents: config.alwaysOpen ? 'none' : 'auto'
+              }}>
+                <div style={{ fontSize: '.84rem', fontWeight: 700, color: '#334155', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <Clock size={16} color="#2563EB" /> Khung giờ nhận & chỉnh sửa báo cáo:
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+                  {/* 1. Giờ mở cổng */}
                   <div>
-                    <label className="form-label" style={{ fontWeight: 600, fontSize: '.85rem', display: 'flex', alignItems: 'center', gap: 6 }}>
-                      🕒 Giờ Mở Cổng
+                    <label style={{ fontWeight: 700, fontSize: '.8rem', color: '#1E293B', display: 'block', marginBottom: 4 }}>
+                      🕒 1. Giờ Mở Cổng
                     </label>
                     <input 
                       type="time" 
                       className="form-input" 
                       value={config.openTime || '13:00'} 
                       onChange={e => setConfig(c => ({ ...c, openTime: e.target.value }))}
-                      required
-                      style={{ fontSize: '1.05rem', fontWeight: 700 }}
+                      required={!config.alwaysOpen}
+                      style={{ fontSize: '1rem', fontWeight: 800, textAlign: 'center', width: '100%', height: 42, borderRadius: 8, borderColor: '#CBD5E1', background: '#FFFFFF', color: '#0F172A' }}
                     />
-                    <span style={{ fontSize: '.75rem', color: 'var(--tx-3)', marginTop: 4, display: 'block' }}>
-                      Mặc định: 13:00 chiều
+                    <span style={{ fontSize: '.7rem', color: '#64748B', marginTop: 4, display: 'block' }}>
+                      Bắt đầu nhận BC
                     </span>
                   </div>
 
+                  {/* 2. Giờ đóng cổng nộp mới */}
                   <div>
-                    <label className="form-label" style={{ fontWeight: 600, fontSize: '.85rem', display: 'flex', alignItems: 'center', gap: 6 }}>
-                      ⏰ Giờ Đóng / Hạn Sửa
+                    <label style={{ fontWeight: 700, fontSize: '.8rem', color: '#1E293B', display: 'block', marginBottom: 4 }}>
+                      ⏰ 2. Giờ Đóng Cổng
                     </label>
                     <input 
                       type="time" 
                       className="form-input" 
                       value={config.closeTime || '18:30'} 
                       onChange={e => setConfig(c => ({ ...c, closeTime: e.target.value }))}
-                      required
-                      style={{ fontSize: '1.05rem', fontWeight: 700 }}
+                      required={!config.alwaysOpen}
+                      style={{ fontSize: '1rem', fontWeight: 800, textAlign: 'center', width: '100%', height: 42, borderRadius: 8, borderColor: '#CBD5E1', background: '#FFFFFF', color: '#0F172A' }}
                     />
-                    <span style={{ fontSize: '.75rem', color: 'var(--tx-3)', marginTop: 4, display: 'block' }}>
-                      Mặc định: 18:30 tối
+                    <span style={{ fontSize: '.7rem', color: '#64748B', marginTop: 4, display: 'block' }}>
+                      Hạn nộp bài mới
+                    </span>
+                  </div>
+
+                  {/* 3. Hạn chót chỉnh sửa */}
+                  <div>
+                    <label style={{ fontWeight: 700, fontSize: '.8rem', color: '#B45309', display: 'block', marginBottom: 4 }}>
+                      ⏳ 3. Hạn Chỉnh Sửa
+                    </label>
+                    <input 
+                      type="time" 
+                      className="form-input" 
+                      value={config.editDeadline || config.closeTime || '19:00'} 
+                      onChange={e => setConfig(c => ({ ...c, editDeadline: e.target.value }))}
+                      required={!config.alwaysOpen}
+                      style={{ fontSize: '1rem', fontWeight: 800, textAlign: 'center', width: '100%', height: 42, borderRadius: 8, borderColor: '#F59E0B', background: '#FFFBEB', color: '#92400E' }}
+                    />
+                    <span style={{ fontSize: '.7rem', color: '#D97706', marginTop: 4, display: 'block', fontWeight: 600 }}>
+                      Hạn sửa số liệu đã nộp
                     </span>
                   </div>
                 </div>
-              )}
+              </div>
 
               {/* Thông báo tùy chỉnh cho các xã */}
-              <div style={{ marginBottom: 20 }}>
-                <label className="form-label" style={{ fontWeight: 600, fontSize: '.85rem' }}>
+              <div style={{ marginBottom: 18 }}>
+                <label style={{ fontWeight: 700, fontSize: '.82rem', color: '#334155', display: 'block', marginBottom: 6 }}>
                   📢 Thông báo / Ghi chú đặc biệt gửi tới các Xã (Tùy chọn)
                 </label>
                 <input 
                   type="text" 
                   className="form-input" 
-                  placeholder="Ví dụ: Hôm nay gia hạn nộp đến 20:00..."
+                  placeholder="Ví dụ: Hôm nay gia hạn nộp đến 20:00, hạn sửa đến 21:00..."
                   value={config.customNotice || ''}
                   onChange={e => setConfig(c => ({ ...c, customNotice: e.target.value }))}
+                  style={{ width: '100%', height: 42, borderRadius: 10, borderColor: '#CBD5E1', padding: '0 14px', background: '#FFFFFF', color: '#0F172A' }}
                 />
               </div>
 
-              {/* Quy tắc hiệu lực */}
+              {/* Quy tắc hiệu lực Box */}
               <div style={{
-                background: 'var(--surface-1)', padding: '12px 16px', borderRadius: 10,
-                marginBottom: 20, display: 'flex', alignItems: 'center', gap: 10, fontSize: '.85rem', border: '1px solid var(--border)'
+                background: '#EFF6FF', padding: '12px 14px', borderRadius: 12,
+                marginBottom: 20, display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: '.84rem', border: '1px solid #BFDBFE'
               }}>
-                <AlertCircle size={18} color="var(--primary)" style={{ flexShrink: 0 }} />
-                <div style={{ color: 'var(--tx-2)' }}>
-                  <strong>Quy tắc hiệu lực:</strong> Các đơn vị cấp Xã chỉ có thể gửi mới và chỉnh sửa số liệu báo cáo trong khoảng thời gian quy định ở trên.
+                <AlertCircle size={18} color="#1D4ED8" style={{ flexShrink: 0, marginTop: 2 }} />
+                <div style={{ color: '#1E3A8A', lineHeight: 1.45 }}>
+                  <strong>Quy tắc hiệu lực:</strong> {config.alwaysOpen ? (
+                    <span>Cổng đang mở tự do 24/7. Các xã có thể nộp mới và cập nhật lại số liệu bất kỳ lúc nào.</span>
+                  ) : (
+                    <span>
+                      Xã được nộp báo cáo mới từ <strong>{config.openTime || '13:00'}</strong> đến <strong>{config.closeTime || '18:30'}</strong>, và được phép chỉnh sửa số liệu đã nộp đến <strong>{config.editDeadline || config.closeTime || '19:00'}</strong>.
+                    </span>
+                  )}
                 </div>
               </div>
 
               {/* Action buttons */}
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, borderTop: '1px solid #E2E8F0', paddingTop: 16 }}>
                 <button 
                   type="button" 
                   className="btn btn-outline" 
                   onClick={() => setShowConfigModal(false)}
+                  style={{ padding: '9px 18px', borderRadius: 10, fontWeight: 600 }}
                 >
                   Đóng
                 </button>
@@ -429,7 +547,7 @@ const CampaignAdmin = () => {
                   type="submit" 
                   className="btn btn-primary" 
                   disabled={savingConfig}
-                  style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+                  style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '9px 22px', borderRadius: 10, fontWeight: 700, background: '#1D4ED8' }}
                 >
                   {savingConfig ? <Loader2 size={16} className="spin" /> : <Save size={16} />}
                   {savingConfig ? 'Đang lưu...' : 'Lưu Cấu hình'}

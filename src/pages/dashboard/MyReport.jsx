@@ -174,7 +174,7 @@ const MyReport = () => {
   const [isEditing, setIsEditing] = useState(false);
 
   // Cấu hình khung giờ báo cáo động từ Super Admin
-  const [config, setConfig] = useState({ openTime: '13:00', closeTime: '18:30', alwaysOpen: false, customNotice: '', isOpenNow: true });
+  const [config, setConfig] = useState({ openTime: '13:00', closeTime: '18:30', editDeadline: '19:00', alwaysOpen: false, customNotice: '', isOpenNow: true, canEditNow: true });
 
   const agencyName = (() => {
     try { return JSON.parse(localStorage.getItem('agency'))?.name || 'Đơn vị của bạn'; }
@@ -184,6 +184,7 @@ const MyReport = () => {
   const today = new Date();
   const todayStr = today.toLocaleDateString('vi-VN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
+  // Kiểm tra giờ nộp mới
   const isReportTime = (() => {
     if (config.alwaysOpen) return true;
     const now = new Date();
@@ -193,6 +194,18 @@ const MyReport = () => {
     const openMin = (isNaN(oh) ? 13 : oh) * 60 + (isNaN(om) ? 0 : om);
     const closeMin = (isNaN(ch) ? 18 : ch) * 60 + (isNaN(cm) ? 30 : cm);
     return curMin >= openMin && curMin <= closeMin;
+  })();
+
+  // Kiểm tra giờ chỉnh sửa (cho phép sửa đến editDeadline)
+  const isEditTime = (() => {
+    if (config.alwaysOpen) return true;
+    const now = new Date();
+    const curMin = now.getHours() * 60 + now.getMinutes();
+    const [oh, om] = (config.openTime || '13:00').split(':').map(Number);
+    const [eh, em] = (config.editDeadline || config.closeTime || '19:00').split(':').map(Number);
+    const openMin = (isNaN(oh) ? 13 : oh) * 60 + (isNaN(om) ? 0 : om);
+    const editMin = (isNaN(eh) ? 19 : eh) * 60 + (isNaN(em) ? 0 : em);
+    return curMin >= openMin && curMin <= editMin;
   })();
 
   useEffect(() => {
@@ -274,26 +287,32 @@ const MyReport = () => {
         </div>
       </div>
 
-      {/* Thông báo giờ nộp & hướng dẫn */}
+      {/* Banner Khung giờ nộp & chỉnh sửa */}
       <div style={{
-        background: isReportTime ? '#D1FAE5' : '#FEF3C7',
-        border: `1px solid ${isReportTime ? '#10B981' : '#F59E0B'}`,
+        background: isReportTime ? '#ECFDF5' : (isEditTime ? '#EFF6FF' : '#FFFBEB'),
+        border: `1px solid ${isReportTime ? '#10B981' : (isEditTime ? '#3B82F6' : '#F59E0B')}`,
         borderRadius: 14, padding: '14px 20px', marginBottom: 24,
         display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap'
       }}>
         {isReportTime
           ? <CheckCircle size={24} color="#10B981" style={{ flexShrink: 0 }} />
-          : <Clock size={24} color="#F59E0B" style={{ flexShrink: 0 }} />
+          : (isEditTime ? <Clock size={24} color="#2563EB" style={{ flexShrink: 0 }} /> : <Clock size={24} color="#F59E0B" style={{ flexShrink: 0 }} />)
         }
         <div style={{ flex: 1, minWidth: 240 }}>
-          <div style={{ fontWeight: 700, color: isReportTime ? '#059669' : '#D97706', fontSize: '.95rem' }}>
-            {isReportTime 
-              ? `✅ Cổng tiếp nhận & chỉnh sửa đang MỞ (${config.alwaysOpen ? 'Luôn mở 24/7' : `${config.openTime || '13:00'} – ${config.closeTime || '18:30'} hằng ngày`})`
-              : `⏰ Cổng báo cáo mở từ ${config.openTime || '13:00'} đến ${config.closeTime || '18:30'} hằng ngày (Hạn chót: ${config.closeTime || '18:30'})`
+          <div style={{ fontWeight: 700, color: isReportTime ? '#059669' : (isEditTime ? '#1D4ED8' : '#D97706'), fontSize: '.95rem' }}>
+            {config.alwaysOpen
+              ? '🟢 Cổng tiếp nhận & chỉnh sửa đang MỞ 24/7 (Không giới hạn giờ)'
+              : (isReportTime 
+                  ? `✅ Cổng nộp báo cáo đang MỞ (${config.openTime || '13:00'} – ${config.closeTime || '18:30'}) • Hạn chót sửa: ${config.editDeadline || config.closeTime || '19:00'}`
+                  : (isEditTime 
+                      ? `⏳ Đã đóng nộp mới nhưng ĐANG TRONG HẠN CHỈNH SỬA (Đến ${config.editDeadline || config.closeTime || '19:00'})`
+                      : `⏰ Cổng đóng. Giờ mở nộp: ${config.openTime || '13:00'} – ${config.closeTime || '18:30'} (Hạn sửa: ${config.editDeadline || config.closeTime || '19:00'})`
+                    )
+                )
             }
           </div>
           <div style={{ fontSize: '.84rem', color: 'var(--tx-2)', marginTop: 3, lineHeight: 1.4 }}>
-            Nhập số liệu lũy kế 11 tiêu chí trực tiếp lên hệ thống. {existingReport ? `Đơn vị có thể chỉnh sửa lại số liệu đến ${config.alwaysOpen ? 'bất kỳ lúc nào' : config.closeTime || '18:30'}.` : `Vui lòng hoàn thành trước ${config.alwaysOpen ? 'cuối ngày' : config.closeTime || '18:30'}.`}
+            Nhập số liệu lũy kế 11 tiêu chí trực tiếp lên hệ thống. {existingReport ? `Đơn vị có thể chỉnh sửa lại số liệu đến ${config.alwaysOpen ? 'bất kỳ lúc nào' : (config.editDeadline || config.closeTime || '19:00')}.` : `Vui lòng hoàn thành trước ${config.alwaysOpen ? 'cuối ngày' : config.closeTime || '18:30'}.`}
             {config.customNotice && (
               <span style={{ display: 'block', color: 'var(--primary)', fontWeight: 600, marginTop: 4 }}>
                 📢 Lưu ý từ Tỉnh: {config.customNotice}
@@ -314,7 +333,7 @@ const MyReport = () => {
           </p>
 
           {/* Nút cho phép chỉnh sửa nếu đang trong khung giờ hợp lệ */}
-          {isReportTime ? (
+          {isEditTime ? (
             <div style={{ marginBottom: 24 }}>
               <button 
                 type="button" 

@@ -3,8 +3,9 @@ import api from '../../../lib/api';
 import { toast } from 'react-toastify';
 import Swal from 'sweetalert2';
 import { getFileUrl, downloadFile } from '../../../utils/fileHelper';
-import { FileInput, Search, Plus, Eye, Trash2, RefreshCw, Upload, Bot, ChevronDown, X, Save, Calendar, Building2, User, FileText, AlertTriangle, Shield, MessageCircle } from 'lucide-react';
+import { FileInput, Search, Plus, Eye, Trash2, RefreshCw, Upload, Bot, ChevronDown, X, Save, Calendar, Building2, User, FileText, AlertTriangle, Shield, MessageCircle, BookOpen } from 'lucide-react';
 import AiChatPanel, { AiChatButton } from '../../../components/AiChatPanel';
+import EofficeGuideModal from '../../../components/EofficeGuideModal';
 
 const CATEGORIES = ['Công văn', 'Báo cáo', 'Kế hoạch', 'Tờ trình', 'Thông báo', 'Quyết định', 'Giấy mời', 'Chỉ thị', 'Hướng dẫn', 'Khác'];
 const URGENCIES = ['Thường', 'Khẩn', 'Thượng khẩn', 'Hỏa tốc'];
@@ -28,6 +29,7 @@ const DocumentsIncoming = () => {
   const [search, setSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
   const [filterUrgency, setFilterUrgency] = useState('');
+  const [showGuide, setShowGuide] = useState(false);
 
   // Modal states
   const [showForm, setShowForm] = useState(false);
@@ -195,6 +197,13 @@ const DocumentsIncoming = () => {
           <p>Quản lý văn bản tiếp nhận — Tổng: {total} văn bản</p>
         </div>
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+          <button 
+            className="btn btn-outline" 
+            onClick={() => setShowGuide(true)} 
+            style={{ display: 'flex', alignItems: 'center', gap: 6, borderColor: '#0284C7', color: '#0284C7', background: '#F0F9FF', fontWeight: 700 }}
+          >
+            <BookOpen size={15} /> 📖 Hướng dẫn Quy trình
+          </button>
           <button className="btn btn-ghost btn-sm" onClick={fetchDocs}><RefreshCw size={15} /> Tải lại</button>
           {canCreate && <button className="btn btn-primary btn-sm" onClick={() => { setShowForm(true); setForm({ ...emptyForm }); setFiles([]); setAiResult(null); }}>
             <Plus size={15} /> Thêm văn bản
@@ -555,19 +564,12 @@ const DocumentsIncoming = () => {
         onClose={() => { setChatOpen(false); setChatTarget(null); }}
       />
 
-      {/* Nút mở chat khi đang xem chi tiết */}
-      {showDetail && !chatOpen && (
-        <button onClick={() => { setChatTarget(showDetail); setChatOpen(true); }} title="Chat với AI về văn bản này" style={{
-          position: 'fixed', bottom: 24, right: 24, width: 56, height: 56,
-          borderRadius: '50%', border: 'none', cursor: 'pointer', zIndex: 999,
-          background: 'linear-gradient(135deg, #1e40af, #3b82f6)',
-          color: '#fff', boxShadow: '0 4px 16px rgba(37,99,235,.4)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          transition: 'transform .2s'
-        }}>
-          <MessageCircle size={24} />
-        </button>
-      )}
+      {/* Modal Hướng dẫn eOffice */}
+      <EofficeGuideModal
+        isOpen={showGuide}
+        onClose={() => setShowGuide(false)}
+        defaultTab="incoming"
+      />
     </div>
   );
 };

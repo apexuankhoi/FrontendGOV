@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import api from '../../../lib/api';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
-import { FileInput, FileOutput, AlertTriangle, CheckCircle, Clock, Zap, TrendingUp, Bot } from 'lucide-react';
+import { FileInput, FileOutput, AlertTriangle, CheckCircle, Clock, Zap, TrendingUp, Bot, BookOpen } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import EofficeGuideModal from '../../../components/EofficeGuideModal';
 
 const COLORS = ['#0056D6', '#00A86B', '#DD6B20', '#E53E3E', '#9333EA', '#0891B2'];
 const URGENCY_COLORS = { 'Thường': 'badge-info', 'Khẩn': 'badge-warning', 'Thượng khẩn': 'badge-danger', 'Hỏa tốc': 'badge-danger' };
@@ -13,6 +14,7 @@ const EofficeDashboard = () => {
   const [taskStats, setTaskStats] = useState(null);
   const [overdueTasks, setOverdueTasks] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showGuide, setShowGuide] = useState(false);
 
   const [generatingReport, setGeneratingReport] = useState(false);
   const [aiReportContent, setAiReportContent] = useState('');
@@ -67,19 +69,28 @@ const EofficeDashboard = () => {
 
   return (
     <div className="animate-up">
-      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
         <div>
           <h2>📊 eOffice Dashboard</h2>
           <p>Tổng quan điều hành văn bản & công việc</p>
         </div>
-        <button 
-          onClick={generateAiReport} 
-          disabled={generatingReport}
-          className="premium-btn" 
-          style={{ width: 'auto', padding: '10px 20px', background: 'var(--brand-blue)', borderRadius: 8, display: 'flex', alignItems: 'center', gap: 8, border: 'none', color: '#fff', cursor: 'pointer' }}
-        >
-          {generatingReport ? 'Đang viết báo cáo...' : <><Bot size={18} /> AI Viết Báo Cáo Tháng</>}
-        </button>
+        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+          <button 
+            className="btn btn-outline" 
+            onClick={() => setShowGuide(true)} 
+            style={{ display: 'flex', alignItems: 'center', gap: 6, borderColor: '#0284C7', color: '#0284C7', background: '#F0F9FF', fontWeight: 700 }}
+          >
+            <BookOpen size={16} /> 📖 Hướng dẫn Quy trình
+          </button>
+          <button 
+            onClick={generateAiReport} 
+            disabled={generatingReport}
+            className="premium-btn" 
+            style={{ width: 'auto', padding: '10px 20px', background: 'var(--brand-blue)', borderRadius: 8, display: 'flex', alignItems: 'center', gap: 8, border: 'none', color: '#fff', cursor: 'pointer' }}
+          >
+            {generatingReport ? 'Đang viết báo cáo...' : <><Bot size={18} /> AI Viết Báo Cáo Tháng</>}
+          </button>
+        </div>
       </div>
 
       {/* AI Report Modal */}
@@ -221,6 +232,13 @@ const EofficeDashboard = () => {
           )}
         </div>
       </div>
+
+      {/* Modal Hướng dẫn Quy trình eOffice */}
+      <EofficeGuideModal
+        isOpen={showGuide}
+        onClose={() => setShowGuide(false)}
+        defaultTab="workflow"
+      />
     </div>
   );
 };
