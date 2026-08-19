@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import api from '../lib/api';
 import { Link, useNavigate } from 'react-router-dom';
@@ -7,7 +8,8 @@ import {
   Map, Users, Hammer, Heart, ArrowRight, Calendar,
   CheckCircle, ShieldCheck, Search, MessageCircle,
   FileText, ChevronRight, Star, Globe, Phone, Mail,
-  Download, BookOpen, Sparkles, FolderDown, FileDown, Bot, Layers
+  Download, BookOpen, Sparkles, FolderDown, FileDown, Bot, Layers,
+  ExternalLink, CheckCircle2
 } from 'lucide-react';
 import { toast } from 'react-toastify';
 
@@ -26,18 +28,92 @@ const getNewsImg = (item, idx = 0) => {
 const CENTER = [12.6667, 108.0383];
 const DISTRICT_COORDS = {
   'TP Buôn Ma Thuột': [12.6667, 108.0383],
-  'Huyện Krông Búk': [12.873, 108.067],
-  "Huyện Ea H'leo": [13.067, 108.15],
-  'Huyện Krông Năng': [12.936, 108.35],
-  "Huyện M'Đrắk": [12.468, 108.703],
-  'Huyện Krông Pắc': [12.55, 108.20],
-  'Huyện Lắk': [12.283, 108.183],
   'TX Buôn Hồ': [12.922, 108.268],
+  'Huyện Cư M\'gar': [12.833, 108.083],
+  'Huyện Krông Pắc': [12.650, 108.283],
+  "Huyện Ea H'leo": [13.200, 108.183],
+  'Huyện Krông Búk': [12.916, 108.150],
+  'Huyện Krông Năng': [12.966, 108.416],
+  'Huyện Ea Kar': [12.800, 108.533],
+  "Huyện M'Đrắk": [12.750, 108.800],
+  'Huyện Krông Bông': [12.433, 108.383],
+  'Huyện Lắk': [12.333, 108.183],
+  'Huyện Buôn Đôn': [12.833, 107.833],
+  'Huyện Ea Súp': [13.083, 107.883],
+  'Huyện Krông Ana': [12.500, 108.033],
+  'Huyện Cư Kuin': [12.583, 108.150],
+  'Đoàn phường Tuy Hòa': [13.090, 109.300],
+  'Đoàn phường Sông Cầu': [13.450, 109.220],
+  'Đoàn phường Đông Hòa': [12.950, 109.350],
 };
 
 function getPos(team) {
-  const base = DISTRICT_COORDS[team.location?.district] || CENTER;
-  return [base[0] + (Math.random() - 0.5) * 0.12, base[1] + (Math.random() - 0.5) * 0.12];
+  let d = team.location?.district || '';
+  if (!DISTRICT_COORDS[d]) {
+    const c = team.location?.commune || team.name || '';
+    if (c.includes('Buôn Ma Thuột') || c.includes('Tân An') || c.includes('Tân Lập') || c.includes('Ea Kao')) d = 'TP Buôn Ma Thuột';
+    else if (c.includes('Buôn Hồ') || c.includes('Cư Bao')) d = 'TX Buôn Hồ';
+    else if (c.includes('Cư M\'gar') || c.includes('Quảng Phú')) d = 'Huyện Cư M\'gar';
+    else if (c.includes('Krông Pắc') || c.includes('Phước An')) d = 'Huyện Krông Pắc';
+    else if (c.includes('Ea H\'leo') || c.includes('Ea Drăng')) d = "Huyện Ea H'leo";
+    else if (c.includes('Krông Búk') || c.includes('Pơng Drang')) d = 'Huyện Krông Búk';
+    else if (c.includes('Krông Năng')) d = 'Huyện Krông Năng';
+    else if (c.includes('Ea Kar') || c.includes('Ea Knốp')) d = 'Huyện Ea Kar';
+    else if (c.includes('M\'Đrắk') || c.includes('M\'Drắk')) d = "Huyện M'Đrắk";
+    else if (c.includes('Krông Bông')) d = 'Huyện Krông Bông';
+    else if (c.includes('Lắk') || c.includes('Liên Sơn')) d = 'Huyện Lắk';
+    else if (c.includes('Buôn Đôn')) d = 'Huyện Buôn Đôn';
+    else if (c.includes('Ea Súp')) d = 'Huyện Ea Súp';
+    else if (c.includes('Krông Ana')) d = 'Huyện Krông Ana';
+    else if (c.includes('Cư Kuin')) d = 'Huyện Cư Kuin';
+    else if (c.includes('Tuy Hòa')) d = 'Đoàn phường Tuy Hòa';
+    else if (c.includes('Sông Cầu')) d = 'Đoàn phường Sông Cầu';
+    else if (c.includes('Đông Hòa')) d = 'Đoàn phường Đông Hòa';
+    else d = 'TP Buôn Ma Thuột';
+  }
+
+  const base = DISTRICT_COORDS[d] || CENTER;
+  const str = (team._id || team.name || '') + (team.location?.commune || '');
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = ((hash << 5) - hash) + str.charCodeAt(i);
+    hash |= 0;
+  }
+  const offX = ((Math.abs(hash) % 100) / 100 - 0.5) * 0.08;
+  const offY = (((Math.abs(hash * 31)) % 100) / 100 - 0.5) * 0.08;
+  return [base[0] + offX, base[1] + offY];
+}
+
+// Tạo Icon Lá Cờ Đỏ Sao Vàng / Cờ Đội hình Thanh niên số
+function createFlagIcon(hasEvidence = false) {
+  const flagColor = hasEvidence ? '#DC2626' : '#EA580C';
+  return L.divIcon({
+    className: 'custom-leaflet-flag',
+    html: `
+      <div style="position: relative; width: 36px; height: 40px; cursor: pointer; transform-origin: bottom left; filter: drop-shadow(0 3px 6px rgba(0,0,0,0.4));" class="flag-wrapper">
+        <svg width="36" height="40" viewBox="0 0 36 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Cột cờ kim loại -->
+          <rect x="5.5" y="3" width="3.2" height="35" rx="1.6" fill="#334155" stroke="#0F172A" stroke-width="0.5"/>
+          <!-- Quả cầu vàng đỉnh cột cờ -->
+          <circle cx="7.1" cy="3.5" r="2.8" fill="#F59E0B" stroke="#B45309" stroke-width="0.5"/>
+          
+          <!-- Lá cờ đỏ tung bay uốn lượn 3D -->
+          <path d="M8.7 4 C14.5 1.5, 20.5 7, 29.5 4 C31.5 3.5, 31.5 17.5, 29.5 17.5 C20.5 20.5, 14.5 15, 8.7 18 Z" 
+                fill="${flagColor}" 
+                stroke="#991B1B" 
+                stroke-width="0.8"/>
+          
+          <!-- Ngôi sao vàng 5 cánh tỏa sáng -->
+          <polygon points="19,6 19.9,8.4 22.4,8.4 20.4,9.9 21.2,12.3 19,10.8 16.8,12.3 17.6,9.9 15.6,8.4 18.1,8.4" fill="#FDE047" stroke="#CA8A04" stroke-width="0.3"/>
+        </svg>
+        <!-- Chân bóng 3D -->
+        <div style="position: absolute; bottom: 0; left: 3px; width: 8px; height: 3px; background: rgba(15,23,42,0.45); border-radius: 50%;"></div>
+      </div>
+    `,
+    iconSize: [36, 40],
+    iconAnchor: [7.1, 38],
+    popupAnchor: [12, -34]
+  });
 }
 
 // Dịch vụ công nhanh
@@ -310,28 +386,67 @@ const Home = () => {
                 url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
               />
               {filteredTeams.map(t => (
-                <CircleMarker key={t._id} center={getPos(t)} radius={11}
-                  pathOptions={{ color: '#1D4ED8', fillColor: '#3B82F6', fillOpacity: .8, weight: 2.5 }}>
+                <Marker 
+                  key={t._id} 
+                  position={getPos(t)} 
+                  icon={createFlagIcon(!!t.evidenceLinks)}
+                >
                   <Popup>
-                    <div style={{ fontFamily: "'Be Vietnam Pro', sans-serif", minWidth: 210 }}>
-                      <div style={{ fontWeight: 700, fontSize: '1rem', color: '#0F172A', marginBottom: 8 }}>{t.name}</div>
-                      <div style={{ fontSize: '.8rem', color: '#64748B', marginBottom: 4 }}>🏫 {t.schoolOrUnit}</div>
-                      <div style={{ fontSize: '.8rem', color: '#64748B', marginBottom: 10 }}>📍 {t.location?.commune}, {t.location?.district}</div>
-                      {t.fieldsOfActivity?.length > 0 && (
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 10 }}>
-                          {t.fieldsOfActivity.slice(0, 2).map(f => (
-                            <span key={f} style={{ background: '#DBEAFE', color: '#1D4ED8', fontSize: '.7rem', padding: '2px 8px', borderRadius: 20, fontWeight: 600 }}>{f}</span>
-                          ))}
+                    <div style={{ fontFamily: "'Be Vietnam Pro', sans-serif", minWidth: 260, padding: '4px 2px' }}>
+                      {/* Tiêu đề Đội hình / Xã */}
+                      <div style={{ fontWeight: 800, fontSize: '.98rem', color: '#1E3A8A', marginBottom: 6, lineHeight: 1.3 }}>
+                        {t.name}
+                      </div>
+                      
+                      <div style={{ fontSize: '.8rem', color: '#475569', marginBottom: 4 }}>
+                        🏫 <strong>{t.schoolOrUnit || 'Đoàn cơ sở'}</strong>
+                      </div>
+                      
+                      <div style={{ fontSize: '.78rem', color: '#64748B', marginBottom: 8 }}>
+                        📍 {t.location?.commune || 'Xã/Phường'}, {t.location?.district || 'Đắk Lắk'}
+                      </div>
+
+                      {t.reporterName && (
+                        <div style={{ fontSize: '.75rem', color: '#1E40AF', background: '#EFF6FF', padding: '4px 8px', borderRadius: 6, marginBottom: 8, fontWeight: 600 }}>
+                          👤 Cán bộ nộp: {t.reporterName}
                         </div>
                       )}
-                      <div style={{ display: 'flex', gap: 14, fontSize: '.8rem', fontWeight: 700 }}>
-                        <span style={{ color: '#1D4ED8' }}>👥 {t.statistics?.volunteersCount || 0}</span>
-                        <span style={{ color: '#16A34A' }}>🏗 {t.statistics?.projectsCount || 0}</span>
-                        <span style={{ color: '#E11D48' }}>❤️ {t.statistics?.beneficiaries || 0}</span>
+
+                      {/* Số liệu 4 chỉ tiêu nổi bật */}
+                      <div style={{
+                        display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6,
+                        marginBottom: 10, background: '#F8FAFC', padding: 8, borderRadius: 8,
+                        border: '1px solid #E2E8F0', fontSize: '.75rem'
+                      }}>
+                        <div>💻 KNS: <strong style={{ color: '#0284C7' }}>{(t.kpiSummary?.digitalSkills || t.statistics?.beneficiaries || 0).toLocaleString('vi-VN')}</strong></div>
+                        <div>🪪 VNeID: <strong style={{ color: '#16A34A' }}>{(t.kpiSummary?.vneidSupport || 0).toLocaleString('vi-VN')}</strong></div>
+                        <div>🏛️ DVC: <strong style={{ color: '#7C3AED' }}>{(t.kpiSummary?.publicServices || 0).toLocaleString('vi-VN')}</strong></div>
+                        <div>📱 QR: <strong style={{ color: '#D97706' }}>{(t.kpiSummary?.qrSupport || 0).toLocaleString('vi-VN')}</strong></div>
                       </div>
+
+                      {/* NÚT MỞ LINK MINH CHỨNG GOOGLE DRIVE / HÌNH ẢNH */}
+                      {t.evidenceLinks ? (
+                        <a 
+                          href={t.evidenceLinks} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          style={{
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                            padding: '8px 12px', background: '#1D4ED8', color: '#FFFFFF',
+                            borderRadius: 8, fontWeight: 700, fontSize: '.78rem', textDecoration: 'none',
+                            boxShadow: '0 2px 6px rgba(29, 78, 216, 0.3)', transition: 'background .2s'
+                          }}
+                        >
+                          <ExternalLink size={13} /> 🔗 Mở Link Minh chứng (Drive / Ảnh)
+                        </a>
+                      ) : (
+                        <div style={{ fontSize: '.72rem', color: '#94A3B8', textAlign: 'center', fontStyle: 'italic', padding: '3px 0' }}>
+                          Chưa đính kèm link minh chứng
+                        </div>
+                      )}
                     </div>
                   </Popup>
-                </CircleMarker>
+                </Marker>
               ))}
             </MapContainer>
 
