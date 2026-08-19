@@ -394,6 +394,61 @@ const CampaignAdmin = () => {
                 </div>
               </div>
 
+              {/* Cấu hình Ngày Bắt đầu & Kết thúc Chiến dịch */}
+              <div style={{
+                background: '#EFF6FF', border: '1px solid #BFDBFE', padding: '14px 16px', borderRadius: 12, marginBottom: 18
+              }}>
+                <div style={{ fontSize: '.84rem', fontWeight: 800, color: '#1E3A8A', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <Clock size={16} color="#1D4ED8" /> Thời gian toàn chiến dịch ({config.campaignTotalDays || 44} ngày):
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                  <div>
+                    <label style={{ fontSize: '.76rem', fontWeight: 700, color: '#334155', display: 'block', marginBottom: 2 }}>
+                      🚀 Ngày bắt đầu
+                    </label>
+                    <input 
+                      type="date"
+                      className="form-input"
+                      value={config.campaignStartDate || '2026-08-01'}
+                      onChange={e => {
+                        const s = e.target.value;
+                        setConfig(c => {
+                          let diff = c.campaignTotalDays;
+                          if (s && c.campaignEndDate) {
+                            const d = Math.round((new Date(c.campaignEndDate) - new Date(s)) / (1000 * 60 * 60 * 24)) + 1;
+                            if (d > 0) diff = d;
+                          }
+                          return { ...c, campaignStartDate: s, campaignTotalDays: diff };
+                        });
+                      }}
+                      style={{ height: 38, fontWeight: 700, background: '#FFFFFF' }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: '.76rem', fontWeight: 700, color: '#334155', display: 'block', marginBottom: 2 }}>
+                      🏁 Ngày kết thúc
+                    </label>
+                    <input 
+                      type="date"
+                      className="form-input"
+                      value={config.campaignEndDate || '2026-09-13'}
+                      onChange={e => {
+                        const end = e.target.value;
+                        setConfig(c => {
+                          let diff = c.campaignTotalDays;
+                          if (c.campaignStartDate && end) {
+                            const d = Math.round((new Date(end) - new Date(c.campaignStartDate)) / (1000 * 60 * 60 * 24)) + 1;
+                            if (d > 0) diff = d;
+                          }
+                          return { ...c, campaignEndDate: end, campaignTotalDays: diff };
+                        });
+                      }}
+                      style={{ height: 38, fontWeight: 700, background: '#FFFFFF' }}
+                    />
+                  </div>
+                </div>
+              </div>
+
               {/* Chế độ Always Open Switch Card */}
               <div style={{
                 background: config.alwaysOpen ? '#ECFDF5' : '#F8FAFC',
