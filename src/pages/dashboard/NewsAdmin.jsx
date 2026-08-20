@@ -2,12 +2,28 @@ import React, { useEffect, useState, useRef } from 'react';
 import api from '../../lib/api';
 import { toast } from 'react-toastify';
 import {
-  Plus, Trash2, RefreshCw, Calendar, Link2, Facebook,
+  Plus, Trash2, RefreshCw, Calendar, Link2,
   Eye, Edit3, X, Check, Loader2, Globe, Image as ImageIcon,
   FileText, ArrowRight, AlertCircle, Sparkles, Newspaper,
   ChevronDown, ChevronUp, ExternalLink
 } from 'lucide-react';
 import Swal from 'sweetalert2';
+
+const FacebookIcon = ({ size = 16, color = 'currentColor' }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke={color}
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    style={{ display: 'inline-block', verticalAlign: 'middle' }}
+  >
+    <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
+  </svg>
+);
 
 // ── Constants ───────────────────────────────────────────────────────────────
 const CATEGORIES = [
@@ -20,7 +36,7 @@ const CATEGORIES = [
 ];
 
 const TABS = [
-  { id: 'import', label: '🔗 Import từ Facebook / Web', icon: <Facebook size={15} /> },
+  { id: 'import', label: '🔗 Import từ Facebook / Web', icon: <FacebookIcon size={15} /> },
   { id: 'manual', label: '✏️ Viết bài thủ công', icon: <Edit3 size={15} /> },
   { id: 'list', label: '📋 Danh sách bài viết', icon: <Newspaper size={15} /> },
 ];
@@ -194,7 +210,8 @@ const NewsAdmin = () => {
       {/* Tab Navigation */}
       <div style={{
         display: 'flex', gap: 8, marginBottom: 28,
-        borderBottom: '2px solid var(--border)', paddingBottom: 0
+        borderBottom: '2px solid var(--border)', paddingBottom: 0,
+        flexWrap: 'wrap'
       }}>
         {TABS.map(tab => (
           <button
@@ -202,7 +219,7 @@ const NewsAdmin = () => {
             onClick={() => setActiveTab(tab.id)}
             style={{
               display: 'inline-flex', alignItems: 'center', gap: 7,
-              padding: '10px 20px', border: 'none', borderRadius: '10px 10px 0 0',
+              padding: '10px 16px', border: 'none', borderRadius: '10px 10px 0 0',
               cursor: 'pointer', fontWeight: 600, fontSize: '0.88rem',
               transition: 'all .2s',
               background: activeTab === tab.id ? 'var(--brand-blue)' : 'transparent',
@@ -211,7 +228,7 @@ const NewsAdmin = () => {
               marginBottom: -2,
             }}
           >
-            {tab.label}
+            {tab.icon} {tab.label}
           </button>
         ))}
         {/* refresh on list tab */}
@@ -243,20 +260,20 @@ const NewsAdmin = () => {
             }}>
               <AlertCircle size={16} style={{ flexShrink: 0, marginTop: 2 }} />
               <div>
-                <strong>Lưu ý về Facebook:</strong> Facebook thường chặn bot đọc nội dung bài viết.
-                Nếu không tự động kéo được, bạn có thể điền nội dung thủ công bên dưới và hệ thống vẫn lưu link nguồn gốc.
+                <strong>Lưu ý về Facebook:</strong> Facebook thường chặn bot đọc tự động.
+                Nếu không kéo được nội dung, hệ thống sẽ mở form để bạn điền thủ công và vẫn gắn link nguồn gốc Facebook.
               </div>
             </div>
 
-            <div style={{ display: 'flex', gap: 10 }}>
-              <div style={{ flex: 1, position: 'relative' }}>
+            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+              <div style={{ flex: '1 1 280px', position: 'relative' }}>
                 <Globe size={16} style={{
                   position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#94A3B8'
                 }} />
                 <input
                   className="form-input"
                   style={{ paddingLeft: 36 }}
-                  placeholder="https://www.facebook.com/share/p/... hoặc link trang tin tức"
+                  placeholder="https://www.facebook.com/... hoặc link trang báo, tin tức"
                   value={importUrl}
                   onChange={e => setImportUrl(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && handleScrape()}
@@ -328,10 +345,11 @@ const NewsAdmin = () => {
                   background: isFBUrl(editForm.sourceUrl || '') ? '#EEF2FF' : '#F0FDF4',
                   color: isFBUrl(editForm.sourceUrl || '') ? '#4338CA' : '#166534',
                   border: `1px solid ${isFBUrl(editForm.sourceUrl || '') ? '#C7D2FE' : '#BBF7D0'}`,
+                  maxWidth: '100%'
                 }}>
                   <ExternalLink size={12} />
                   {isFBUrl(editForm.sourceUrl || '') ? '🟦 Facebook' : '🌐 Web'}
-                  <span style={{ maxWidth: 280, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <span style={{ maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {editForm.sourceUrl}
                   </span>
                 </div>
@@ -373,7 +391,7 @@ const NewsAdmin = () => {
                     />
                   </div>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14 }}>
                     <div className="form-group" style={{ marginBottom: 0 }}>
                       <label className="form-label">Ảnh bìa (URL)</label>
                       <div style={{ position: 'relative' }}>
@@ -404,7 +422,7 @@ const NewsAdmin = () => {
                 </div>
 
                 {/* Actions */}
-                <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
+                <div style={{ display: 'flex', gap: 10, marginTop: 20, flexWrap: 'wrap' }}>
                   <button type="submit" className="btn btn-primary" disabled={submitting}>
                     {submitting
                       ? <><Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> Đang đăng...</>
@@ -468,7 +486,7 @@ const NewsAdmin = () => {
                 />
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14 }}>
                 <div className="form-group" style={{ marginBottom: 0 }}>
                   <label className="form-label">Ảnh bìa (URL)</label>
                   <input
