@@ -43,7 +43,13 @@ const CampaignAdmin = () => {
       if (selectedReport?._id === reportId) setSelectedReport(null);
       fetchReports();
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Lỗi khi xóa báo cáo');
+      if (err.response?.status === 404) {
+        toast.warning('⚠️ Server VPS chưa được deploy/reload code Backend mới (API DELETE /report/:id trả về 404). Đã tạm ẩn bản ghi này khỏi giao diện hiện tại!');
+        setReports(prev => prev.filter(r => r._id !== reportId));
+        if (selectedReport?._id === reportId) setSelectedReport(null);
+      } else {
+        toast.error(err.response?.data?.message || 'Lỗi khi xóa báo cáo');
+      }
     }
   };
 
