@@ -4,7 +4,7 @@ import api from '../../lib/api';
 import { 
   Map, FileSpreadsheet, RefreshCw, Loader2, TrendingUp, Globe, 
   Sparkles, Award, CheckCircle2, ChevronRight, Filter,
-  Clock, Settings, X, Save, CheckCircle, AlertCircle, Zap, Moon
+  Clock, Settings, X, Save, CheckCircle, AlertCircle, Zap, Moon, Trash2
 } from 'lucide-react';
 
 const CampaignAdmin = () => {
@@ -29,6 +29,19 @@ const CampaignAdmin = () => {
 
   const role = localStorage.getItem('role') || '';
   const canConfig = ['SENIOR_ADMIN', 'ADMIN', 'PROVINCE_ADMIN'].includes(role);
+
+  const handleDeleteReport = async (reportId, agencyName) => {
+    if (!window.confirm(`Bạn có chắc chắn muốn xóa bản ghi báo cáo của "${agencyName || 'đơn vị này'}" không? Thao tác này không thể hoàn tác.`)) {
+      return;
+    }
+    try {
+      await api.delete(`/campaign/report/${reportId}`);
+      toast.success('✅ Đã xóa báo cáo thành công!');
+      fetchReports();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Lỗi khi xóa báo cáo');
+    }
+  };
 
   const fetchReports = async () => {
     setLoading(true);
@@ -248,43 +261,72 @@ const CampaignAdmin = () => {
                   <th style={{ textAlign: 'center', background: '#EFF6FF', color: '#1E40AF' }}>11. Web SW</th>
                   <th style={{ textAlign: 'center' }}>TNV</th>
                   <th style={{ minWidth: 200 }}>Khó khăn / Đề xuất / Minh chứng</th>
+                  {canConfig && <th style={{ textAlign: 'center', minWidth: 80, color: '#DC2626' }}>Thao tác</th>}
                 </tr>
               </thead>
               <tbody>
-                {filteredReports.map((r, i) => (
-                  <tr key={r._id} className="animate-up" style={{ animationDelay: `${i * 30}ms` }}>
-                    <td style={{ fontWeight: 700, color: 'var(--tx-1)' }}>{r.agencyId?.name || 'Không rõ'}</td>
-                    <td style={{ fontSize: '.8rem', color: 'var(--tx-3)' }}>{r.reporterId?.username || 'Không rõ'}</td>
-                    
-                    {/* 11 chỉ tiêu */}
-                    <td style={{ textAlign: 'center', fontWeight: 700, color: '#0284C7' }}>{(r.digitalSkills || 0).toLocaleString('vi-VN')}</td>
-                    <td style={{ textAlign: 'center', fontWeight: 700, color: '#16A34A' }}>{(r.vneidSupport || 0).toLocaleString('vi-VN')}</td>
-                    <td style={{ textAlign: 'center', fontWeight: 700, color: '#7C3AED' }}>{(r.publicServices || 0).toLocaleString('vi-VN')}</td>
-                    <td style={{ textAlign: 'center', fontWeight: 700, color: '#D97706' }}>{(r.qrSupport || 0).toLocaleString('vi-VN')}</td>
-                    <td style={{ textAlign: 'center', fontWeight: 700, color: '#2563EB' }}>{r.activeTeams || 0}</td>
-                    <td style={{ textAlign: 'center', fontWeight: 700, color: '#0D9488' }}>{r.trainingClasses || 0}</td>
-                    <td style={{ textAlign: 'center', fontWeight: 700, color: '#E11D48' }}>{r.digitalModels || 0}</td>
-                    <td style={{ textAlign: 'center', fontWeight: 700, color: '#EA580C' }}>{r.digitalProducts || 0}</td>
-                    <td style={{ textAlign: 'center', fontWeight: 700, color: '#4F46E5' }}>{(r.youthTrained || 0).toLocaleString('vi-VN')}</td>
-                    <td style={{ textAlign: 'center', fontWeight: 700, color: '#9333EA' }}>{r.youthProjects || 0}</td>
-                    <td style={{ textAlign: 'center', fontWeight: 700, color: '#1E40AF' }}>{r.smartwebCount || 0}</td>
-                    
-                    <td style={{ textAlign: 'center', color: 'var(--tx-3)' }}>{(r.volunteers || 0).toLocaleString('vi-VN')}</td>
-                    
-                    <td style={{ maxWidth: 220, fontSize: '.78rem', color: 'var(--tx-2)' }}>
-                      {r.issues && <div style={{ color: '#DC2626' }}>🔴 {r.issues}</div>}
-                      {r.proposals && <div style={{ color: '#0284C7', marginTop: 2 }}>💡 {r.proposals}</div>}
-                      {r.evidenceLinks && (
-                        <div style={{ marginTop: 2 }}>
-                          <a href={r.evidenceLinks} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary)', fontWeight: 600 }}>
-                            🔗 Link minh chứng
-                          </a>
-                        </div>
+                {filteredReports.map((r, i) => {
+                  const agencyName = r.agencyId?.name || r.reporterId?.locationContext?.commune || 'Chưa gán đơn vị';
+                  const reporterName = r.reporterId?.username || r.reporterId?.email || 'Tài khoản ẩn';
+                  const isOrphan = !r.agencyId?.name;
+
+                  return (
+                    <tr key={r._id} className="animate-up" style={{ animationDelay: `${i * 30}ms`, background: isOrphan ? '#FFFDFD' : 'transparent' }}>
+                      <td style={{ fontWeight: 700, color: 'var(--tx-1)' }}>
+                        {agencyName}
+                        {isOrphan && (
+                          <span style={{ display: 'block', fontSize: '.7rem', color: '#DC2626', fontWeight: 600, marginTop: 2 }}>
+                            ⚠️ Chưa liên kết Agency
+                          </span>
+                        )}
+                      </td>
+                      <td style={{ fontSize: '.8rem', color: 'var(--tx-3)' }}>{reporterName}</td>
+                      
+                      {/* 11 chỉ tiêu */}
+                      <td style={{ textAlign: 'center', fontWeight: 700, color: '#0284C7' }}>{(r.digitalSkills || 0).toLocaleString('vi-VN')}</td>
+                      <td style={{ textAlign: 'center', fontWeight: 700, color: '#16A34A' }}>{(r.vneidSupport || 0).toLocaleString('vi-VN')}</td>
+                      <td style={{ textAlign: 'center', fontWeight: 700, color: '#7C3AED' }}>{(r.publicServices || 0).toLocaleString('vi-VN')}</td>
+                      <td style={{ textAlign: 'center', fontWeight: 700, color: '#D97706' }}>{(r.qrSupport || 0).toLocaleString('vi-VN')}</td>
+                      <td style={{ textAlign: 'center', fontWeight: 700, color: '#2563EB' }}>{r.activeTeams || 0}</td>
+                      <td style={{ textAlign: 'center', fontWeight: 700, color: '#0D9488' }}>{r.trainingClasses || 0}</td>
+                      <td style={{ textAlign: 'center', fontWeight: 700, color: '#E11D48' }}>{r.digitalModels || 0}</td>
+                      <td style={{ textAlign: 'center', fontWeight: 700, color: '#EA580C' }}>{r.digitalProducts || 0}</td>
+                      <td style={{ textAlign: 'center', fontWeight: 700, color: '#4F46E5' }}>{(r.youthTrained || 0).toLocaleString('vi-VN')}</td>
+                      <td style={{ textAlign: 'center', fontWeight: 700, color: '#9333EA' }}>{r.youthProjects || 0}</td>
+                      <td style={{ textAlign: 'center', fontWeight: 700, color: '#1E40AF' }}>{r.smartwebCount || 0}</td>
+                      
+                      <td style={{ textAlign: 'center', color: 'var(--tx-3)' }}>{(r.volunteers || 0).toLocaleString('vi-VN')}</td>
+                      
+                      <td style={{ maxWidth: 220, fontSize: '.78rem', color: 'var(--tx-2)' }}>
+                        {r.issues && <div style={{ color: '#DC2626' }}>🔴 {r.issues}</div>}
+                        {r.proposals && <div style={{ color: '#0284C7', marginTop: 2 }}>💡 {r.proposals}</div>}
+                        {r.evidenceLinks && (
+                          <div style={{ marginTop: 2 }}>
+                            <a href={r.evidenceLinks} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary)', fontWeight: 600 }}>
+                              🔗 Link minh chứng
+                            </a>
+                          </div>
+                        )}
+                        {!r.issues && !r.proposals && !r.evidenceLinks && <span style={{ color: 'var(--tx-3)' }}>—</span>}
+                      </td>
+
+                      {/* Nút Xóa báo cáo (Dành cho Admin) */}
+                      {canConfig && (
+                        <td style={{ textAlign: 'center' }}>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteReport(r._id, agencyName)}
+                            className="btn btn-ghost btn-sm"
+                            style={{ color: '#DC2626', padding: '5px 8px', borderRadius: 8, background: '#FEE2E2', border: '1px solid #FCA5A5' }}
+                            title="Xóa báo cáo này (Dành cho Admin xóa số liệu rác)"
+                          >
+                            <Trash2 size={14} /> Xóa
+                          </button>
+                        </td>
                       )}
-                      {!r.issues && !r.proposals && !r.evidenceLinks && <span style={{ color: 'var(--tx-3)' }}>—</span>}
-                    </td>
-                  </tr>
-                ))}
+                    </tr>
+                  );
+                })}
 
                 {/* Hàng tổng cộng */}
                 <tr style={{ background: '#FFF7ED', fontWeight: 800 }}>
@@ -302,6 +344,7 @@ const CampaignAdmin = () => {
                   <td style={{ textAlign: 'center', color: '#1E40AF' }}>{totals.smartwebCount}</td>
                   <td style={{ textAlign: 'center' }}>{totals.volunteers.toLocaleString('vi-VN')}</td>
                   <td></td>
+                  {canConfig && <td></td>}
                 </tr>
               </tbody>
             </table>
