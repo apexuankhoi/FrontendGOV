@@ -160,7 +160,8 @@ const PublicCampaigns = () => {
     smartwebCount: '',
     volunteers: '',
     safetyCampaigns: '',
-    mediaPosts: ''
+    mediaPosts: '',
+    evidenceLinks: ''
   });
   
   const [config, setConfig] = useState({ openTime: '13:00', closeTime: '18:30', alwaysOpen: false });
@@ -181,11 +182,9 @@ const PublicCampaigns = () => {
         api.get('/campaign/stats'),
         api.get('/campaign/config')
       ]);
-
       if (cfgRes.status === 'fulfilled' && cfgRes.value.data) {
         setConfig(cfgRes.value.data);
       }
-
       if (statsRes.status === 'fulfilled' && statsRes.value.data) {
         const d = statsRes.value.data;
         setStats({
@@ -216,6 +215,12 @@ const PublicCampaigns = () => {
       toast.warning('Bạn cần đăng nhập bằng tài khoản Cấp Xã để báo cáo!');
       return;
     }
+
+    const link = (formData.evidenceLinks || '').trim();
+    if (!link) {
+      toast.error('⚠️ BẮT BUỘC: Bạn phải đính kèm Link minh chứng (Google Drive / Hình ảnh) trước khi gửi báo cáo!');
+      return;
+    }
     
     setLoading(true);
     try {
@@ -233,14 +238,15 @@ const PublicCampaigns = () => {
         smartwebCount: Number(formData.smartwebCount) || 0,
         volunteers: Number(formData.volunteers) || 0,
         safetyCampaigns: Number(formData.safetyCampaigns) || 0,
-        mediaPosts: Number(formData.mediaPosts) || 0
+        mediaPosts: Number(formData.mediaPosts) || 0,
+        evidenceLinks: link
       });
       toast.success('✅ Gửi báo cáo 11 chỉ tiêu thành công!');
       setFormData({
         digitalSkills: '', vneidSupport: '', publicServices: '', qrSupport: '',
         activeTeams: '', trainingClasses: '', digitalModels: '', digitalProducts: '',
         youthTrained: '', youthProjects: '', smartwebCount: '',
-        volunteers: '', safetyCampaigns: '', mediaPosts: ''
+        volunteers: '', safetyCampaigns: '', mediaPosts: '', evidenceLinks: ''
       });
       fetchStats();
     } catch (err) {
@@ -485,6 +491,25 @@ const PublicCampaigns = () => {
                             <div className="form-group">
                               <label className="form-label">Tình nguyện viên tham gia</label>
                               <input type="number" min="0" className="form-input" placeholder="0" value={formData.volunteers} onChange={e => setFormData({...formData, volunteers: e.target.value})} />
+                            </div>
+                          </div>
+
+                          {/* LINK MINH CHỨNG - BẮT BUỘC */}
+                          <div style={{ marginTop: 16, background: '#FEF2F2', border: '1.5px solid #F87171', borderRadius: 10, padding: '12px 14px' }}>
+                            <label className="form-label" style={{ fontWeight: 800, color: '#991B1B', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 6, fontSize: '.86rem' }}>
+                              🔗 Link minh chứng hoạt động <span style={{ color: '#DC2626' }}>(* BẮT BUỘC)</span>
+                            </label>
+                            <input
+                              required
+                              type="url"
+                              className="form-input"
+                              placeholder="https://drive.google.com/drive/folders/... hoặc link bài đăng"
+                              value={formData.evidenceLinks}
+                              onChange={e => setFormData({...formData, evidenceLinks: e.target.value})}
+                              style={{ background: '#FFFFFF', borderColor: !formData.evidenceLinks ? '#EF4444' : '#10B981', fontWeight: 600 }}
+                            />
+                            <div style={{ fontSize: '.72rem', color: '#7F1D1D', marginTop: 4 }}>
+                              📌 Bắt buộc đính kèm link Google Drive (ảnh/video ra quân thực tế) hoặc link bài đăng truyền thông.
                             </div>
                           </div>
                         </div>

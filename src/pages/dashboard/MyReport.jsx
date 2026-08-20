@@ -246,11 +246,27 @@ const MyReport = () => {
 
   const handleSubmit = async e => {
     e.preventDefault();
+
+    // 1. Kiểm tra BẮT BUỘC có Link minh chứng
+    const link = (extra.evidenceLinks || '').trim();
+    if (!link) {
+      toast.error('⚠️ BẮT BUỘC: Bạn phải đính kèm Link minh chứng (Google Drive / Hình ảnh ra quân) trước khi gửi báo cáo!');
+      const el = document.getElementById('evidenceLinks-input');
+      if (el) {
+        el.focus();
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      return;
+    }
+
     setLoading(true);
     try {
       const body = {};
       ALL_FIELDS.forEach(f => { body[f.key] = Number(form[f.key]) || 0; });
-      Object.assign(body, extra);
+      Object.assign(body, {
+        ...extra,
+        evidenceLinks: link
+      });
       await api.post('/campaign/report', body);
       toast.success('✅ Lưu & Cập nhật báo cáo 11 chỉ tiêu thành công! Số liệu đã được đồng bộ lên Tỉnh.');
       setSubmitted(true);
@@ -598,16 +614,38 @@ const MyReport = () => {
                 />
               </div>
             </div>
-            <div style={{ marginTop: 14 }}>
-              <label className="form-label">Link thư mục minh chứng (Google Drive / Bài viết Facebook / Báo đài)</label>
+            {/* KHUNG LINK MINH CHỨNG - BẮT BUỘC */}
+            <div style={{
+              marginTop: 18,
+              background: '#FEF2F2',
+              border: '1.5px solid #F87171',
+              borderRadius: 12,
+              padding: '16px 18px'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6, flexWrap: 'wrap', gap: 6 }}>
+                <label htmlFor="evidenceLinks-input" className="form-label" style={{ fontWeight: 800, color: '#991B1B', margin: 0, display: 'flex', alignItems: 'center', gap: 6, fontSize: '.92rem' }}>
+                  🔗 Link thư mục minh chứng hoạt động <span style={{ color: '#DC2626', fontWeight: 900 }}>(* BẮT BUỘC)</span>
+                </label>
+                <span style={{ fontSize: '.72rem', background: '#FEE2E2', color: '#B91C1C', padding: '3px 8px', borderRadius: 6, fontWeight: 800, border: '1px solid #FCA5A5' }}>
+                  YÊU CẦU BẮT BUỘC ĐỂ NGHIỆM THU
+                </span>
+              </div>
               <input
+                id="evidenceLinks-input"
+                required
                 value={extra.evidenceLinks}
                 onChange={e => setExtra(x => ({ ...x, evidenceLinks: e.target.value }))}
                 className="form-input"
                 placeholder="https://drive.google.com/drive/folders/... hoặc https://facebook.com/..."
+                style={{
+                  background: '#FFFFFF',
+                  borderColor: !extra.evidenceLinks ? '#EF4444' : '#10B981',
+                  fontWeight: 600,
+                  fontSize: '.9rem'
+                }}
               />
-              <div style={{ fontSize: '.75rem', color: 'var(--tx-3)', marginTop: 4 }}>
-                Đính kèm link Google Drive chứa hình ảnh, video ra quân thực tế của xã/phường để Tỉnh nghiệm thu.
+              <div style={{ fontSize: '.76rem', color: '#7F1D1D', marginTop: 6, lineHeight: 1.4 }}>
+                📌 <strong>Quy định:</strong> Bắt buộc đính kèm đường dẫn Google Drive (chứa hình ảnh, video ra quân thực tế) hoặc link bài đăng Fanpage/báo chí của xã/phường để Tỉnh Đoàn kiểm tra và nghiệm thu chỉ tiêu.
               </div>
             </div>
           </div>
