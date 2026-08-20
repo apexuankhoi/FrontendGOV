@@ -5,7 +5,8 @@ import {
   Map, FileSpreadsheet, RefreshCw, Loader2, TrendingUp, Globe, 
   Sparkles, Award, CheckCircle2, ChevronRight, Filter,
   Clock, Settings, X, Save, CheckCircle, AlertCircle, Zap, Moon, Trash2,
-  Eye, LayoutGrid, Table as TableIcon, ExternalLink, MessageSquare
+  Eye, LayoutGrid, Table as TableIcon, ExternalLink, MessageSquare,
+  Building2, Search, Check
 } from 'lucide-react';
 
 const CampaignAdmin = () => {
@@ -16,6 +17,11 @@ const CampaignAdmin = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState('TABLE'); // 'TABLE' | 'CARDS'
   const [selectedReport, setSelectedReport] = useState(null); // Detail modal
+
+  // Gán đơn vị xã/phường cho báo cáo (Dành cho Super Admin)
+  const [agenciesList, setAgenciesList] = useState([]);
+  const [assignModal, setAssignModal] = useState({ open: false, report: null, selectedAgencyId: '', searchAgency: '' });
+  const [assigning, setAssigning] = useState(false);
 
   // Cấu hình khung giờ báo cáo
   const [showConfigModal, setShowConfigModal] = useState(false);
@@ -64,6 +70,23 @@ const CampaignAdmin = () => {
     setLoading(false);
   };
 
+  const fetchAgencies = async () => {
+    try {
+      const res = await api.get('/agencies/public');
+      if (Array.isArray(res.data) && res.data.length > 0) {
+        setAgenciesList(res.data);
+      } else {
+        const res2 = await api.get('/agencies');
+        if (Array.isArray(res2.data)) setAgenciesList(res2.data);
+      }
+    } catch {
+      try {
+        const res2 = await api.get('/agencies');
+        if (Array.isArray(res2.data)) setAgenciesList(res2.data);
+      } catch {}
+    }
+  };
+
   const fetchConfig = async () => {
     try {
       const res = await api.get('/campaign/config');
@@ -74,7 +97,48 @@ const CampaignAdmin = () => {
   useEffect(() => { 
     fetchReports(); 
     fetchConfig();
+    fetchAgencies();
   }, [filterDate]);
+
+  // Mở modal gán đơn vị
+  const handleOpenAssignModal = (report) => {
+    setAssignModal({
+      open: true,
+      report,
+      selectedAgencyId: report.agencyId?._id || '',
+      searchAgency: ''
+    });
+  };
+
+  // Lưu gán đơn vị cho báo cáo
+  const handleSaveAssignAgency = async (e) => {
+    if (e) e.preventDefault();
+    if (!assignModal.selectedAgencyId) {
+      toast.warning('Vui lòng chọn 1 đơn vị xã/phường để gán.');
+      return;
+    }
+    setAssigning(true);
+    try {
+      const res = await api.put(`/campaign/report/${assignModal.report._id}/agency`, {
+        agencyId: assignModal.selectedAgencyId
+      });
+      toast.success(res.data.message || '✅ Đã gán đơn vị thành công!');
+      
+      const chosenAgency = agenciesList.find(a => a._id === assignModal.selectedAgencyId);
+      const updated = res.data.report || { ...assignModal.report, agencyId: chosenAgency };
+
+      // Cập nhật state danh sách ngay lập tức
+      setReports(prev => prev.map(r => r._id === assignModal.report._id ? updated : r));
+      if (selectedReport?._id === assignModal.report._id) {
+        setSelectedReport(updated);
+      }
+      setAssignModal({ open: false, report: null, selectedAgencyId: '', searchAgency: '' });
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Lỗi khi gán đơn vị cho báo cáo');
+    } finally {
+      setAssigning(false);
+    }
+  };
 
   const handleSaveConfig = async (e) => {
     e.preventDefault();
@@ -357,9 +421,35 @@ const CampaignAdmin = () => {
                     >
                       {/* Đơn vị & Người nộp gom gọn 1 cột */}
                       <td style={{ padding: '8px 8px' }}>
-                        <div style={{ fontWeight: 800, color: 'var(--tx-1)', fontSize: '.86rem', display: 'flex', alignItems: 'center', gap: 4 }}>
-                          {agencyName}
-                          {isOrphan && <span title="Chưa liên kết Agency" style={{ color: '#DC2626', fontSize: '.7rem' }}>⚠️</span>}
+                        <div style={{ fontWeight: 800, color: 'var(--tx-1)', fontSize: '.86rem', display: 'flex', alignItems: 'center', gap: 5, flexWrap: 'wrap' }}>
+                          <span>{agencyName}</span>
+                          {isOrphan && (
+                            <span title="Chưa liên kết Đơn vị" style={{ color: '#DC2626', fontSize: '.68rem', background: '#FEE2E2', padding: '1px 5px', borderRadius: 4, fontWeight: 700 }}>
+                              ⚠️ Chưa gán
+                            </span>
+                          )}
+                          {canConfig && (
+                            <button
+                              type="button"
+                              onClick={() => handleOpenAssignModal(r)}
+                              style={{
+                                border: '1px solid #93C5FD',
+                                background: isOrphan ? '#EFF6FF' : '#F8FAFC',
+                                color: '#1D4ED8',
+                                fontSize: '.68rem',
+                                fontWeight: 700,
+                                padding: '1px 6px',
+                                borderRadius: 5,
+                                cursor: 'pointer',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: 3
+                              }}
+                              title="Gán hoặc đổi đơn vị xã/phường cho báo cáo này"
+                            >
+                              <Building2 size={10} /> {isOrphan ? 'Gán ĐV' : 'Đổi'}
+                            </button>
+                          )}
                         </div>
                         <div style={{ fontSize: '.72rem', color: 'var(--tx-3)', marginTop: 1 }}>
                           👤 {reporterName} {r.updatedAt && `• ${new Date(r.updatedAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}`}
@@ -447,15 +537,26 @@ const CampaignAdmin = () => {
                           </button>
 
                           {canConfig && (
-                            <button
-                              type="button"
-                              onClick={() => handleDeleteReport(r._id, agencyName)}
-                              className="btn btn-ghost btn-sm"
-                              style={{ padding: '4px 6px', color: '#DC2626', background: '#FEE2E2', borderRadius: 6 }}
-                              title="Xóa bản ghi này"
-                            >
-                              <Trash2 size={13} />
-                            </button>
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => handleOpenAssignModal(r)}
+                                className="btn btn-ghost btn-sm"
+                                style={{ padding: '4px 6px', color: '#1D4ED8', background: '#EFF6FF', borderRadius: 6 }}
+                                title="Gán hoặc đổi đơn vị xã cho báo cáo này"
+                              >
+                                <Building2 size={13} />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteReport(r._id, agencyName)}
+                                className="btn btn-ghost btn-sm"
+                                style={{ padding: '4px 6px', color: '#DC2626', background: '#FEE2E2', borderRadius: 6 }}
+                                title="Xóa bản ghi này"
+                              >
+                                <Trash2 size={13} />
+                              </button>
+                            </>
                           )}
                         </div>
                       </td>
@@ -518,8 +619,9 @@ const CampaignAdmin = () => {
                     {/* Header Card */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10, gap: 8 }}>
                       <div>
-                        <div style={{ fontWeight: 800, fontSize: '1rem', color: 'var(--tx-1)' }}>
-                          {agencyName} {isOrphan && <span style={{ color: '#DC2626', fontSize: '.75rem' }}>⚠️</span>}
+                        <div style={{ fontWeight: 800, fontSize: '1rem', color: 'var(--tx-1)', display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                          <span>{agencyName}</span>
+                          {isOrphan && <span style={{ color: '#DC2626', fontSize: '.72rem', background: '#FEE2E2', padding: '1px 5px', borderRadius: 4, fontWeight: 700 }}>⚠️ Chưa gán</span>}
                         </div>
                         <div style={{ fontSize: '.76rem', color: 'var(--tx-3)', marginTop: 2 }}>
                           👤 {reporterName} {r.updatedAt && `• ${new Date(r.updatedAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}`}
@@ -527,15 +629,26 @@ const CampaignAdmin = () => {
                       </div>
 
                       {canConfig && (
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteReport(r._id, agencyName)}
-                          className="btn btn-ghost btn-sm"
-                          style={{ color: '#DC2626', background: '#FEE2E2', padding: '4px 6px', borderRadius: 6 }}
-                          title="Xóa báo cáo này"
-                        >
-                          <Trash2 size={13} />
-                        </button>
+                        <div style={{ display: 'flex', gap: 4 }}>
+                          <button
+                            type="button"
+                            onClick={() => handleOpenAssignModal(r)}
+                            className="btn btn-ghost btn-sm"
+                            style={{ color: '#1D4ED8', background: '#EFF6FF', padding: '4px 6px', borderRadius: 6 }}
+                            title="Gán / Đổi đơn vị"
+                          >
+                            <Building2 size={13} />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteReport(r._id, agencyName)}
+                            className="btn btn-ghost btn-sm"
+                            style={{ color: '#DC2626', background: '#FEE2E2', padding: '4px 6px', borderRadius: 6 }}
+                            title="Xóa báo cáo này"
+                          >
+                            <Trash2 size={13} />
+                          </button>
+                        </div>
                       )}
                     </div>
 
@@ -593,8 +706,19 @@ const CampaignAdmin = () => {
                         className="btn btn-outline btn-sm"
                         style={{ flex: 1, textAlign: 'center', fontSize: '.76rem', color: '#0284C7', borderColor: '#38BDF8', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}
                       >
-                        🔗 Minh chứng <ExternalLink size={11} />
+                        🔗 Link <ExternalLink size={11} />
                       </a>
+                    )}
+                    {canConfig && (
+                      <button
+                        type="button"
+                        onClick={() => handleOpenAssignModal(r)}
+                        className="btn btn-outline btn-sm"
+                        style={{ fontSize: '.76rem', borderColor: '#93C5FD', color: '#1D4ED8', background: '#EFF6FF', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}
+                        title="Gán hoặc đổi đơn vị"
+                      >
+                        <Building2 size={12} /> {isOrphan ? 'Gán ĐV' : 'Đổi ĐV'}
+                      </button>
                     )}
                     <button
                       type="button"
@@ -631,7 +755,7 @@ const CampaignAdmin = () => {
                   📊 Chi tiết Báo cáo: {selectedReport.agencyId?.name || selectedReport.reporterId?.locationContext?.commune || 'Xã/Phường'}
                 </h3>
                 <div style={{ fontSize: '.8rem', color: 'var(--tx-3)', marginTop: 2 }}>
-                  👤 Người nộp: <strong>{selectedReport.reporterId?.username || 'Ẩn danh'}</strong> • {new Date(selectedReport.reportDate).toLocaleDateString('vi-VN')}
+                  👤 Người nộp: <strong>{selectedReport.reporterId?.username || selectedReport.reporterName || 'Ẩn danh'}</strong> • {new Date(selectedReport.reportDate).toLocaleDateString('vi-VN')}
                 </div>
               </div>
               <button 
@@ -693,14 +817,27 @@ const CampaignAdmin = () => {
             {/* Action buttons in modal */}
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 16 }}>
               {canConfig && (
-                <button
-                  type="button"
-                  onClick={() => handleDeleteReport(selectedReport._id, selectedReport.agencyId?.name)}
-                  className="btn btn-outline"
-                  style={{ borderColor: '#DC2626', color: '#DC2626', background: '#FEE2E2', fontWeight: 700 }}
-                >
-                  <Trash2 size={15} /> Xóa báo cáo này
-                </button>
+                <>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const rep = selectedReport;
+                      handleOpenAssignModal(rep);
+                    }}
+                    className="btn btn-outline"
+                    style={{ borderColor: '#3B82F6', color: '#1D4ED8', background: '#EFF6FF', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}
+                  >
+                    <Building2 size={15} /> Gán / Đổi Đơn vị
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteReport(selectedReport._id, selectedReport.agencyId?.name)}
+                    className="btn btn-outline"
+                    style={{ borderColor: '#DC2626', color: '#DC2626', background: '#FEE2E2', fontWeight: 700 }}
+                  >
+                    <Trash2 size={15} /> Xóa báo cáo này
+                  </button>
+                </>
               )}
               <button
                 type="button"
@@ -709,6 +846,123 @@ const CampaignAdmin = () => {
                 style={{ padding: '8px 20px', fontWeight: 700 }}
               >
                 Đóng
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL GÁN / ĐỔI ĐƠN VỊ XÃ (SUPER ADMIN) */}
+      {assignModal.open && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(15, 23, 42, 0.75)', backdropFilter: 'blur(6px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          zIndex: 10000, padding: 16
+        }}>
+          <div className="animate-up" style={{
+            background: 'var(--bg-card)', borderRadius: 20, padding: 24,
+            maxWidth: 520, width: '100%', maxHeight: '90vh', display: 'flex', flexDirection: 'column',
+            border: '1px solid var(--border)', boxShadow: '0 20px 50px rgba(0,0,0,0.3)'
+          }}>
+            {/* Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ width: 38, height: 38, borderRadius: 10, background: '#EFF6FF', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#2563EB' }}>
+                  <Building2 size={20} />
+                </div>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '1.15rem', color: 'var(--primary-dark)', fontWeight: 800 }}>
+                    🏢 Gán Đơn vị cho Báo cáo
+                  </h3>
+                  <div style={{ fontSize: '.78rem', color: 'var(--tx-3)', marginTop: 2 }}>
+                    Người nộp: <strong>{assignModal.report?.reporterId?.username || assignModal.report?.reporterName || 'Chưa rõ'}</strong> • {new Date(assignModal.report?.reportDate || filterDate).toLocaleDateString('vi-VN')}
+                  </div>
+                </div>
+              </div>
+              <button 
+                type="button" 
+                onClick={() => setAssignModal({ open: false, report: null, selectedAgencyId: '', searchAgency: '' })}
+                style={{ border: 'none', background: 'var(--bg-main)', borderRadius: '50%', width: 32, height: 32, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Search filter input */}
+            <div style={{ position: 'relative', marginBottom: 12 }}>
+              <Search size={16} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--tx-3)' }} />
+              <input 
+                type="text"
+                className="form-input"
+                placeholder="Tìm nhanh xã/phường (gõ tên xã...)"
+                value={assignModal.searchAgency}
+                onChange={e => setAssignModal(m => ({ ...m, searchAgency: e.target.value }))}
+                style={{ width: '100%', paddingLeft: 36, height: 40, borderRadius: 10 }}
+                autoFocus
+              />
+            </div>
+
+            {/* List of 102 communes */}
+            <div style={{ flex: 1, overflowY: 'auto', maxHeight: 340, border: '1px solid var(--border)', borderRadius: 12, padding: 6, background: 'var(--bg-main)' }}>
+              {agenciesList
+                .filter(a => !assignModal.searchAgency || a.name.toLowerCase().includes(assignModal.searchAgency.toLowerCase()))
+                .map(a => {
+                  const isSelected = assignModal.selectedAgencyId === a._id;
+                  return (
+                    <div 
+                      key={a._id}
+                      onClick={() => setAssignModal(m => ({ ...m, selectedAgencyId: a._id }))}
+                      style={{
+                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                        padding: '10px 14px', borderRadius: 8, cursor: 'pointer', marginBottom: 4,
+                        background: isSelected ? '#EFF6FF' : 'var(--bg-card)',
+                        border: isSelected ? '1.5px solid #2563EB' : '1px solid transparent',
+                        transition: 'all .15s'
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <Building2 size={16} color={isSelected ? '#2563EB' : '#94A3B8'} />
+                        <div>
+                          <div style={{ fontWeight: isSelected ? 800 : 600, fontSize: '.86rem', color: isSelected ? '#1E40AF' : 'var(--tx-1)' }}>
+                            {a.name}
+                          </div>
+                          {a.district && (
+                            <div style={{ fontSize: '.72rem', color: 'var(--tx-3)' }}>
+                              {a.district}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      {isSelected && <Check size={18} color="#2563EB" style={{ strokeWidth: 3 }} />}
+                    </div>
+                  );
+                })}
+              {agenciesList.filter(a => !assignModal.searchAgency || a.name.toLowerCase().includes(assignModal.searchAgency.toLowerCase())).length === 0 && (
+                <div style={{ padding: '24px 0', textAlign: 'center', color: 'var(--tx-3)', fontSize: '.85rem' }}>
+                  Không tìm thấy đơn vị phù hợp
+                </div>
+              )}
+            </div>
+
+            {/* Actions */}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 16, borderTop: '1px solid var(--border)', paddingTop: 14 }}>
+              <button
+                type="button"
+                className="btn btn-outline"
+                onClick={() => setAssignModal({ open: false, report: null, selectedAgencyId: '', searchAgency: '' })}
+              >
+                Hủy
+              </button>
+              <button
+                type="button"
+                className="btn btn-primary"
+                disabled={assigning || !assignModal.selectedAgencyId}
+                onClick={handleSaveAssignAgency}
+                style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 20px', fontWeight: 700 }}
+              >
+                {assigning ? <Loader2 size={16} className="spin" /> : <Check size={16} />}
+                {assigning ? 'Đang lưu...' : 'Xác nhận Gán'}
               </button>
             </div>
           </div>
