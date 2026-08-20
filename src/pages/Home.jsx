@@ -267,6 +267,39 @@ function getPos(team) {
   return [base[0] + offX, base[1] + offY];
 }
 
+// Suy ra tên khu vực đúng từ tên xã/phường (bỏ qua district lưu sai trong DB)
+function getCorrectDistrict(commune) {
+  if (!commune) return 'Đắk Lắk';
+  const c = commune;
+  // Phú Yên — các đoàn phường/xã thuộc vùng Tuy Hòa
+  if (c.includes('Tuy Hòa') || c.includes('Bình Kiến') || c.includes('Phú Yên') || c.includes('Xuân Đài')) return 'TP Tuy Hòa';
+  if (c.includes('Sông Cầu') || c.includes('Xuân Thọ') || c.includes('Xuân Cảnh') || c.includes('Xuân Lộc')) return 'TX Sông Cầu';
+  if (c.includes('Đông Hòa') || c.includes('Hòa Hiệp') || c.includes('Hòa Xuân')) return 'H. Đông Hòa';
+  if (c.includes('Tuy An') || c.includes('Ô Loan')) return 'H. Tuy An';
+  if (c.includes('Phú Hòa 1') || c.includes('Phú Hòa 2')) return 'H. Phú Hòa';
+  if (c.includes('Tây Hòa') || c.includes('Hòa Thịnh') || c.includes('Hòa Mỹ') || c.includes('Sơn Thành')) return 'H. Tây Hòa';
+  if (c.includes('Sơn Hòa') || c.includes('Vân Hòa') || c.includes('Tây Sơn') || c.includes('Suối Trai')) return 'H. Sơn Hòa';
+  if (c.includes('Sông Hinh') || c.includes('Ea Ly') || c.includes('Ea Bá') || c.includes('Đức Bình')) return 'H. Sông Hinh';
+  if (c.includes('Đồng Xuân') || c.includes('Xuân Lãnh') || c.includes('Phú Mỡ') || c.includes('Xuân Phước')) return 'H. Đồng Xuân';
+  // Đắk Lắk
+  if (c.includes('Buôn Ma Thuột') || c.includes('Tân An') || c.includes('Tân Lập') || c.includes('Thành Nhất') || c.includes('Ea Kao') || c.includes('Hòa Phú')) return 'TP Buôn Ma Thuột';
+  if (c.includes('Buôn Hồ') || c.includes('Cư Bao') || c.includes('Ea Drông')) return 'TX Buôn Hồ';
+  if (c.includes('Ea Súp') || c.includes('Ia Rvê') || c.includes('Ia Lốp') || c.includes('Ea Bung') || c.includes('Ea Wer')) return 'H. Ea Súp';
+  if (c.includes('Buôn Đôn') || c.includes('Ea Nuôl')) return 'H. Buôn Đôn';
+  if (c.includes("Cư M'gar") || c.includes('Quảng Phú') || c.includes('Ea Kiết') || c.includes('Cuôr Đăng') || c.includes('Ea Tul')) return "H. Cư M'gar";
+  if (c.includes('Krông Búk') || c.includes('Pơng Drang') || c.includes('Cư Pơng')) return 'H. Krông Búk';
+  if (c.includes("Ea H'leo") || c.includes('Ea Drăng') || c.includes('Ea Wy') || c.includes('Ea Hiao')) return "H. Ea H'leo";
+  if (c.includes('Krông Năng') || c.includes('Dliê Ya') || c.includes('Tam Giang') || c.includes('Phú Xuân')) return 'H. Krông Năng';
+  if (c.includes('Krông Pắc') || c.includes('Ea Kly') || c.includes('Vụ Bổn') || c.includes('Ea Phê')) return 'H. Krông Pắc';
+  if (c.includes('Ea Kar') || c.includes('Ea Knốp') || c.includes('Cư Yang') || c.includes('Ea Ô')) return 'H. Ea Kar';
+  if (c.includes("M'Đrắk") || c.includes("M'Drắk") || c.includes('Ea Riêng') || c.includes("Cư M'ta")) return "H. M'Đrắk";
+  if (c.includes('Krông Bông') || c.includes('Yang Mao') || c.includes('Cư Pui') || c.includes('Hòa Sơn')) return 'H. Krông Bông';
+  if (c.includes('Lắk') || c.includes('Liên Sơn') || c.includes('Nam Ka') || c.includes('Đắk Phơi')) return 'H. Lắk';
+  if (c.includes('Krông Ana') || c.includes('Ea Na') || c.includes('Dray Bhăng') || c.includes('Krông Nô')) return 'H. Krông Ana';
+  if (c.includes('Cư Kuin') || c.includes('Ea Ning')) return 'H. Cư Kuin';
+  return 'Đắk Lắk';
+}
+
 // Tạo Icon Lá Cờ Đỏ Sao Vàng / Cờ Đội hình Thanh niên số
 function createFlagIcon(hasEvidence = false) {
   const flagColor = hasEvidence ? '#DC2626' : '#EA580C';
@@ -586,7 +619,10 @@ const Home = () => {
                       </div>
                       
                       <div style={{ fontSize: '.78rem', color: '#64748B', marginBottom: 8 }}>
-                        📍 {t.location?.commune || 'Xã/Phường'}, {t.location?.district || 'Đắk Lắk'}
+                        📍 {t.location?.commune || 'Xã/Phường'},{' '}
+                        <span style={{ color: '#0F766E', fontWeight: 600 }}>
+                          {getCorrectDistrict(t.location?.commune)}, Đắk Lắk
+                        </span>
                       </div>
 
                       {t.reporterName && (
