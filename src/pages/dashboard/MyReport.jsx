@@ -263,8 +263,16 @@ const MyReport = () => {
     try {
       const body = {};
       ALL_FIELDS.forEach(f => { body[f.key] = Number(form[f.key]) || 0; });
+      
+      let localAgencyId = null;
+      try {
+        const stored = JSON.parse(localStorage.getItem('agency'));
+        localAgencyId = stored?._id || stored?.id || localStorage.getItem('agencyId');
+      } catch {}
+
       Object.assign(body, {
         ...extra,
+        agencyId: localAgencyId || undefined,
         evidenceLinks: link
       });
       await api.post('/campaign/report', body);
