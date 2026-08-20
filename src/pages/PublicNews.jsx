@@ -278,10 +278,29 @@ const PublicNews = () => {
                           alt={item.title}
                           onError={(e) => { e.target.src = DEFAULT_IMAGE; }}
                         />
-                        <div style={{ position: 'absolute', top: 12, left: 12, zIndex: 2 }}>
+                        <div style={{ position: 'absolute', top: 12, left: 12, zIndex: 2, display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                           <span className="news-category-tag" style={{ background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(4px)', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
                             {item.category || 'Tin tức'}
                           </span>
+                          {item.sourceType === 'facebook' && (
+                            <span style={{
+                              background: '#1877F2', color: '#fff', borderRadius: 20,
+                              padding: '2px 9px', fontSize: '0.68rem', fontWeight: 700,
+                              display: 'inline-flex', alignItems: 'center', gap: 3,
+                              backdropFilter: 'blur(4px)', boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
+                            }}>
+                              🟦 Facebook
+                            </span>
+                          )}
+                          {item.sourceType === 'web' && (
+                            <span style={{
+                              background: 'rgba(16,185,129,0.9)', color: '#fff', borderRadius: 20,
+                              padding: '2px 9px', fontSize: '0.68rem', fontWeight: 700,
+                              display: 'inline-flex', alignItems: 'center', gap: 3
+                            }}>
+                              🌐 Web
+                            </span>
+                          )}
                         </div>
                       </div>
 
@@ -426,12 +445,27 @@ const PublicNews = () => {
                 <div style={{ fontSize: '0.85rem', color: '#64748B' }}>
                   Nguồn: <strong>Cổng thông tin Điều hành Chuyển đổi số tỉnh Đắk Lắk (Webgov)</strong>
                 </div>
-                <button 
-                  className="btn btn-primary"
-                  onClick={() => setSelectedArticle(null)}
-                >
-                  Đóng bài viết
-                </button>
+                <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                  {selectedArticle.sourceUrl && (
+                    <a
+                      href={selectedArticle.sourceUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn btn-outline"
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: '0.88rem' }}
+                    >
+                      {selectedArticle.sourceType === 'facebook'
+                        ? <>🟦 Xem bài gốc trên Facebook</>
+                        : <>🌐 Xem nguồn gốc</>}
+                    </a>
+                  )}
+                  <button 
+                    className="btn btn-primary"
+                    onClick={() => setSelectedArticle(null)}
+                  >
+                    Đóng bài viết
+                  </button>
+                </div>
               </div>
             </div>
           </div>
