@@ -5,7 +5,8 @@ import {
   LayoutDashboard, Map, FileText, Users, LogOut,
   Globe, Menu, X, ChevronRight, UserCircle, Settings, Bot,
   FileInput, FileOutput, CheckSquare, Activity, Briefcase, Bell, Zap, Database, Heart, 
-  BarChart3, ClipboardList, QrCode, Target, Sparkles, Folder, ChevronsUpDown, ShieldCheck
+  BarChart3, ClipboardList, QrCode, Target, Sparkles, Folder, ChevronsUpDown, ShieldCheck,
+  Monitor, Wifi, Clock, Eye, Shield
 } from 'lucide-react';
 import api, { API_URL } from '../lib/api';
 import { io } from 'socket.io-client';
@@ -17,6 +18,46 @@ const ROLE_LABEL = {
   ADMIN:          'Admin Content',
   CITIZEN:        'Người dân',
 };
+const ROLE_COLOR = {
+  SENIOR_ADMIN:   '#DC2626',
+  PROVINCE_ADMIN: '#2563EB',
+  COMMUNE_ADMIN:  '#059669',
+  ADMIN:          '#7C3AED',
+  CITIZEN:        '#64748B',
+};
+
+const PAGE_LABEL = (p) => {
+  if (!p || p === '/') return '🏠 Trang chủ';
+  if (p.includes('campaigns'))       return '📊 Tiến độ 102 Xã';
+  if (p.includes('my-report'))       return '📝 Báo cáo 11 chỉ tiêu';
+  if (p.includes('dti-report'))      return '📈 Báo cáo DTI';
+  if (p.includes('map'))             return '🗺️ Đội hình bản đồ';
+  if (p.includes('qr-manager'))      return '📱 QR Điểm hỗ trợ';
+  if (p.includes('smartweb'))        return '🌐 SmartWeb';
+  if (p.includes('ai-center'))       return '🤖 Trung tâm AI';
+  if (p.includes('eoffice/report'))  return '🧀 Báo cáo AI';
+  if (p.includes('incoming'))        return '📥 Văn bản đến';
+  if (p.includes('outgoing'))        return '📤 Văn bản đi';
+  if (p.includes('tasks'))           return '✅ Công việc';
+  if (p.includes('drive'))           return '🗄️ Kho dữ liệu';
+  if (p.includes('agencies-monitor'))return '🏢 Quản lý tuyến dưới';
+  if (p.includes('support-report'))  return '📊 Thống kê hỗ trợ';
+  if (p.includes('support'))         return '❤️ Yêu cầu hỗ trợ';
+  if (p.includes('news'))            return '📰 Tin tức';
+  if (p.includes('users'))           return '👥 Quản lý TK';
+  if (p.includes('profile'))         return '👤 Hồ sơ cá nhân';
+  if (p.includes('eoffice'))         return '💼 Dashboard eOffice';
+  if (p.includes('dashboard'))       return '📌 Dashboard Tổng quan';
+  return '💻 ' + p.split('/').pop();
+};
+
+const formatDuration = (isoStr) => {
+  if (!isoStr) return '-';
+  const diff = Math.floor((Date.now() - new Date(isoStr).getTime()) / 1000);
+  if (diff < 60)    return `${diff}s`;
+  if (diff < 3600)  return `${Math.floor(diff/60)}ph`;
+  return `${Math.floor(diff/3600)}h ${Math.floor((diff%3600)/60)}ph`;
+};
 
 const DashboardLayout = () => {
   const [open, setOpen] = useState(false);
@@ -24,6 +65,10 @@ const DashboardLayout = () => {
   const [showNotif, setShowNotif] = useState(false);
   const [notifications, setNotifications] = useState({ unreadCount: 0, items: [] });
   const [onlineUsers, setOnlineUsers] = useState(1);
+  const [onlineList, setOnlineList] = useState([]);
+  const [showMonitor, setShowMonitor] = useState(false);
+  const [tick, setTick] = useState(0); // for live duration update
+  const socketRef = useRef(null);
   
   // Quản lý trạng thái đóng/mở của các nhóm danh mục
   const [expandedGroups, setExpandedGroups] = useState({
@@ -36,10 +81,12 @@ const DashboardLayout = () => {
   });
 
   const notifRef = useRef(null);
+  const monitorRef = useRef(null);
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const role     = localStorage.getItem('role') || '';
   const username = localStorage.getItem('username') || 'Người dùng';
+  const userId   = localStorage.getItem('userId') || '';
 
   const fetchNotifications = () => {
     api.get('/notifications/summary')
@@ -47,15 +94,30 @@ const DashboardLayout = () => {
        .catch(() => {});
   };
 
+  // Live timer tick every 10s to update session durations
+  useEffect(() => {
+    const t = setInterval(() => setTick(x => x + 1), 10000);
+    return () => clearInterval(t);
+  }, []);
+
   useEffect(() => {
     fetchNotifications();
 
     const socket = io(API_URL);
-    socket.on('onlineUsers', (count) => setOnlineUsers(count));
-    
-    socket.on('newNotification', () => {
-      fetchNotifications();
+    socketRef.current = socket;
+
+    // Emit user identity
+    socket.emit('userLogin', {
+      userId,
+      username,
+      role,
+      currentPage: window.location.pathname,
     });
+
+    socket.on('onlineUsers', (count) => setOnlineUsers(count));
+    socket.on('onlineUsersList', (list) => setOnlineList(list));
+    
+    socket.on('newNotification', () => { fetchNotifications(); });
 
     socket.on('newSupportRequest', (data) => {
       fetchNotifications();
@@ -79,6 +141,13 @@ const DashboardLayout = () => {
       socket.disconnect();
     };
   }, []);
+
+  // Emit pageChange khi navigate
+  useEffect(() => {
+    if (socketRef.current?.connected) {
+      socketRef.current.emit('pageChange', { page: pathname });
+    }
+  }, [pathname]);
 
   // Tự động mở danh mục tương ứng khi người dùng truy cập trang con
   useEffect(() => {
@@ -117,10 +186,11 @@ const DashboardLayout = () => {
     }
   }, [pathname]);
 
-  // Đóng dropdown khi click ra ngoài
+  // Đóng monitor khi click ra ngoài
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (notifRef.current && !notifRef.current.contains(e.target)) setShowNotif(false);
+      if (monitorRef.current && !monitorRef.current.contains(e.target)) setShowMonitor(false);
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -328,9 +398,141 @@ const DashboardLayout = () => {
           </div>
           
           <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.85rem', color: 'var(--tx-2)', background: 'var(--surface-2)', padding: '6px 12px', borderRadius: 20 }}>
-              <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--success)', boxShadow: '0 0 5px var(--success)' }} />
-              {onlineUsers} Online
+            {/* Online Badge - clickable for SENIOR_ADMIN */}
+            <div ref={monitorRef} style={{ position: 'relative' }}>
+              <button
+                onClick={() => role === 'SENIOR_ADMIN' ? setShowMonitor(m => !m) : null}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 6,
+                  fontSize: '0.85rem', color: 'var(--tx-2)',
+                  background: showMonitor ? 'var(--primary)' : 'var(--surface-2)',
+                  color: showMonitor ? 'white' : 'var(--tx-2)',
+                  padding: '6px 12px', borderRadius: 20, border: 'none',
+                  cursor: role === 'SENIOR_ADMIN' ? 'pointer' : 'default',
+                  transition: 'all .2s', fontWeight: 600,
+                }}
+                title={role === 'SENIOR_ADMIN' ? 'Xem bảng hoạt động thành viên' : ''}
+              >
+                <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#22C55E', boxShadow: '0 0 6px #22C55E', flexShrink: 0 }} />
+                {onlineUsers} Online
+                {role === 'SENIOR_ADMIN' && <Eye size={13} style={{ marginLeft: 2, opacity: .8 }} />}
+              </button>
+
+              {/* Monitor Dropdown Panel */}
+              {showMonitor && role === 'SENIOR_ADMIN' && (
+                <div className="animate-up" style={{
+                  position: 'fixed', top: 56, right: 16,
+                  width: 520, maxWidth: 'calc(100vw - 32px)',
+                  maxHeight: '80vh', overflowY: 'auto',
+                  background: '#0F172A', color: '#E2E8F0',
+                  borderRadius: 16, border: '1px solid #1E3A5F',
+                  boxShadow: '0 20px 60px rgba(0,0,0,0.6)',
+                  zIndex: 9990,
+                }}>
+                  {/* Header */}
+                  <div style={{
+                    padding: '16px 20px', borderBottom: '1px solid #1E3A5F',
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    background: 'linear-gradient(135deg, #1E3A5F, #0F172A)',
+                    borderRadius: '16px 16px 0 0',
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(37,99,235,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Monitor size={18} color="#60A5FA" />
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: 800, fontSize: '.95rem', color: '#F1F5F9' }}>🛡️ Bảng Hoạt Động Thành Viên</div>
+                        <div style={{ fontSize: '.75rem', color: '#94A3B8', marginTop: 1 }}>Realtime · Chỉ Super Admin thấy</div>
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <div style={{ background: 'rgba(34,197,94,0.15)', border: '1px solid #22C55E', borderRadius: 20, padding: '3px 10px', fontSize: '.78rem', color: '#22C55E', fontWeight: 700 }}>
+                        <span style={{ display: 'inline-block', width: 6, height: 6, background: '#22C55E', borderRadius: '50%', marginRight: 5, boxShadow: '0 0 6px #22C55E' }} />
+                        {onlineUsers} đang online
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Body */}
+                  <div style={{ padding: '12px 0' }}>
+                    {onlineList.length === 0 ? (
+                      <div style={{ textAlign: 'center', padding: '28px 0', color: '#64748B' }}>
+                        <Wifi size={28} style={{ opacity: .4, display: 'block', margin: '0 auto 8px' }} />
+                        <div style={{ fontSize: '.85rem' }}>Chưa có phiên nào được xác định</div>
+                        <div style={{ fontSize: '.75rem', marginTop: 4, opacity: .7 }}>Trang sẽ tự cập nhật khi có user kết nối</div>
+                      </div>
+                    ) : onlineList.map((u, idx) => (
+                      <div key={u.socketId} style={{
+                        display: 'flex', alignItems: 'flex-start', gap: 12,
+                        padding: '12px 20px',
+                        borderBottom: idx < onlineList.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none',
+                        transition: 'background .15s',
+                      }}
+                        onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}
+                        onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                      >
+                        {/* Avatar */}
+                        <div style={{
+                          width: 36, height: 36, borderRadius: '50%',
+                          background: ROLE_COLOR[u.role] || '#475569',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontWeight: 800, fontSize: '.9rem', color: 'white', flexShrink: 0,
+                          boxShadow: `0 0 10px ${ROLE_COLOR[u.role] || '#475569'}55`,
+                        }}>
+                          {(u.username || '?').charAt(0).toUpperCase()}
+                        </div>
+
+                        {/* Info */}
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 4 }}>
+                            <span style={{ fontWeight: 700, color: '#F1F5F9', fontSize: '.88rem' }}>{u.username || 'Ẩn danh'}</span>
+                            <span style={{
+                              fontSize: '.68rem', fontWeight: 700, padding: '1px 7px', borderRadius: 10,
+                              background: `${ROLE_COLOR[u.role] || '#475569'}25`,
+                              color: ROLE_COLOR[u.role] || '#94A3B8',
+                              border: `1px solid ${ROLE_COLOR[u.role] || '#475569'}40`,
+                            }}>
+                              {ROLE_LABEL[u.role] || u.role}
+                            </span>
+                          </div>
+
+                          <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: '.76rem', color: '#94A3B8' }}>
+                              <Eye size={11} />
+                              <span style={{ color: '#60A5FA', fontWeight: 600 }}>{PAGE_LABEL(u.currentPage)}</span>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: '.76rem', color: '#94A3B8' }}>
+                              <Clock size={11} />
+                              Login: {u.loginTime ? new Date(u.loginTime).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : '-'}
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: '.76rem', color: '#94A3B8' }}>
+                              <Wifi size={11} />
+                              {formatDuration(u.loginTime)} phiên
+                            </div>
+                          </div>
+
+                          <div style={{ marginTop: 4, fontSize: '.7rem', color: '#475569', fontFamily: 'monospace' }}>
+                            IP: {u.ip || 'N/A'} &nbsp;·&nbsp; SessionID: {u.socketId?.slice(-8)}
+                          </div>
+                        </div>
+
+                        {/* Online dot */}
+                        <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#22C55E', boxShadow: '0 0 8px #22C55E', flexShrink: 0, marginTop: 14 }} />
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Footer */}
+                  <div style={{
+                    padding: '10px 20px', borderTop: '1px solid rgba(255,255,255,0.05)',
+                    fontSize: '.72rem', color: '#475569', display: 'flex', justifyContent: 'space-between',
+                    background: 'rgba(0,0,0,0.2)', borderRadius: '0 0 16px 16px',
+                  }}>
+                    <span>🔄 Tự cập nhật realtime qua WebSocket</span>
+                    <span>📍 {new Date().toLocaleTimeString('vi-VN')}</span>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Notifications */}
