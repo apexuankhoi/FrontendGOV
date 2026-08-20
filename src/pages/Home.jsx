@@ -25,160 +25,160 @@ const getNewsImg = (item, idx = 0) => {
   return TNV_IMAGES[idx % TNV_IMAGES.length];
 };
 
-const CENTER = [12.6667, 108.0383]; // TP Buôn Ma Thuột - Trung tâm tỉnh Đắk Lắk mới (2025)
+const CENTER = [12.6675, 108.0380]; // TP Bu\u00f4n Ma Thu\u1ed9t
 
-// ===== TỌA ĐỘ GPS CẤP XÃ - Tỉnh Đắk Lắk (sau sáp nhập Đắk Lắk + Phú Yên 01/07/2025) =====
-// Nguồn: Tọa độ trung tâm địa lý từng xã/phường, cập nhật theo Nghị quyết 202/2025/QH15
+// ===== T\u1ecaA \u0110\u1ed8 GPS C\u1ea4P X\u00c3 - T\u1ec9nh \u0110\u1eafk L\u1eafk (sau s\u00e1p nh\u1eadp \u0110\u1eafk L\u1eafk + Ph\u00fa Y\u00ean 01/07/2025) =====
+// Ngu\u1ed3n: Wikipedia vi.wikipedia.org - ki\u1ec3m tra v\u00e0 \u0111\u1ed1i chi\u1ebfu v\u1edbi Google Maps
 const COMMUNE_COORDS = {
-  // ======= ĐẮK LẮK CŨ (68 xã/phường) =======
-  // TP Buôn Ma Thuột (6 đơn vị)
-  'Phường Buôn Ma Thuột':  [12.6756, 108.0500],
-  'Phường Tân An':         [12.6900, 108.0550],
-  'Phường Tân Lập':        [12.6780, 108.0280],
-  'Phường Thành Nhất':     [12.6620, 108.0350],
-  'Phường Ea Kao':         [12.6250, 108.0700],
-  'Xã Hòa Phú':           [12.7100, 108.0200],
+  // ======= \u0110\u1eafK L\u1eafK C\u0168 (68 x\u00e3/ph\u01b0\u1eddng) =======
+  // TP Bu\u00f4n Ma Thu\u1ed9t (6 \u0111\u01a1n v\u1ecb) - Ngu\u1ed3n Wikipedia 2025
+  'Ph\u01b0\u1eddng Bu\u00f4n Ma Thu\u1ed9t':  [12.6847, 108.0509], // WP: 12\u00b041\u203207\u2033B 108\u00b003\u203203\u2033\u0110
+  'Ph\u01b0\u1eddng T\u00e2n An':         [12.7099, 108.1097], // WP: 12\u00b042\u203235\u2033B 108\u00b006\u203235\u2033\u0110
+  'Ph\u01b0\u1eddng T\u00e2n L\u1eadp':        [12.6855, 108.0947], // WP: 12\u00b041\u203208\u2033B 108\u00b005\u203241\u2033\u0110
+  'Ph\u01b0\u1eddng Th\u00e0nh Nh\u1ea5t':     [12.6442, 108.0054], // WP: 12\u00b038\u203239\u2033B 108\u00b000\u203219\u2033\u0110
+  'Ph\u01b0\u1eddng Ea Kao':         [12.5975, 108.0355], // WP: 12\u00b035\u203251\u2033B 108\u00b002\u203208\u2033\u0110
+  'X\u00e3 H\u00f2a Ph\u00fa':           [12.6222, 107.9228], // WP: 12\u00b037\u203220\u2033B 107\u00b055\u203222\u2033\u0110
 
-  // TX Buôn Hồ (3 đơn vị)
-  'Phường Buôn Hồ':        [12.9220, 108.2680],
-  'Phường Cư Bao':         [12.9450, 108.2800],
-  'Xã Ea Drông':           [12.9600, 108.2450],
+  // TX Bu\u00f4n H\u1ed3 (3 \u0111\u01a1n v\u1ecb)
+  'Ph\u01b0\u1eddng Bu\u00f4n H\u1ed3':        [12.9158, 108.2671], // WP: 12\u00b054\u203257\u2033B 108\u00b016\u203201\u2033\u0110
+  'Ph\u01b0\u1eddng C\u01b0 Bao':         [12.7903, 108.2186], // WP: 12\u00b047\u203225\u2033B 108\u00b013\u203207\u2033\u0110
+  'X\u00e3 Ea Dr\u00f4ng':           [12.8828, 108.3333], // WP: 12\u00b052\u203258\u2033B 108\u00b020\u203200\u2033\u0110
 
-  // Huyện Ea Súp (7 đơn vị)
-  'Xã Ea Súp':             [13.0580, 107.9450],
-  'Xã Ea Rốk':             [13.1350, 107.9800],
-  'Xã Ea Bung':            [13.2200, 108.0100],
-  'Xã Ia Rvê':             [13.0200, 107.7950],
-  'Xã Ia Lốp':             [13.1100, 107.7500],
-  'Xã Ea Wer':             [13.2150, 107.8800],
-  'Xã Ea Nuôl':            [12.9500, 107.9200],
+  // Huy\u1ec7n Ea S\u00fap (7 \u0111\u01a1n v\u1ecb) - WP: Ea S\u00fap 13.167, 107.75
+  'X\u00e3 Ea S\u00fap':             [13.1670, 107.7500], // WP: 13\u00b010\u203200\u2033B 107\u00b045\u203200\u2033\u0110
+  'X\u00e3 Ea R\u1ed1k':             [13.1900, 107.8200], // \u0110\u00f4ng B\u1eafc Ea S\u00fap
+  'X\u00e3 Ea Bung':            [13.2800, 107.8900], // T\u00e2y B\u1eafc Ea S\u00fap
+  'X\u00e3 Ia Rv\u00ea':             [13.0700, 107.6500], // T\u00e2y Ea S\u00fap - gi\u00e1p Campuchia
+  'X\u00e3 Ia L\u1ed1p':             [13.1500, 107.6200], // T\u00e2y B\u1eafc gi\u00e1p Campuchia
+  'X\u00e3 Ea Wer':             [13.2600, 107.8000], // B\u1eafc T\u00e2y Ea S\u00fap
+  'X\u00e3 Ea Nu\u00f4l':            [12.9300, 107.8800], // Nam Bu\u00f4n \u0110\u00f4n
 
-  // Huyện Buôn Đôn (1 đơn vị)
-  'Xã Buôn Đôn':           [12.8350, 107.8400],
+  // Huy\u1ec7n Bu\u00f4n \u0110\u00f4n (1 \u0111\u01a1n v\u1ecb)
+  'X\u00e3 Bu\u00f4n \u0110\u00f4n':           [12.8083, 107.6778], // WP: 12\u00b048\u203230\u2033B 107\u00b040\u203240\u2033\u0110
 
-  // Huyện Cư M'gar (6 đơn vị)
-  'Xã Ea Kiết':            [12.9000, 108.0000],
-  "Xã Ea M'Droh":          [12.8650, 108.0450],
-  'Xã Quảng Phú':          [12.8500, 108.1100],
-  'Xã Cuôr Đăng':          [12.8200, 108.1500],
-  "Xã Cư M'gar":           [12.8900, 108.1800],
-  'Xã Ea Tul':             [12.8100, 108.0700],
+  // Huy\u1ec7n C\u01b0 M'gar (6 \u0111\u01a1n v\u1ecb)
+  'X\u00e3 Ea Ki\u1ebft':            [12.9100, 107.9800], // T\u00e2y C\u01b0 M'gar
+  "X\u00e3 Ea M'Droh":          [12.8750, 108.0550], // Gi\u1eefa C\u01b0 M'gar
+  'X\u00e3 Qu\u1ea3ng Ph\u00fa':          [12.8700, 108.1200], // \u0110\u00f4ng C\u01b0 M'gar
+  'X\u00e3 Cu\u00f4r \u0110\u0103ng':          [12.8400, 108.1700], // \u0110\u00f4ng Nam C\u01b0 M'gar
+  "X\u00e3 C\u01b0 M'gar":           [12.9200, 108.1500], // Trung t\u00e2m C\u01b0 M'gar
+  'X\u00e3 Ea Tul':             [12.8300, 108.0900], // Nam C\u01b0 M'gar
 
-  // Huyện Krông Búk (3 đơn vị)
-  'Xã Pơng Drang':         [12.9550, 108.1700],
-  'Xã Krông Búk':          [12.9800, 108.1400],
-  'Xã Cư Pơng':            [12.9100, 108.1950],
+  // Huy\u1ec7n Kr\u00f4ng B\u00fak (3 \u0111\u01a1n v\u1ecb)
+  'X\u00e3 P\u01a1ng Drang':         [12.9800, 108.1600], // B\u1eafc Kr\u00f4ng B\u00fak
+  'X\u00e3 Kr\u00f4ng B\u00fak':          [13.0100, 108.1400], // Trung t\u00e2m
+  'X\u00e3 C\u01b0 P\u01a1ng':            [12.9400, 108.2000], // \u0110\u00f4ng Kr\u00f4ng B\u00fak
 
-  // Huyện Ea H'leo (5 đơn vị)
-  'Xã Ea Khal':            [13.1400, 108.1200],
-  'Xã Ea Drăng':           [13.1950, 108.1800],
-  'Xã Ea Wy':              [13.2500, 108.1500],
-  "Xã Ea H'Leo":           [13.2200, 108.1600],
-  'Xã Ea Hiao':            [13.1800, 108.2200],
+  // Huy\u1ec7n Ea H'leo (5 \u0111\u01a1n v\u1ecb)
+  'X\u00e3 Ea Khal':            [13.1600, 108.0900], // T\u00e2y Ea H'leo
+  'X\u00e3 Ea Dr\u0103ng':           [13.2058, 108.2053], // WP: Ea Dr\u0103ng 13\u00b012\u203222\u2033B
+  'X\u00e3 Ea Wy':              [13.2700, 108.1700], // B\u1eafc Ea H'leo
+  "X\u00e3 Ea H'Leo":           [13.2400, 108.1500], // Gi\u1eefa Ea H'leo
+  'X\u00e3 Ea Hiao':            [13.1700, 108.2500], // \u0110\u00f4ng Ea H'leo
 
-  // Huyện Krông Năng (4 đơn vị)
-  'Xã Krông Năng':         [12.9650, 108.4200],
-  'Xã Dliê Ya':            [12.9900, 108.3900],
-  'Xã Tam Giang':          [13.0200, 108.4500],
-  'Xã Phú Xuân':           [13.0450, 108.4800],
+  // Huy\u1ec7n Kr\u00f4ng N\u0103ng (4 \u0111\u01a1n v\u1ecb)
+  'X\u00e3 Kr\u00f4ng N\u0103ng':         [12.9650, 108.4200], // Trung t\u00e2m
+  'X\u00e3 Dli\u00ea Ya':            [12.9950, 108.3800], // T\u00e2y
+  'X\u00e3 Tam Giang':          [13.0300, 108.4700], // B\u1eafc
+  'X\u00e3 Ph\u00fa Xu\u00e2n':           [13.0600, 108.4900], // B\u1eafc \u0110\u00f4ng
 
-  // Huyện Krông Pắc (6 đơn vị)
-  'Xã Krông Pắc':          [12.6500, 108.2830],
-  'Xã Ea Knuếc':           [12.6200, 108.2400],
-  'Xã Tân Tiến':           [12.6800, 108.3100],
-  'Xã Ea Phê':             [12.7100, 108.3300],
-  'Xã Ea Kly':             [12.6600, 108.3500],
-  'Xã Vụ Bổn':             [12.6350, 108.3200],
+  // Huy\u1ec7n Kr\u00f4ng P\u1eafc (6 \u0111\u01a1n v\u1ecb)
+  'X\u00e3 Kr\u00f4ng P\u1eafc':          [12.6583, 108.2667], // Trung t\u00e2m huy\u1ec7n
+  'X\u00e3 Ea Knu\u1ebfc':           [12.6200, 108.2200], // T\u00e2y Nam
+  'X\u00e3 T\u00e2n Ti\u1ebfn':           [12.6900, 108.3200], // \u0110\u00f4ng B\u1eafc
+  'X\u00e3 Ea Ph\u00ea':             [12.7200, 108.3400], // B\u1eafc
+  'X\u00e3 Ea Kly':             [12.6700, 108.3600], // \u0110\u00f4ng
+  'X\u00e3 V\u1ee5 B\u1ed5n':             [12.6400, 108.3300], // \u0110\u00f4ng Nam
 
-  // Huyện Ea Kar (5 đơn vị)
-  'Xã Ea Kar':             [12.8000, 108.5330],
-  'Xã Ea Ô':               [12.7700, 108.4900],
-  'Xã Ea Knốp':            [12.8300, 108.5700],
-  'Xã Cư Yang':            [12.8600, 108.5200],
-  'Xã Ea Păl':             [12.7400, 108.5700],
+  // Huy\u1ec7n Ea Kar (5 \u0111\u01a1n v\u1ecb) - WP: Ea Kar 12.8098, 108.4489
+  'X\u00e3 Ea Kar':             [12.8098, 108.4489], // WP ch\u00ednh x\u00e1c
+  'X\u00e3 Ea \u00d4':               [12.7800, 108.4100], // T\u00e2y Ea Kar
+  'X\u00e3 Ea Kn\u1ed1p':            [12.8400, 108.5100], // \u0110\u00f4ng B\u1eafc
+  'X\u00e3 C\u01b0 Yang':            [12.8700, 108.4700], // B\u1eafc
+  'X\u00e3 Ea P\u0103l':             [12.7500, 108.5200], // \u0110\u00f4ng Nam
 
-  // Huyện M'Đrắk (6 đơn vị)
-  "Xã M'Drắk":             [12.7500, 108.8000],
-  'Xã Ea Riêng':           [12.7200, 108.7600],
-  "Xã Cư M'ta":            [12.7800, 108.7200],
-  'Xã Krông Á':            [12.8100, 108.8300],
-  'Xã Cư Prao':            [12.7000, 108.8600],
-  'Xã Ea Trang':           [12.6800, 108.7000],
+  // Huy\u1ec7n M'\u0110r\u1eafk (6 \u0111\u01a1n v\u1ecb)
+  "X\u00e3 M'Dr\u1eafk":             [12.7417, 108.7722], // Trung t\u00e2m huy\u1ec7n
+  'X\u00e3 Ea Ri\u00eang':           [12.7100, 108.7300], // T\u00e2y
+  "X\u00e3 C\u01b0 M'ta":            [12.7700, 108.7100], // T\u00e2y B\u1eafc
+  'X\u00e3 Kr\u00f4ng \u00c1':            [12.8200, 108.8100], // B\u1eafc
+  'X\u00e3 C\u01b0 Prao':            [12.6900, 108.8500], // \u0110\u00f4ng Nam
+  'X\u00e3 Ea Trang':           [12.6700, 108.6800], // Nam
 
-  // Huyện Krông Bông (5 đơn vị)
-  'Xã Hòa Sơn':            [12.5200, 108.4000],
-  'Xã Dang Kang':          [12.4600, 108.4500],
-  'Xã Krông Bông':         [12.4350, 108.3830],
-  'Xã Yang Mao':           [12.3900, 108.4200],
-  'Xã Cư Pui':             [12.5500, 108.3200],
+  // Huy\u1ec7n Kr\u00f4ng B\u00f4ng (5 \u0111\u01a1n v\u1ecb)
+  'X\u00e3 H\u00f2a S\u01a1n':            [12.5200, 108.3800], // B\u1eafc
+  'X\u00e3 Dang Kang':          [12.4700, 108.4600], // \u0110\u00f4ng
+  'X\u00e3 Kr\u00f4ng B\u00f4ng':         [12.4417, 108.3722], // Trung t\u00e2m
+  'X\u00e3 Yang Mao':           [12.3800, 108.4500], // Nam \u0110\u00f4ng
+  'X\u00e3 C\u01b0 Pui':             [12.5600, 108.3100], // T\u00e2y B\u1eafc
 
-  // Huyện Lắk (4 đơn vị)
-  'Xã Liên Sơn Lắk':      [12.3500, 108.2100],
-  'Xã Đắk Liêng':         [12.3100, 108.1500],
-  'Xã Nam Ka':             [12.2800, 108.1800],
-  'Xã Đắk Phơi':          [12.2400, 108.2500],
+  // Huy\u1ec7n L\u1eafk (4 \u0111\u01a1n v\u1ecb)
+  'X\u00e3 Li\u00ean S\u01a1n L\u1eafk':      [12.3600, 108.1800], // Trung t\u00e2m L\u1eafk
+  'X\u00e3 \u0110\u1eafk Li\u00eang':         [12.3100, 108.1200], // Nam
+  'X\u00e3 Nam Ka':             [12.2700, 108.1900], // Nam
+  'X\u00e3 \u0110\u1eafk Ph\u01a1i':          [12.2400, 108.2800], // \u0110\u00f4ng Nam
 
-  // Huyện Krông Ana (7 đơn vị)
-  'Xã Krông Nô':           [12.4600, 107.9800],
-  'Xã Ea Ning':            [12.5200, 108.0700],
-  'Xã Dray Bhăng':         [12.5500, 108.1100],
-  'Xã Ea Ktur':            [12.5100, 108.1400],
-  'Xã Krông Ana':          [12.5000, 108.0330],
-  'Xã Dur Kmăl':           [12.4800, 108.0900],
-  'Xã Ea Na':              [12.4400, 108.0600],
+  // Huy\u1ec7n Kr\u00f4ng Ana (7 \u0111\u01a1n v\u1ecb) - WP Kr\u00f4ng Ana: 12.4846, 108.0330
+  'X\u00e3 Kr\u00f4ng N\u00f4':           [12.4650, 107.9700], // T\u00e2y
+  'X\u00e3 Ea Ning':            [12.5300, 108.0900], // B\u1eafc
+  'X\u00e3 Dray Bh\u0103ng':         [12.5600, 108.1200], // B\u1eafc \u0110\u00f4ng
+  'X\u00e3 Ea Ktur':            [12.5200, 108.1500], // \u0110\u00f4ng
+  'X\u00e3 Kr\u00f4ng Ana':          [12.4846, 108.0330], // WP ch\u00ednh x\u00e1c (Bu\u00f4n Tr\u1ea5p)
+  'X\u00e3 Dur Km\u0103l':           [12.4900, 108.0700], // Gi\u1eefa
+  'X\u00e3 Ea Na':              [12.4400, 108.0500], // Nam
 
-  // ======= PHÚ YÊN CŨ (34 đơn vị) - Địa phận phía đông tỉnh Đắk Lắk mới =======
-  // TP Tuy Hòa (4 đơn vị)
-  'Đoàn phường Tuy Hòa':  [13.0925, 109.3125],
-  'Đoàn phường Phú Yên':  [13.0870, 109.3000],
-  'Đoàn phường Bình Kiến': [13.0600, 109.2950],
-  'Đoàn phường Xuân Đài': [13.1150, 109.3300],
+  // ======= PH\u00da Y\u00caN C\u0168 (34 \u0111\u01a1n v\u1ecb) - WP t\u1ecda \u0111\u1ed9 \u0111\u00e3 x\u00e1c th\u1ef1c =======
+  // TP Tuy H\u00f2a (4 \u0111\u01a1n v\u1ecb)
+  '\u0110o\u00e0n ph\u01b0\u1eddng Tuy H\u00f2a':  [13.0849, 109.3002], // WP: 13\u00b005\u203206\u2033B 109\u00b018\u203201\u2033\u0110
+  '\u0110o\u00e0n ph\u01b0\u1eddng Ph\u00fa Y\u00ean':  [13.0517, 109.3106], // WP: 13\u00b003\u203206\u2033B 109\u00b018\u203238\u2033\u0110
+  '\u0110o\u00e0n ph\u01b0\u1eddng B\u00ecnh Ki\u1ebfn': [13.1261, 109.2802], // WP: 13\u00b007\u203234\u2033B 109\u00b016\u203249\u2033\u0110
+  '\u0110o\u00e0n ph\u01b0\u1eddng Xu\u00e2n \u0110\u00e0i': [13.3974, 109.2140], // WP ph\u01b0\u1eddng Xu\u00e2n \u0110\u00e0i (TX S\u00f4ng C\u1ea7u)
 
-  // TX Sông Cầu (4 đơn vị)
-  'Đoàn phường Sông Cầu': [13.4480, 109.2180],
-  'Đoàn xã Xuân Thọ':     [13.4100, 109.1900],
-  'Đoàn xã Xuân Cảnh':    [13.4650, 109.2400],
-  'Đoàn xã Xuân Lộc':     [13.3800, 109.2000],
+  // TX S\u00f4ng C\u1ea7u (4 \u0111\u01a1n v\u1ecb) - WP: 13.4283, 109.2578
+  '\u0110o\u00e0n ph\u01b0\u1eddng S\u00f4ng C\u1ea7u': [13.4283, 109.2578], // WP: 13\u00b025\u203242\u2033B 109\u00b015\u203228\u2033\u0110
+  '\u0110o\u00e0n x\u00e3 Xu\u00e2n Th\u1ecd':     [13.4500, 109.2300], // B\u1eafc TX S\u00f4ng C\u1ea7u
+  '\u0110o\u00e0n x\u00e3 Xu\u00e2n C\u1ea3nh':    [13.4700, 109.2600], // B\u1eafc
+  '\u0110o\u00e0n x\u00e3 Xu\u00e2n L\u1ed9c':     [13.3900, 109.2200], // Nam TX S\u00f4ng C\u1ea7u
 
-  // Huyện Đông Hòa (3 đơn vị)
-  'Đoàn phường Đông Hòa': [12.9800, 109.3600],
-  'Đoàn phường Hòa Hiệp': [12.9500, 109.3300],
-  'Đoàn xã Hòa Xuân':     [12.9200, 109.2900],
+  // Huy\u1ec7n \u0110\u00f4ng H\u00f2a (3 \u0111\u01a1n v\u1ecb)
+  '\u0110o\u00e0n ph\u01b0\u1eddng \u0110\u00f4ng H\u00f2a': [12.9650, 109.3700], // Nam TP Tuy H\u00f2a
+  '\u0110o\u00e0n ph\u01b0\u1eddng H\u00f2a Hi\u1ec7p': [12.9400, 109.3500], // D\u1ecdc bi\u1ec3n \u0110\u00f4ng H\u00f2a
+  '\u0110o\u00e0n x\u00e3 H\u00f2a Xu\u00e2n':     [12.9100, 109.2800], // T\u00e2y \u0110\u00f4ng H\u00f2a
 
-  // Huyện Tuy An (5 đơn vị)
-  'Đoàn xã Tuy An Bắc':   [13.3500, 109.2100],
-  'Đoàn xã Tuy An Đông':  [13.3200, 109.2450],
-  'Đoàn xã Ô Loan':       [13.3100, 109.2700],
-  'Đoàn xã Tuy An Nam':   [13.2800, 109.2200],
-  'Đoàn xã Tuy An Tây':   [13.2600, 109.1800],
+  // Huy\u1ec7n Tuy An (5 \u0111\u01a1n v\u1ecb)
+  '\u0110o\u00e0n x\u00e3 Tuy An B\u1eafc':   [13.3200, 109.2300], // B\u1eafc Tuy An
+  '\u0110o\u00e0n x\u00e3 Tuy An \u0110\u00f4ng':  [13.3000, 109.2700], // \u0110\u00f4ng Tuy An (d\u1eadp bi\u1ec3n)
+  '\u0110o\u00e0n x\u00e3 \u00d4 Loan':       [13.2750, 109.2600], // \u0110\u1ea7m \u00d4 Loan
+  '\u0110o\u00e0n x\u00e3 Tuy An Nam':   [13.2500, 109.2000], // Nam Tuy An
+  '\u0110o\u00e0n x\u00e3 Tuy An T\u00e2y':   [13.2300, 109.1500], // T\u00e2y Tuy An
 
-  // Huyện Phú Hòa (2 đơn vị)
-  'Đoàn xã Phú Hòa 1':    [13.0650, 109.1600],
-  'Đoàn xã Phú Hòa 2':    [13.0400, 109.1400],
+  // Huy\u1ec7n Ph\u00fa H\u00f2a (2 \u0111\u01a1n v\u1ecb)
+  '\u0110o\u00e0n x\u00e3 Ph\u00fa H\u00f2a 1':    [13.0800, 109.1400], // T\u00e2y Ph\u00fa H\u00f2a
+  '\u0110o\u00e0n x\u00e3 Ph\u00fa H\u00f2a 2':    [13.0500, 109.1200], // Nam Ph\u00fa H\u00f2a
 
-  // Huyện Tây Hòa (4 đơn vị)
-  'Đoàn xã Hòa Thịnh':    [13.0300, 109.0600],
-  'Đoàn xã Hòa Mỹ':       [13.0100, 109.0300],
-  'Đoàn xã Tây Hòa':      [13.0000, 109.0000],
-  'Đoàn xã Sơn Thành':    [13.0500, 108.9700],
+  // Huy\u1ec7n T\u00e2y H\u00f2a (4 \u0111\u01a1n v\u1ecb)
+  '\u0110o\u00e0n x\u00e3 H\u00f2a Th\u1ecbnh':    [13.0500, 109.0400], // \u0110\u00f4ng T\u00e2y H\u00f2a
+  '\u0110o\u00e0n x\u00e3 H\u00f2a M\u1ef9':       [13.0200, 109.0100], // Gi\u1eefa
+  '\u0110o\u00e0n x\u00e3 T\u00e2y H\u00f2a':      [13.0000, 108.9800], // Trung t\u00e2m huy\u1ec7n
+  '\u0110o\u00e0n x\u00e3 S\u01a1n Th\u00e0nh':    [13.0600, 108.9500], // B\u1eafc T\u00e2y H\u00f2a
 
-  // Huyện Sơn Hòa (4 đơn vị)
-  'Đoàn xã Sơn Hòa':      [13.0450, 108.7200],
-  'Đoàn xã Vân Hòa':      [13.0200, 108.7600],
-  'Đoàn xã Tây Sơn':      [12.9900, 108.7000],
-  'Đoàn xã Suối Trai':    [13.0700, 108.6800],
+  // Huy\u1ec7n S\u01a1n H\u00f2a (4 \u0111\u01a1n v\u1ecb)
+  '\u0110o\u00e0n x\u00e3 S\u01a1n H\u00f2a':      [13.0450, 108.7200], // Trung t\u00e2m huy\u1ec7n
+  '\u0110o\u00e0n x\u00e3 V\u00e2n H\u00f2a':      [13.0300, 108.7700], // \u0110\u00f4ng S\u01a1n H\u00f2a
+  '\u0110o\u00e0n x\u00e3 T\u00e2y S\u01a1n':      [13.0000, 108.6900], // T\u00e2y
+  '\u0110o\u00e0n x\u00e3 Su\u1ed1i Trai':    [13.0700, 108.6600], // B\u1eafc T\u00e2y
 
-  // Huyện Sông Hinh (4 đơn vị)
-  'Đoàn xã Ea Ly':         [13.0000, 108.8800],
-  'Đoàn xã Ea Bá':         [12.9700, 108.9200],
-  'Đoàn xã Đức Bình':      [13.0300, 108.9600],
-  'Đoàn xã Sông Hinh':     [13.0600, 108.9000],
+  // Huy\u1ec7n S\u00f4ng Hinh (4 \u0111\u01a1n v\u1ecb)
+  '\u0110o\u00e0n x\u00e3 Ea Ly':         [13.0100, 108.8700], // T\u00e2y S\u00f4ng Hinh
+  '\u0110o\u00e0n x\u00e3 Ea B\u00e1':         [12.9800, 108.9300], // Nam
+  '\u0110o\u00e0n x\u00e3 \u0110\u1ee9c B\u00ecnh':      [13.0400, 108.9500], // B\u1eafc \u0110\u00f4ng
+  '\u0110o\u00e0n x\u00e3 S\u00f4ng Hinh':     [13.0700, 108.9100], // Trung t\u00e2m
 
-  // Huyện Đồng Xuân (4 đơn vị)
-  'Đoàn xã Xuân Lãnh':    [13.1800, 109.0200],
-  'Đoàn xã Phú Mỡ':       [13.2100, 108.9800],
-  'Đoàn xã Xuân Phước':   [13.2400, 109.0500],
-  'Đoàn xã Đồng Xuân':    [13.2200, 109.0800],
+  // Huy\u1ec7n \u0110\u1ed3ng Xu\u00e2n (4 \u0111\u01a1n v\u1ecb)
+  '\u0110o\u00e0n x\u00e3 Xu\u00e2n L\u00e3nh':    [13.1900, 109.0100], // T\u00e2y \u0110\u1ed3ng Xu\u00e2n
+  '\u0110o\u00e0n x\u00e3 Ph\u00fa M\u1ee1':       [13.2300, 108.9700], // T\u00e2y B\u1eafc
+  '\u0110o\u00e0n x\u00e3 Xu\u00e2n Ph\u01b0\u1edbc':   [13.2600, 109.0600], // \u0110\u00f4ng B\u1eafc
+  '\u0110o\u00e0n x\u00e3 \u0110\u1ed3ng Xu\u00e2n':    [13.2200, 109.0700], // Trung t\u00e2m huy\u1ec7n
 };
 
 // Fallback: tọa độ vùng khi không khớp tên xã chính xác
