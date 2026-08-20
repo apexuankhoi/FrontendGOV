@@ -340,7 +340,9 @@ const CampaignAdmin = () => {
               <tbody>
                 {filteredReports.map((r, i) => {
                   const agencyName = r.agencyId?.name || r.reporterId?.locationContext?.commune || 'Chưa gán đơn vị';
-                  const reporterName = r.reporterId?.username || r.reporterId?.email || 'Tài khoản ẩn';
+                  const reporterName = r.reporterName
+                    || r.reporterId?.username || r.reporterId?.email
+                    || (r.agencyId?.name ? `Cán bộ Đoàn ${r.agencyId.name}` : 'Không rõ');
                   const isOrphan = !r.agencyId?.name;
 
                   return (
@@ -492,7 +494,9 @@ const CampaignAdmin = () => {
           }}>
             {filteredReports.map((r, i) => {
               const agencyName = r.agencyId?.name || r.reporterId?.locationContext?.commune || 'Chưa gán đơn vị';
-              const reporterName = r.reporterId?.username || r.reporterId?.email || 'Tài khoản ẩn';
+              const reporterName = r.reporterName
+                || r.reporterId?.username || r.reporterId?.email
+                || (r.agencyId?.name ? `Cán bộ Đoàn ${r.agencyId.name}` : 'Không rõ');
               const isOrphan = !r.agencyId?.name;
 
               return (
