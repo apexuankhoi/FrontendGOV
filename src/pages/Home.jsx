@@ -25,50 +25,233 @@ const getNewsImg = (item, idx = 0) => {
   return TNV_IMAGES[idx % TNV_IMAGES.length];
 };
 
-const CENTER = [12.6667, 108.0383];
+const CENTER = [12.6667, 108.0383]; // TP Buôn Ma Thuột - Trung tâm tỉnh Đắk Lắk mới (2025)
+
+// ===== TỌA ĐỘ GPS CẤP XÃ - Tỉnh Đắk Lắk (sau sáp nhập Đắk Lắk + Phú Yên 01/07/2025) =====
+// Nguồn: Tọa độ trung tâm địa lý từng xã/phường, cập nhật theo Nghị quyết 202/2025/QH15
+const COMMUNE_COORDS = {
+  // ======= ĐẮK LẮK CŨ (68 xã/phường) =======
+  // TP Buôn Ma Thuột (6 đơn vị)
+  'Phường Buôn Ma Thuột':  [12.6756, 108.0500],
+  'Phường Tân An':         [12.6900, 108.0550],
+  'Phường Tân Lập':        [12.6780, 108.0280],
+  'Phường Thành Nhất':     [12.6620, 108.0350],
+  'Phường Ea Kao':         [12.6250, 108.0700],
+  'Xã Hòa Phú':           [12.7100, 108.0200],
+
+  // TX Buôn Hồ (3 đơn vị)
+  'Phường Buôn Hồ':        [12.9220, 108.2680],
+  'Phường Cư Bao':         [12.9450, 108.2800],
+  'Xã Ea Drông':           [12.9600, 108.2450],
+
+  // Huyện Ea Súp (7 đơn vị)
+  'Xã Ea Súp':             [13.0580, 107.9450],
+  'Xã Ea Rốk':             [13.1350, 107.9800],
+  'Xã Ea Bung':            [13.2200, 108.0100],
+  'Xã Ia Rvê':             [13.0200, 107.7950],
+  'Xã Ia Lốp':             [13.1100, 107.7500],
+  'Xã Ea Wer':             [13.2150, 107.8800],
+  'Xã Ea Nuôl':            [12.9500, 107.9200],
+
+  // Huyện Buôn Đôn (1 đơn vị)
+  'Xã Buôn Đôn':           [12.8350, 107.8400],
+
+  // Huyện Cư M'gar (6 đơn vị)
+  'Xã Ea Kiết':            [12.9000, 108.0000],
+  "Xã Ea M'Droh":          [12.8650, 108.0450],
+  'Xã Quảng Phú':          [12.8500, 108.1100],
+  'Xã Cuôr Đăng':          [12.8200, 108.1500],
+  "Xã Cư M'gar":           [12.8900, 108.1800],
+  'Xã Ea Tul':             [12.8100, 108.0700],
+
+  // Huyện Krông Búk (3 đơn vị)
+  'Xã Pơng Drang':         [12.9550, 108.1700],
+  'Xã Krông Búk':          [12.9800, 108.1400],
+  'Xã Cư Pơng':            [12.9100, 108.1950],
+
+  // Huyện Ea H'leo (5 đơn vị)
+  'Xã Ea Khal':            [13.1400, 108.1200],
+  'Xã Ea Drăng':           [13.1950, 108.1800],
+  'Xã Ea Wy':              [13.2500, 108.1500],
+  "Xã Ea H'Leo":           [13.2200, 108.1600],
+  'Xã Ea Hiao':            [13.1800, 108.2200],
+
+  // Huyện Krông Năng (4 đơn vị)
+  'Xã Krông Năng':         [12.9650, 108.4200],
+  'Xã Dliê Ya':            [12.9900, 108.3900],
+  'Xã Tam Giang':          [13.0200, 108.4500],
+  'Xã Phú Xuân':           [13.0450, 108.4800],
+
+  // Huyện Krông Pắc (6 đơn vị)
+  'Xã Krông Pắc':          [12.6500, 108.2830],
+  'Xã Ea Knuếc':           [12.6200, 108.2400],
+  'Xã Tân Tiến':           [12.6800, 108.3100],
+  'Xã Ea Phê':             [12.7100, 108.3300],
+  'Xã Ea Kly':             [12.6600, 108.3500],
+  'Xã Vụ Bổn':             [12.6350, 108.3200],
+
+  // Huyện Ea Kar (5 đơn vị)
+  'Xã Ea Kar':             [12.8000, 108.5330],
+  'Xã Ea Ô':               [12.7700, 108.4900],
+  'Xã Ea Knốp':            [12.8300, 108.5700],
+  'Xã Cư Yang':            [12.8600, 108.5200],
+  'Xã Ea Păl':             [12.7400, 108.5700],
+
+  // Huyện M'Đrắk (6 đơn vị)
+  "Xã M'Drắk":             [12.7500, 108.8000],
+  'Xã Ea Riêng':           [12.7200, 108.7600],
+  "Xã Cư M'ta":            [12.7800, 108.7200],
+  'Xã Krông Á':            [12.8100, 108.8300],
+  'Xã Cư Prao':            [12.7000, 108.8600],
+  'Xã Ea Trang':           [12.6800, 108.7000],
+
+  // Huyện Krông Bông (5 đơn vị)
+  'Xã Hòa Sơn':            [12.5200, 108.4000],
+  'Xã Dang Kang':          [12.4600, 108.4500],
+  'Xã Krông Bông':         [12.4350, 108.3830],
+  'Xã Yang Mao':           [12.3900, 108.4200],
+  'Xã Cư Pui':             [12.5500, 108.3200],
+
+  // Huyện Lắk (4 đơn vị)
+  'Xã Liên Sơn Lắk':      [12.3500, 108.2100],
+  'Xã Đắk Liêng':         [12.3100, 108.1500],
+  'Xã Nam Ka':             [12.2800, 108.1800],
+  'Xã Đắk Phơi':          [12.2400, 108.2500],
+
+  // Huyện Krông Ana (7 đơn vị)
+  'Xã Krông Nô':           [12.4600, 107.9800],
+  'Xã Ea Ning':            [12.5200, 108.0700],
+  'Xã Dray Bhăng':         [12.5500, 108.1100],
+  'Xã Ea Ktur':            [12.5100, 108.1400],
+  'Xã Krông Ana':          [12.5000, 108.0330],
+  'Xã Dur Kmăl':           [12.4800, 108.0900],
+  'Xã Ea Na':              [12.4400, 108.0600],
+
+  // ======= PHÚ YÊN CŨ (34 đơn vị) - Địa phận phía đông tỉnh Đắk Lắk mới =======
+  // TP Tuy Hòa (4 đơn vị)
+  'Đoàn phường Tuy Hòa':  [13.0925, 109.3125],
+  'Đoàn phường Phú Yên':  [13.0870, 109.3000],
+  'Đoàn phường Bình Kiến': [13.0600, 109.2950],
+  'Đoàn phường Xuân Đài': [13.1150, 109.3300],
+
+  // TX Sông Cầu (4 đơn vị)
+  'Đoàn phường Sông Cầu': [13.4480, 109.2180],
+  'Đoàn xã Xuân Thọ':     [13.4100, 109.1900],
+  'Đoàn xã Xuân Cảnh':    [13.4650, 109.2400],
+  'Đoàn xã Xuân Lộc':     [13.3800, 109.2000],
+
+  // Huyện Đông Hòa (3 đơn vị)
+  'Đoàn phường Đông Hòa': [12.9800, 109.3600],
+  'Đoàn phường Hòa Hiệp': [12.9500, 109.3300],
+  'Đoàn xã Hòa Xuân':     [12.9200, 109.2900],
+
+  // Huyện Tuy An (5 đơn vị)
+  'Đoàn xã Tuy An Bắc':   [13.3500, 109.2100],
+  'Đoàn xã Tuy An Đông':  [13.3200, 109.2450],
+  'Đoàn xã Ô Loan':       [13.3100, 109.2700],
+  'Đoàn xã Tuy An Nam':   [13.2800, 109.2200],
+  'Đoàn xã Tuy An Tây':   [13.2600, 109.1800],
+
+  // Huyện Phú Hòa (2 đơn vị)
+  'Đoàn xã Phú Hòa 1':    [13.0650, 109.1600],
+  'Đoàn xã Phú Hòa 2':    [13.0400, 109.1400],
+
+  // Huyện Tây Hòa (4 đơn vị)
+  'Đoàn xã Hòa Thịnh':    [13.0300, 109.0600],
+  'Đoàn xã Hòa Mỹ':       [13.0100, 109.0300],
+  'Đoàn xã Tây Hòa':      [13.0000, 109.0000],
+  'Đoàn xã Sơn Thành':    [13.0500, 108.9700],
+
+  // Huyện Sơn Hòa (4 đơn vị)
+  'Đoàn xã Sơn Hòa':      [13.0450, 108.7200],
+  'Đoàn xã Vân Hòa':      [13.0200, 108.7600],
+  'Đoàn xã Tây Sơn':      [12.9900, 108.7000],
+  'Đoàn xã Suối Trai':    [13.0700, 108.6800],
+
+  // Huyện Sông Hinh (4 đơn vị)
+  'Đoàn xã Ea Ly':         [13.0000, 108.8800],
+  'Đoàn xã Ea Bá':         [12.9700, 108.9200],
+  'Đoàn xã Đức Bình':      [13.0300, 108.9600],
+  'Đoàn xã Sông Hinh':     [13.0600, 108.9000],
+
+  // Huyện Đồng Xuân (4 đơn vị)
+  'Đoàn xã Xuân Lãnh':    [13.1800, 109.0200],
+  'Đoàn xã Phú Mỡ':       [13.2100, 108.9800],
+  'Đoàn xã Xuân Phước':   [13.2400, 109.0500],
+  'Đoàn xã Đồng Xuân':    [13.2200, 109.0800],
+};
+
+// Fallback: tọa độ vùng khi không khớp tên xã chính xác
 const DISTRICT_COORDS = {
-  'TP Buôn Ma Thuột': [12.6667, 108.0383],
-  'TX Buôn Hồ': [12.922, 108.268],
-  'Huyện Cư M\'gar': [12.833, 108.083],
-  'Huyện Krông Pắc': [12.650, 108.283],
-  "Huyện Ea H'leo": [13.200, 108.183],
-  'Huyện Krông Búk': [12.916, 108.150],
-  'Huyện Krông Năng': [12.966, 108.416],
-  'Huyện Ea Kar': [12.800, 108.533],
-  "Huyện M'Đrắk": [12.750, 108.800],
-  'Huyện Krông Bông': [12.433, 108.383],
-  'Huyện Lắk': [12.333, 108.183],
-  'Huyện Buôn Đôn': [12.833, 107.833],
-  'Huyện Ea Súp': [13.083, 107.883],
-  'Huyện Krông Ana': [12.500, 108.033],
-  'Huyện Cư Kuin': [12.583, 108.150],
-  'Đoàn phường Tuy Hòa': [13.090, 109.300],
-  'Đoàn phường Sông Cầu': [13.450, 109.220],
-  'Đoàn phường Đông Hòa': [12.950, 109.350],
+  'TP Buôn Ma Thuột': [12.6675, 108.0380],
+  'TX Buôn Hồ':       [12.9220, 108.2680],
+  "Huyện Ea H'leo":   [13.2000, 108.1800],
+  'Huyện Krông Búk':  [12.9500, 108.1600],
+  'Huyện Krông Năng': [12.9800, 108.4200],
+  "Huyện Cư M'gar":   [12.8600, 108.1100],
+  'Huyện Ea Súp':     [13.0800, 107.9000],
+  'Huyện Buôn Đôn':   [12.8350, 107.8400],
+  'Huyện Krông Pắc':  [12.6500, 108.2800],
+  'Huyện Ea Kar':     [12.8000, 108.5300],
+  "Huyện M'Đrắk":     [12.7500, 108.8000],
+  'Huyện Krông Bông': [12.4350, 108.3800],
+  'Huyện Lắk':        [12.3300, 108.1800],
+  'Huyện Krông Ana':  [12.5000, 108.0300],
+  'Huyện Cư Kuin':    [12.5800, 108.1500],
+  'TP Tuy Hòa':       [13.0925, 109.3125],
+  'TX Sông Cầu':      [13.4500, 109.2200],
+  'Huyện Đông Hòa':   [12.9500, 109.3500],
+  'Huyện Tây Hòa':    [13.0000, 109.0000],
+  'Huyện Phú Hòa':    [13.0500, 109.1600],
+  'Huyện Sơn Hòa':    [13.0450, 108.7200],
+  'Huyện Sông Hinh':  [13.0300, 108.9000],
+  'Huyện Đồng Xuân':  [13.2200, 109.0800],
+  'Huyện Tuy An':     [13.3000, 109.2500],
 };
 
 function getPos(team) {
+  const commune = team.location?.commune || team.name || '';
+
+  // Ưu tiên 1: tra tọa độ chính xác theo tên xã
+  if (COMMUNE_COORDS[commune]) {
+    const base = COMMUNE_COORDS[commune];
+    const str = (team._id || team.name || '') + commune;
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) { hash = ((hash << 5) - hash) + str.charCodeAt(i); hash |= 0; }
+    const offX = ((Math.abs(hash) % 100) / 100 - 0.5) * 0.025;
+    const offY = (((Math.abs(hash * 31)) % 100) / 100 - 0.5) * 0.025;
+    return [base[0] + offX, base[1] + offY];
+  }
+
+  // Ưu tiên 2: tra tọa độ theo district
   let d = team.location?.district || '';
   if (!DISTRICT_COORDS[d]) {
-    const c = team.location?.commune || team.name || '';
-    if (c.includes('Buôn Ma Thuột') || c.includes('Tân An') || c.includes('Tân Lập') || c.includes('Ea Kao')) d = 'TP Buôn Ma Thuột';
+    const c = commune;
+    if (c.includes('Buôn Ma Thuột') || c.includes('Tân An') || c.includes('Tân Lập') || c.includes('Ea Kao') || c.includes('Thành Nhất')) d = 'TP Buôn Ma Thuột';
     else if (c.includes('Buôn Hồ') || c.includes('Cư Bao')) d = 'TX Buôn Hồ';
-    else if (c.includes('Cư M\'gar') || c.includes('Quảng Phú')) d = 'Huyện Cư M\'gar';
-    else if (c.includes('Krông Pắc') || c.includes('Phước An')) d = 'Huyện Krông Pắc';
-    else if (c.includes('Ea H\'leo') || c.includes('Ea Drăng')) d = "Huyện Ea H'leo";
-    else if (c.includes('Krông Búk') || c.includes('Pơng Drang')) d = 'Huyện Krông Búk';
-    else if (c.includes('Krông Năng')) d = 'Huyện Krông Năng';
-    else if (c.includes('Ea Kar') || c.includes('Ea Knốp')) d = 'Huyện Ea Kar';
-    else if (c.includes('M\'Đrắk') || c.includes('M\'Drắk')) d = "Huyện M'Đrắk";
-    else if (c.includes('Krông Bông')) d = 'Huyện Krông Bông';
-    else if (c.includes('Lắk') || c.includes('Liên Sơn')) d = 'Huyện Lắk';
+    else if (c.includes("Cư M'gar") || c.includes('Quảng Phú') || c.includes('Cuôr Đăng')) d = "Huyện Cư M'gar";
+    else if (c.includes('Krông Pắc') || c.includes('Ea Kly')) d = 'Huyện Krông Pắc';
+    else if (c.includes("Ea H'leo") || c.includes('Ea Drăng') || c.includes('Ea Hiao')) d = "Huyện Ea H'leo";
+    else if (c.includes('Krông Búk') || c.includes('Pơng Drang') || c.includes('Cư Pơng')) d = 'Huyện Krông Búk';
+    else if (c.includes('Krông Năng') || c.includes('Dliê Ya') || c.includes('Tam Giang')) d = 'Huyện Krông Năng';
+    else if (c.includes('Ea Kar') || c.includes('Ea Knốp') || c.includes('Cư Yang')) d = 'Huyện Ea Kar';
+    else if (c.includes("M'Đrắk") || c.includes("M'Drắk") || c.includes('Cư Prao')) d = "Huyện M'Đrắk";
+    else if (c.includes('Krông Bông') || c.includes('Yang Mao') || c.includes('Dang Kang')) d = 'Huyện Krông Bông';
+    else if (c.includes('Lắk') || c.includes('Liên Sơn') || c.includes('Nam Ka')) d = 'Huyện Lắk';
     else if (c.includes('Buôn Đôn')) d = 'Huyện Buôn Đôn';
-    else if (c.includes('Ea Súp')) d = 'Huyện Ea Súp';
-    else if (c.includes('Krông Ana')) d = 'Huyện Krông Ana';
-    else if (c.includes('Cư Kuin')) d = 'Huyện Cư Kuin';
-    else if (c.includes('Tuy Hòa')) d = 'Đoàn phường Tuy Hòa';
-    else if (c.includes('Sông Cầu')) d = 'Đoàn phường Sông Cầu';
-    else if (c.includes('Đông Hòa')) d = 'Đoàn phường Đông Hòa';
+    else if (c.includes('Ea Súp') || c.includes('Ia Rvê') || c.includes('Ia Lốp') || c.includes('Ea Bung')) d = 'Huyện Ea Súp';
+    else if (c.includes('Krông Ana') || c.includes('Ea Ktur') || c.includes('Dray Bhăng') || c.includes('Ea Na')) d = 'Huyện Krông Ana';
+    else if (c.includes('Cư Kuin') || c.includes('Ea Ning')) d = 'Huyện Cư Kuin';
+    // Phú Yên
+    else if (c.includes('Tuy Hòa') || c.includes('Bình Kiến') || c.includes('Xuân Đài') || c.includes('Phú Yên') || c.includes('Phú Lâm')) d = 'TP Tuy Hòa';
+    else if (c.includes('Sông Cầu') || c.includes('Xuân Cảnh') || c.includes('Xuân Thọ') || c.includes('Xuân Lộc')) d = 'TX Sông Cầu';
+    else if (c.includes('Đông Hòa') || c.includes('Hòa Hiệp') || c.includes('Hòa Xuân')) d = 'Huyện Đông Hòa';
+    else if (c.includes('Tây Hòa') || c.includes('Hòa Thịnh') || c.includes('Hòa Mỹ') || c.includes('Sơn Thành')) d = 'Huyện Tây Hòa';
+    else if (c.includes('Phú Hòa 1') || c.includes('Phú Hòa 2')) d = 'Huyện Phú Hòa';
+    else if (c.includes('Sơn Hòa') || c.includes('Vân Hòa') || c.includes('Tây Sơn') || c.includes('Suối Trai')) d = 'Huyện Sơn Hòa';
+    else if (c.includes('Sông Hinh') || c.includes('Ea Ly') || c.includes('Ea Bá') || c.includes('Đức Bình')) d = 'Huyện Sông Hinh';
+    else if (c.includes('Đồng Xuân') || c.includes('Xuân Lãnh') || c.includes('Phú Mỡ') || c.includes('Xuân Phước')) d = 'Huyện Đồng Xuân';
+    else if (c.includes('Tuy An') || c.includes('Ô Loan')) d = 'Huyện Tuy An';
     else d = 'TP Buôn Ma Thuột';
   }
 
