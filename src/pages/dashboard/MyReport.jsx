@@ -264,15 +264,21 @@ const MyReport = () => {
       const body = {};
       ALL_FIELDS.forEach(f => { body[f.key] = Number(form[f.key]) || 0; });
       
+      // Lấy agencyId từ localStorage (được lưu lúc đăng nhập)
       let localAgencyId = null;
+      let localCommune = null;
       try {
-        const stored = JSON.parse(localStorage.getItem('agency'));
-        localAgencyId = stored?._id || stored?.id || localStorage.getItem('agencyId');
+        const storedAgency = JSON.parse(localStorage.getItem('agency'));
+        localAgencyId = storedAgency?._id || storedAgency?.id || null;
+        // Lấy commune từ userInfo để backend fallback tìm Agency theo xã
+        const userInfo = JSON.parse(localStorage.getItem('userInfo') || localStorage.getItem('user') || '{}');
+        localCommune = userInfo?.locationContext?.commune || userInfo?.commune || null;
       } catch {}
 
       Object.assign(body, {
         ...extra,
         agencyId: localAgencyId || undefined,
+        commune: localCommune || undefined,
         evidenceLinks: link
       });
       await api.post('/campaign/report', body);
@@ -281,7 +287,13 @@ const MyReport = () => {
       setExistingReport(body);
       setIsEditing(false);
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Lỗi khi gửi báo cáo');
+      const errMsg = err.response?.data?.message || 'Lỗi khi gửi báo cáo';
+      // Nếu lỗi do chưa liên kết đơn vị, hướng dẫn cụ thể
+      if (errMsg.includes('Đơn vị') || errMsg.includes('liên kết')) {
+        toast.error('⚠️ Tài khoản chưa liên kết đơn vị. Vui lòng đăng xuất và đăng nhập lại để hệ thống tự cập nhật!', { autoClose: 8000 });
+      } else {
+        toast.error(errMsg);
+      }
     } finally {
       setLoading(false);
     }
