@@ -23,8 +23,17 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    // ── Xử lý 401 (token hết hạn) ──────────────────────────────────────────
+    // ── Xử lý 401 (token hết hạn hoặc server restart) ─────────────────────
     if (error.response?.status === 401 && !originalRequest._retry) {
+      // Nếu server vừa restart → xóa hết, về login ngay, không refresh
+      if (error.response?.data?.code === 'SERVER_RESTARTED') {
+        localStorage.clear();
+        // Lưu thông báo để hiện ở trang login
+        sessionStorage.setItem('loginNotice', '🔄 Hệ thống vừa được cập nhật. Vui lòng đăng nhập lại.');
+        window.location.href = '/login';
+        return Promise.reject(error);
+      }
+
       originalRequest._retry = true;
       try {
         const refreshToken = localStorage.getItem('refreshToken');

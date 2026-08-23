@@ -33,9 +33,18 @@ const Login = () => {
       setTimeout(() => {
         setSlide(prev => (prev + 1) % SLIDES.length);
         setFading(false);
-      }, 600); // fade-out duration
+      }, 600);
     }, 5000);
     return () => clearInterval(timer);
+  }, []);
+
+  // Hiện thông báo nếu bị redirect do server restart
+  useEffect(() => {
+    const notice = sessionStorage.getItem('loginNotice');
+    if (notice) {
+      toast.info(notice, { autoClose: 6000 });
+      sessionStorage.removeItem('loginNotice');
+    }
   }, []);
 
   const submit = async (e) => {
