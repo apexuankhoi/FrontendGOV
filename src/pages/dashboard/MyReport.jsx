@@ -4,7 +4,8 @@ import { toast } from 'react-toastify';
 import {
   Send, CheckCircle, Loader2, ClipboardList,
   AlertCircle, Clock, Info, Globe, Smartphone, Landmark,
-  ShieldCheck, ShoppingCart, Award, Sparkles, ExternalLink, HelpCircle
+  ShieldCheck, ShoppingCart, Award, Sparkles, ExternalLink, HelpCircle,
+  Calendar, History, ChevronLeft, ChevronRight, Eye, RefreshCw, FileText
 } from 'lucide-react';
 
 // 11 CHỈ TIÊU CHÍNH THỨC CỦA CHIẾN DỊCH (THEO VĂN BẢN HƯỚNG DẪN)
@@ -165,6 +166,9 @@ const ALL_FIELDS = [...CORE_CRITERIA, ...AUX_FIELDS];
 const emptyForm = () => Object.fromEntries(ALL_FIELDS.map(f => [f.key, '']));
 
 const MyReport = () => {
+  const [activeTab, setActiveTab] = useState('FORM'); // 'FORM' | 'HISTORY'
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  
   const [form, setForm] = useState(emptyForm());
   const [extra, setExtra] = useState({ issues: '', proposals: '', evidenceLinks: '' });
   const [loading, setLoading] = useState(false);
@@ -173,20 +177,32 @@ const MyReport = () => {
   const [existingReport, setExistingReport] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
 
+  // Lịch sử báo cáo tất cả các ngày
+  const [historyList, setHistoryList] = useState([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
+
   // Cấu hình khung giờ báo cáo động từ Super Admin
-  const [config, setConfig] = useState({ openTime: '13:00', closeTime: '18:30', editDeadline: '19:00', alwaysOpen: false, customNotice: '', isOpenNow: true, canEditNow: true });
+  const [config, setConfig] = useState({ 
+    openTime: '13:00', 
+    closeTime: '18:30', 
+    editDeadline: '19:00', 
+    alwaysOpen: false, 
+    customNotice: '', 
+    isOpenNow: true, 
+    canEditNow: true 
+  });
 
   const agencyName = (() => {
     try { return JSON.parse(localStorage.getItem('agency'))?.name || 'Đơn vị của bạn'; }
     catch { return 'Đơn vị của bạn'; }
   })();
 
-  const today = new Date();
-  const todayStr = today.toLocaleDateString('vi-VN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  const isToday = selectedDate === new Date().toISOString().split('T')[0];
 
-  // Kiểm tra giờ nộp mới
+  // Kiểm tra giờ nộp mới hôm nay
   const isReportTime = (() => {
     if (config.alwaysOpen) return true;
+    if (!isToday) return false; // Không nộp mới cho ngày cũ
     const now = new Date();
     const curMin = now.getHours() * 60 + now.getMinutes();
     const [oh, om] = (config.openTime || '13:00').split(':').map(Number);
@@ -196,9 +212,10 @@ const MyReport = () => {
     return curMin >= openMin && curMin <= closeMin;
   })();
 
-  // Kiểm tra giờ chỉnh sửa (cho phép sửa đến editDeadline)
+  // Kiểm tra giờ chỉnh sửa hôm nay
   const isEditTime = (() => {
     if (config.alwaysOpen) return true;
+    if (!isToday) return false; // Ngày cũ là chế độ xem lại (Read-only)
     const now = new Date();
     const curMin = now.getHours() * 60 + now.getMinutes();
     const [oh, om] = (config.openTime || '13:00').split(':').map(Number);
@@ -208,36 +225,74 @@ const MyReport = () => {
     return curMin >= openMin && curMin <= editMin;
   })();
 
+  // Tải báo cáo của ngày được chọn
+  const fetchReportByDate = async (dateStr) => {
+    setFetching(true);
+    setSubmitted(false);
+    setIsEditing(false);
+    try {
+      const [repRes, cfgRes] = await Promise.allSettled([
+        api.get('/campaign/report', { params: { date: dateStr } }),
+        api.get('/campaign/config')
+      ]);
+
+      if (cfgRes.status === 'fulfilled' && cfgRes.value.data) {
+        setConfig(cfgRes.value.data);
+      }
+
+      if (repRes.status === 'fulfilled' && repRes.value.data) {
+        const data = repRes.value.data;
+        setExistingReport(data);
+        const filled = {};
+        ALL_FIELDS.forEach(f => { filled[f.key] = String(data[f.key] || 0); });
+        setForm(filled);
+        setExtra({
+          issues: data.issues || '',
+          proposals: data.proposals || '',
+          evidenceLinks: data.evidenceLinks || ''
+        });
+      } else {
+        // Chưa có báo cáo ngày này
+        setExistingReport(null);
+        setForm(emptyForm());
+        setExtra({ issues: '', proposals: '', evidenceLinks: '' });
+      }
+    } catch {
+      setExistingReport(null);
+      setForm(emptyForm());
+    }
+    setFetching(false);
+  };
+
+  // Tải danh sách lịch sử tất cả các ngày đã nộp
+  const fetchHistory = async () => {
+    setLoadingHistory(true);
+    try {
+      const res = await api.get('/campaign/my-history');
+      setHistoryList(res.data || []);
+    } catch {
+      toast.error('Lỗi tải lịch sử báo cáo');
+    }
+    setLoadingHistory(false);
+  };
+
   useEffect(() => {
-    const fetchExisting = async () => {
-      setFetching(true);
-      try {
-        const [repRes, cfgRes] = await Promise.allSettled([
-          api.get('/campaign/report'),
-          api.get('/campaign/config')
-        ]);
+    fetchReportByDate(selectedDate);
+  }, [selectedDate]);
 
-        if (cfgRes.status === 'fulfilled' && cfgRes.value.data) {
-          setConfig(cfgRes.value.data);
-        }
+  useEffect(() => {
+    if (activeTab === 'HISTORY') {
+      fetchHistory();
+    }
+  }, [activeTab]);
 
-        if (repRes.status === 'fulfilled' && repRes.value.data) {
-          const data = repRes.value.data;
-          setExistingReport(data);
-          const filled = {};
-          ALL_FIELDS.forEach(f => { filled[f.key] = String(data[f.key] || 0); });
-          setForm(filled);
-          setExtra({
-            issues: data.issues || '',
-            proposals: data.proposals || '',
-            evidenceLinks: data.evidenceLinks || ''
-          });
-        }
-      } catch { /* No report yet */ }
-      setFetching(false);
-    };
-    fetchExisting();
-  }, []);
+  // Đổi ngày nhanh
+  const handleShiftDate = (days) => {
+    const current = new Date(selectedDate);
+    current.setDate(current.getDate() + days);
+    const newDateStr = current.toISOString().split('T')[0];
+    setSelectedDate(newDateStr);
+  };
 
   const handleChange = (key, val) => {
     if (!/^\d*$/.test(val)) return;
@@ -248,470 +303,555 @@ const MyReport = () => {
     e.preventDefault();
 
     // 1. Kiểm tra BẮT BUỘC có Link minh chứng
-    const link = (extra.evidenceLinks || '').trim();
-    if (!link) {
-      toast.error('⚠️ BẮT BUỘC: Bạn phải đính kèm Link minh chứng (Google Drive / Hình ảnh ra quân) trước khi gửi báo cáo!');
-      const el = document.getElementById('evidenceLinks-input');
-      if (el) {
-        el.focus();
-        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
+    const cleanLinks = (extra.evidenceLinks || '').trim();
+    if (!cleanLinks) {
+      toast.error('⚠️ BẮT BUỘC: Bạn phải đính kèm Link minh chứng (Google Drive, ảnh, bài viết) trước khi nộp báo cáo!');
       return;
     }
 
     setLoading(true);
     try {
-      const body = {};
-      ALL_FIELDS.forEach(f => { body[f.key] = Number(form[f.key]) || 0; });
-      
-      // Lấy agencyId từ localStorage (được lưu lúc đăng nhập)
-      let localAgencyId = null;
-      let localCommune = null;
-      try {
-        const storedAgency = JSON.parse(localStorage.getItem('agency'));
-        localAgencyId = storedAgency?._id || storedAgency?.id || null;
-        // Lấy commune từ userInfo để backend fallback tìm Agency theo xã
-        const userInfo = JSON.parse(localStorage.getItem('userInfo') || localStorage.getItem('user') || '{}');
-        localCommune = userInfo?.locationContext?.commune || userInfo?.commune || null;
-      } catch {}
+      const body = {
+        reportDate: selectedDate,
+        ...Object.fromEntries(ALL_FIELDS.map(f => [f.key, Number(form[f.key]) || 0])),
+        issues: extra.issues,
+        proposals: extra.proposals,
+        evidenceLinks: cleanLinks
+      };
 
-      Object.assign(body, {
-        ...extra,
-        agencyId: localAgencyId || undefined,
-        commune: localCommune || undefined,
-        evidenceLinks: link
-      });
       await api.post('/campaign/report', body);
-      toast.success('✅ Lưu & Cập nhật báo cáo 11 chỉ tiêu thành công! Số liệu đã được đồng bộ lên Tỉnh.');
+      toast.success(`✅ Đã lưu báo cáo ngày ${new Date(selectedDate).toLocaleDateString('vi-VN')} thành công!`);
       setSubmitted(true);
-      setExistingReport(body);
       setIsEditing(false);
+      fetchReportByDate(selectedDate);
     } catch (err) {
-      const errMsg = err.response?.data?.message || 'Lỗi khi gửi báo cáo';
-      // Nếu lỗi do chưa liên kết đơn vị, hướng dẫn cụ thể
-      if (errMsg.includes('Đơn vị') || errMsg.includes('liên kết')) {
-        toast.error('⚠️ Tài khoản chưa liên kết đơn vị. Vui lòng đăng xuất và đăng nhập lại để hệ thống tự cập nhật!', { autoClose: 8000 });
-      } else {
-        toast.error(errMsg);
-      }
-    } finally {
-      setLoading(false);
+      toast.error(err.response?.data?.message || 'Lỗi khi gửi báo cáo');
     }
+    setLoading(false);
   };
-
-  if (fetching) {
-    return (
-      <div style={{ textAlign: 'center', padding: 80 }}>
-        <Loader2 size={36} className="spin" style={{ color: 'var(--primary)' }} />
-        <p style={{ marginTop: 14, color: 'var(--tx-3)', fontWeight: 500 }}>Đang kiểm tra dữ liệu báo cáo...</p>
-      </div>
-    );
-  }
 
   return (
     <div className="animate-up" style={{ paddingBottom: 40 }}>
-      {/* Header */}
-      <div className="page-header" style={{ marginBottom: 20 }}>
+      {/* Header Banner */}
+      <div className="page-header" style={{ marginBottom: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 14 }}>
         <div>
-          <h2 style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+          <h2 style={{ display: 'flex', alignItems: 'center', gap: 10, margin: 0, color: 'var(--primary-dark, #065f46)' }}>
             <ClipboardList size={26} color="var(--primary)" />
             Báo cáo 11 Chỉ tiêu Chiến dịch CĐS
           </h2>
           <p style={{ color: 'var(--tx-3)', fontSize: '.92rem', marginTop: 4 }}>
-            {agencyName} — {todayStr}
+            🏛️ <strong>{agencyName}</strong> — Theo dõi & Xem lại số liệu theo ngày
           </p>
+        </div>
+
+        {/* Tab switch Buttons */}
+        <div style={{ display: 'inline-flex', background: '#f1f5f9', padding: 3, borderRadius: 10, border: '1px solid var(--border)' }}>
+          <button
+            className={`btn btn-sm ${activeTab === 'FORM' ? 'btn-primary' : 'btn-ghost'}`}
+            style={{ padding: '6px 14px', fontSize: '.85rem', fontWeight: 600 }}
+            onClick={() => setActiveTab('FORM')}
+          >
+            <Calendar size={15} style={{ marginRight: 6 }} /> Báo cáo theo ngày
+          </button>
+          <button
+            className={`btn btn-sm ${activeTab === 'HISTORY' ? 'btn-primary' : 'btn-ghost'}`}
+            style={{ padding: '6px 14px', fontSize: '.85rem', fontWeight: 600 }}
+            onClick={() => setActiveTab('HISTORY')}
+          >
+            <History size={15} style={{ marginRight: 6 }} /> 📜 Lịch sử các ngày đã nộp ({historyList.length > 0 ? historyList.length : 'Xem'})
+          </button>
         </div>
       </div>
 
-      {/* Banner Khung giờ nộp & chỉnh sửa */}
-      <div style={{
-        background: isReportTime ? '#ECFDF5' : (isEditTime ? '#EFF6FF' : '#FFFBEB'),
-        border: `1px solid ${isReportTime ? '#10B981' : (isEditTime ? '#3B82F6' : '#F59E0B')}`,
-        borderRadius: 14, padding: '14px 20px', marginBottom: 24,
-        display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap'
-      }}>
-        {isReportTime
-          ? <CheckCircle size={24} color="#10B981" style={{ flexShrink: 0 }} />
-          : (isEditTime ? <Clock size={24} color="#2563EB" style={{ flexShrink: 0 }} /> : <Clock size={24} color="#F59E0B" style={{ flexShrink: 0 }} />)
-        }
-        <div style={{ flex: 1, minWidth: 240 }}>
-          <div style={{ fontWeight: 700, color: isReportTime ? '#059669' : (isEditTime ? '#1D4ED8' : '#D97706'), fontSize: '.95rem' }}>
-            {config.alwaysOpen
-              ? '🟢 Cổng tiếp nhận & chỉnh sửa đang MỞ 24/7 (Không giới hạn giờ)'
-              : (isReportTime 
-                  ? `✅ Cổng nộp báo cáo đang MỞ (${config.openTime || '13:00'} – ${config.closeTime || '18:30'}) • Hạn chót sửa: ${config.editDeadline || config.closeTime || '19:00'}`
-                  : (isEditTime 
-                      ? `⏳ Đã đóng nộp mới nhưng ĐANG TRONG HẠN CHỈNH SỬA (Đến ${config.editDeadline || config.closeTime || '19:00'})`
-                      : `⏰ Cổng đóng. Giờ mở nộp: ${config.openTime || '13:00'} – ${config.closeTime || '18:30'} (Hạn sửa: ${config.editDeadline || config.closeTime || '19:00'})`
-                    )
-                )
-            }
-          </div>
-          <div style={{ fontSize: '.84rem', color: 'var(--tx-2)', marginTop: 3, lineHeight: 1.4 }}>
-            Nhập số liệu lũy kế 11 tiêu chí trực tiếp lên hệ thống. {existingReport ? `Đơn vị có thể chỉnh sửa lại số liệu đến ${config.alwaysOpen ? 'bất kỳ lúc nào' : (config.editDeadline || config.closeTime || '19:00')}.` : `Vui lòng hoàn thành trước ${config.alwaysOpen ? 'cuối ngày' : config.closeTime || '18:30'}.`}
-            {config.customNotice && (
-              <span style={{ display: 'block', color: 'var(--primary)', fontWeight: 600, marginTop: 4 }}>
-                📢 Lưu ý từ Tỉnh: {config.customNotice}
+      {/* ===== TAB 1: BÁO CÁO & XEM LẠI THEO NGÀY ===== */}
+      {activeTab === 'FORM' && (
+        <>
+          {/* THANH ĐIỀU HƯỚNG CHỌN NGÀY THÔNG MINH */}
+          <div className="card" style={{
+            padding: '14px 18px',
+            marginBottom: 20,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: 12,
+            background: '#fff',
+            border: '1px solid var(--border)'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+              <span style={{ fontWeight: 700, fontSize: '.9rem', color: 'var(--tx-1)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                <Calendar size={18} color="var(--primary)" /> Ngày báo cáo:
               </span>
-            )}
-          </div>
-        </div>
-      </div>
 
-      {(submitted || existingReport) && !isEditing ? (
-        <div className="card" style={{ padding: '32px 24px', textAlign: 'center' }}>
-          <div style={{ width: 68, height: 68, borderRadius: '50%', background: '#D1FAE5', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
-            <CheckCircle size={36} color="#10B981" />
-          </div>
-          <h3 style={{ color: '#059669', marginBottom: 8, fontSize: '1.3rem' }}>Đã hoàn thành nộp báo cáo 11 chỉ tiêu hôm nay!</h3>
-          <p style={{ color: 'var(--tx-3)', marginBottom: 20, fontSize: '.92rem' }}>
-            Báo cáo của <strong>{agencyName}</strong> đã được ghi nhận và đồng bộ lên trung tâm chỉ huy số cấp Tỉnh.
-          </p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                <button
+                  type="button"
+                  className="btn btn-ghost btn-sm"
+                  onClick={() => handleShiftDate(-1)}
+                  title="Xem ngày hôm trước"
+                  style={{ padding: '4px 8px' }}
+                >
+                  <ChevronLeft size={16} /> Hôm trước
+                </button>
 
-          {/* Nút cho phép chỉnh sửa nếu đang trong khung giờ hợp lệ */}
-          {isEditTime ? (
-            <div style={{ marginBottom: 24 }}>
-              <button 
-                type="button" 
-                onClick={() => setIsEditing(true)}
-                className="btn btn-primary"
-                style={{ padding: '10px 24px', fontWeight: 700, borderRadius: 10, display: 'inline-flex', alignItems: 'center', gap: 8 }}
-              >
-                ✏️ Chỉnh sửa / Bổ sung số liệu ({config.alwaysOpen ? 'Chế độ 24/7' : `Hạn chót ${config.closeTime || '18:30'}`})
-              </button>
+                <input
+                  type="date"
+                  className="form-input"
+                  style={{ height: 36, width: 'auto', fontWeight: 700, fontSize: '.9rem', color: 'var(--primary)' }}
+                  value={selectedDate}
+                  onChange={e => setSelectedDate(e.target.value)}
+                  max={new Date().toISOString().split('T')[0]}
+                />
+
+                <button
+                  type="button"
+                  className="btn btn-ghost btn-sm"
+                  onClick={() => handleShiftDate(1)}
+                  disabled={isToday}
+                  title="Xem ngày hôm sau"
+                  style={{ padding: '4px 8px' }}
+                >
+                  Hôm sau <ChevronRight size={16} />
+                </button>
+              </div>
+
+              {!isToday && (
+                <button
+                  type="button"
+                  className="btn btn-outline btn-sm"
+                  onClick={() => setSelectedDate(new Date().toISOString().split('T')[0])}
+                  style={{ fontSize: '.8rem', padding: '4px 10px' }}
+                >
+                  ⚡ Về Hôm nay
+                </button>
+              )}
+            </div>
+
+            <div>
+              {existingReport ? (
+                <span style={{
+                  padding: '4px 12px',
+                  borderRadius: 20,
+                  fontSize: '.82rem',
+                  fontWeight: 700,
+                  background: '#ECFDF5',
+                  color: '#059669',
+                  border: '1px solid #A7F3D0',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 6
+                }}>
+                  <CheckCircle size={14} /> Đã có báo cáo ngày {new Date(selectedDate).toLocaleDateString('vi-VN')}
+                </span>
+              ) : (
+                <span style={{
+                  padding: '4px 12px',
+                  borderRadius: 20,
+                  fontSize: '.82rem',
+                  fontWeight: 600,
+                  background: '#FEF3C7',
+                  color: '#B45309',
+                  border: '1px solid #FDE68A',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 6
+                }}>
+                  ⚠️ Chưa nộp báo cáo cho ngày này
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* BANNER THÔNG BÁO CHẾ ĐỘ XEM LẠI NGÀY TRƯỚC HOẶC KHUNG GIỜ */}
+          {!isToday ? (
+            <div style={{
+              background: '#EFF6FF',
+              border: '1px solid #3B82F6',
+              borderRadius: 14,
+              padding: '14px 20px',
+              marginBottom: 24,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 14
+            }}>
+              <Eye size={24} color="#2563EB" style={{ flexShrink: 0 }} />
+              <div>
+                <div style={{ fontWeight: 700, color: '#1D4ED8', fontSize: '.95rem' }}>
+                  📜 Đang ở chế độ xem lại số liệu ngày {new Date(selectedDate).toLocaleDateString('vi-VN')}
+                </div>
+                <div style={{ fontSize: '.84rem', color: '#475569', marginTop: 2 }}>
+                  {existingReport 
+                    ? `Dưới đây là toàn bộ số liệu 11 chỉ tiêu và link minh chứng đơn vị bạn đã nộp trong ngày ${new Date(selectedDate).toLocaleDateString('vi-VN')}.`
+                    : `Ngày ${new Date(selectedDate).toLocaleDateString('vi-VN')} đơn vị chưa gửi báo cáo lên hệ thống.`}
+                </div>
+              </div>
             </div>
           ) : (
-            <div style={{ marginBottom: 20, fontSize: '.84rem', color: '#92400E', background: '#FEF3C7', padding: '8px 16px', borderRadius: 8, display: 'inline-block' }}>
-              ⏰ Đã hết khung giờ chỉnh sửa hôm nay (Hạn chót là {config.closeTime || '18:30'}). Cổng báo cáo sẽ mở lại lúc {config.openTime || '13:00'} ngày mai.
+            /* Banner Khung giờ nộp & chỉnh sửa cho Ngày Hôm Nay */
+            <div style={{
+              background: isReportTime ? '#ECFDF5' : (isEditTime ? '#EFF6FF' : '#FFFBEB'),
+              border: `1px solid ${isReportTime ? '#10B981' : (isEditTime ? '#3B82F6' : '#F59E0B')}`,
+              borderRadius: 14, padding: '14px 20px', marginBottom: 24,
+              display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap'
+            }}>
+              {isReportTime
+                ? <CheckCircle size={24} color="#10B981" style={{ flexShrink: 0 }} />
+                : (isEditTime ? <Clock size={24} color="#2563EB" style={{ flexShrink: 0 }} /> : <Clock size={24} color="#F59E0B" style={{ flexShrink: 0 }} />)
+              }
+              <div style={{ flex: 1, minWidth: 240 }}>
+                <div style={{ fontWeight: 700, color: isReportTime ? '#059669' : (isEditTime ? '#1D4ED8' : '#D97706'), fontSize: '.95rem' }}>
+                  {config.alwaysOpen
+                    ? '🟢 Cổng tiếp nhận & chỉnh sửa đang MỞ 24/7 (Không giới hạn giờ)'
+                    : (isReportTime 
+                        ? `✅ Cổng nộp báo cáo hôm nay đang MỞ (${config.openTime || '13:00'} – ${config.closeTime || '18:30'}) • Hạn chót sửa: ${config.editDeadline || config.closeTime || '19:00'}`
+                        : (isEditTime 
+                            ? `⏳ Đã đóng nộp mới nhưng ĐANG TRONG HẠN CHỈNH SỬA (Đến ${config.editDeadline || config.closeTime || '19:00'})`
+                            : `⏰ Cổng đóng. Giờ mở nộp: ${config.openTime || '13:00'} – ${config.closeTime || '18:30'} (Hạn sửa: ${config.editDeadline || config.closeTime || '19:00'})`
+                          )
+                      )
+                  }
+                </div>
+                <div style={{ fontSize: '.84rem', color: 'var(--tx-2)', marginTop: 3, lineHeight: 1.4 }}>
+                  Nhập số liệu lũy kế 11 tiêu chí trực tiếp lên hệ thống. {existingReport ? `Đơn vị có thể chỉnh sửa lại số liệu đến ${config.alwaysOpen ? 'bất kỳ lúc nào' : (config.editDeadline || config.closeTime || '19:00')}.` : `Vui lòng hoàn thành trước ${config.alwaysOpen ? 'cuối ngày' : config.closeTime || '18:30'}.`}
+                  {config.customNotice && (
+                    <span style={{ display: 'block', color: 'var(--primary)', fontWeight: 600, marginTop: 4 }}>
+                      📢 Lưu ý từ Tỉnh: {config.customNotice}
+                    </span>
+                  )}
+                </div>
+              </div>
             </div>
           )}
 
-          {existingReport && (
-            <div>
-              <div style={{ fontSize: '.9rem', fontWeight: 700, color: 'var(--primary)', marginBottom: 14, textAlign: 'left' }}>
-                📊 KẾT QUẢ 11 CHỈ TIÊU ĐÃ NỘP:
+          {fetching ? (
+            <div style={{ textAlign: 'center', padding: 60 }}>
+              <Loader2 size={36} className="spin" style={{ color: 'var(--primary)' }} />
+              <p style={{ marginTop: 14, color: 'var(--tx-3)', fontWeight: 500 }}>Đang tải dữ liệu báo cáo...</p>
+            </div>
+          ) : (existingReport && !isEditing) ? (
+            /* ===== GIAO DIỆN XEM KẾT QUẢ ĐÃ NỘP ===== */
+            <div className="card" style={{ padding: '28px 24px', background: '#fff' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12, marginBottom: 20 }}>
+                <div>
+                  <h3 style={{ color: '#059669', margin: 0, fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <CheckCircle size={22} color="#10B981" />
+                    Số liệu báo cáo ngày {new Date(selectedDate).toLocaleDateString('vi-VN')}
+                  </h3>
+                  <p style={{ color: 'var(--tx-3)', margin: '4px 0 0', fontSize: '.85rem' }}>
+                    Đã đồng bộ lên Trung tâm chỉ huy số cấp Tỉnh • Cập nhật lúc: {existingReport.updatedAt ? new Date(existingReport.updatedAt).toLocaleString('vi-VN') : ''}
+                  </p>
+                </div>
+
+                {isToday && isEditTime && (
+                  <button 
+                    type="button" 
+                    onClick={() => setIsEditing(true)}
+                    className="btn btn-primary"
+                    style={{ padding: '8px 20px', fontWeight: 700, borderRadius: 10, display: 'inline-flex', alignItems: 'center', gap: 6 }}
+                  >
+                    ✏️ Chỉnh sửa số liệu hôm nay
+                  </button>
+                )}
               </div>
+
+              {/* Grid 11 Chỉ tiêu */}
               <div style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
-                gap: 12,
-                textAlign: 'left'
+                gap: 14,
+                marginBottom: 24
               }}>
                 {CORE_CRITERIA.map(c => (
                   <div key={c.key} style={{
                     background: c.bg,
-                    borderRadius: 12,
-                    padding: '12px 16px',
                     border: `1px solid ${c.color}30`,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    gap: 12
+                    borderRadius: 12,
+                    padding: '14px 16px'
                   }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <span style={{ fontSize: '1.3rem' }}>{c.icon}</span>
-                      <div>
-                        <div style={{ fontSize: '.78rem', color: 'var(--tx-2)', fontWeight: 600 }}>{c.label}</div>
-                        <div style={{ fontSize: '.7rem', color: 'var(--tx-3)' }}>{c.unit}</div>
-                      </div>
+                    <div style={{ fontSize: '.78rem', color: '#475569', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span>{c.icon}</span> {c.label}
                     </div>
-                    <div style={{ fontSize: '1.4rem', fontWeight: 800, color: c.color }}>
-                      {(existingReport[c.key] || 0).toLocaleString('vi-VN')}
+                    <div style={{ fontSize: '1.6rem', fontWeight: 800, color: c.color, marginTop: 6 }}>
+                      {Number(existingReport[c.key] || 0).toLocaleString('vi-VN')}
+                      <span style={{ fontSize: '.8rem', fontWeight: 500, color: '#64748b', marginLeft: 6 }}>{c.unit}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Phụ trợ & Minh chứng */}
+              <div style={{ background: '#f8fafc', padding: 16, borderRadius: 12, border: '1px solid var(--border)' }}>
+                <div style={{ fontWeight: 700, fontSize: '.9rem', marginBottom: 10, color: 'var(--tx-1)' }}>
+                  📎 Minh chứng & Thông tin bổ trợ:
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12, fontSize: '.85rem' }}>
+                  <div>👥 <strong>Tình nguyện viên:</strong> {Number(existingReport.volunteers || 0).toLocaleString('vi-VN')} lượt</div>
+                  <div>🛡️ <strong>Chiến dịch an toàn:</strong> {Number(existingReport.safetyCampaigns || 0).toLocaleString('vi-VN')} buổi</div>
+                  <div>📣 <strong>Bài truyền thông:</strong> {Number(existingReport.mediaPosts || 0).toLocaleString('vi-VN')} tin/bài</div>
+                </div>
+
+                {existingReport.evidenceLinks && (
+                  <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid #e2e8f0' }}>
+                    <div style={{ fontWeight: 700, fontSize: '.84rem', color: '#1e40af', marginBottom: 4 }}>🔗 Link minh chứng:</div>
+                    <a
+                      href={existingReport.evidenceLinks}
+                      target="_blank"
+                      rel="noreferrer"
+                      style={{ color: '#2563eb', wordBreak: 'break-all', display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: '.88rem', fontWeight: 600 }}
+                    >
+                      <ExternalLink size={15} /> {existingReport.evidenceLinks}
+                    </a>
+                  </div>
+                )}
+
+                {existingReport.issues && (
+                  <div style={{ marginTop: 10, fontSize: '.84rem', color: '#dc2626' }}>
+                    ⚠️ <strong>Khó khăn, vướng mắc:</strong> {existingReport.issues}
+                  </div>
+                )}
+
+                {existingReport.proposals && (
+                  <div style={{ marginTop: 6, fontSize: '.84rem', color: '#059669' }}>
+                    💡 <strong>Đề xuất, kiến nghị:</strong> {existingReport.proposals}
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : (
+            /* ===== FORM NHẬP / CHỈNH SỬA BÁO CÁO ===== */
+            <form onSubmit={handleSubmit} className="card" style={{ padding: 24, background: '#fff' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '1.2rem', color: 'var(--tx-1)' }}>
+                    📝 {existingReport ? `Chỉnh sửa báo cáo ngày ${new Date(selectedDate).toLocaleDateString('vi-VN')}` : `Nhập báo cáo ngày ${new Date(selectedDate).toLocaleDateString('vi-VN')}`}
+                  </h3>
+                  <p style={{ margin: '4px 0 0', color: 'var(--tx-3)', fontSize: '.85rem' }}>
+                    Điền các số liệu thực tế đã triển khai (đơn vị tính theo từng chỉ tiêu)
+                  </p>
+                </div>
+                {isEditing && (
+                  <button type="button" className="btn btn-ghost btn-sm" onClick={() => setIsEditing(false)}>
+                    ✕ Hủy sửa
+                  </button>
+                )}
+              </div>
+
+              {/* Grid 11 Chỉ tiêu Input */}
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+                gap: 16,
+                marginBottom: 24
+              }}>
+                {CORE_CRITERIA.map(c => (
+                  <div key={c.key} className="form-group" style={{
+                    background: '#f8fafc',
+                    padding: 14,
+                    borderRadius: 12,
+                    border: '1px solid #e2e8f0'
+                  }}>
+                    <label className="form-label" style={{ fontWeight: 700, fontSize: '.85rem', color: '#1e293b', display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span>{c.icon}</span> {c.label}
+                    </label>
+                    <div style={{ position: 'relative', marginTop: 6 }}>
+                      <input
+                        type="text"
+                        className="form-input"
+                        style={{ paddingRight: 70, fontWeight: 700, fontSize: '1rem', color: c.color }}
+                        value={form[c.key]}
+                        onChange={e => handleChange(c.key, e.target.value)}
+                        placeholder="0"
+                      />
+                      <span style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', fontSize: '.75rem', color: '#64748b' }}>
+                        {c.unit}
+                      </span>
+                    </div>
+                    <div style={{ fontSize: '.72rem', color: '#64748b', marginTop: 4 }}>
+                      {c.desc}
                     </div>
                   </div>
                 ))}
               </div>
 
               {/* Phụ trợ */}
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-                gap: 12,
-                marginTop: 14,
-                textAlign: 'left'
-              }}>
-                {AUX_FIELDS.map(f => (
-                  <div key={f.key} style={{ background: 'var(--surface-1)', borderRadius: 10, padding: '10px 14px', border: '1px solid var(--border)' }}>
-                    <div style={{ fontSize: '.75rem', color: 'var(--tx-3)' }}>{f.icon} {f.label}</div>
-                    <div style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--primary)', marginTop: 2 }}>
-                      {(existingReport[f.key] || 0).toLocaleString('vi-VN')}
+              <div style={{ background: '#f8fafc', padding: 18, borderRadius: 12, border: '1px solid var(--border)', marginBottom: 24 }}>
+                <h4 style={{ margin: '0 0 14px', fontSize: '.92rem', color: '#1e293b' }}>👥 Số liệu bổ trợ khác</h4>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14 }}>
+                  {AUX_FIELDS.map(f => (
+                    <div key={f.key} className="form-group">
+                      <label className="form-label" style={{ fontSize: '.8rem', fontWeight: 600 }}>{f.icon} {f.label}</label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        value={form[f.key]}
+                        onChange={e => handleChange(f.key, e.target.value)}
+                        placeholder="0"
+                      />
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
 
-              {(existingReport.issues || existingReport.proposals || existingReport.evidenceLinks) && (
-                <div style={{ marginTop: 20, textAlign: 'left', background: 'var(--surface-0)', padding: 16, borderRadius: 12, border: '1px solid var(--border)' }}>
-                  {existingReport.issues && <div style={{ fontSize: '.85rem', marginBottom: 6 }}>🔴 <strong>Khó khăn:</strong> {existingReport.issues}</div>}
-                  {existingReport.proposals && <div style={{ fontSize: '.85rem', marginBottom: 6 }}>💡 <strong>Đề xuất:</strong> {existingReport.proposals}</div>}
-                  {existingReport.evidenceLinks && (
-                    <div style={{ fontSize: '.85rem' }}>
-                      🔗 <strong>Minh chứng:</strong> <a href={existingReport.evidenceLinks} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary)' }}>{existingReport.evidenceLinks}</a>
-                    </div>
-                  )}
+              {/* Link minh chứng BẮT BUỘC */}
+              <div className="form-group" style={{ background: '#eff6ff', padding: 16, borderRadius: 12, border: '1px solid #bfdbfe', marginBottom: 20 }}>
+                <label className="form-label" style={{ fontWeight: 700, color: '#1e40af', display: 'flex', alignItems: 'center', gap: 6 }}>
+                  🔗 Link minh chứng hoạt động (Google Drive / Hình ảnh / Bài đăng) <span style={{ color: '#ef4444' }}>*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  className="form-input"
+                  style={{ background: '#fff', marginTop: 6 }}
+                  placeholder="https://drive.google.com/... hoặc https://facebook.com/..."
+                  value={extra.evidenceLinks}
+                  onChange={e => setExtra({ ...extra, evidenceLinks: e.target.value })}
+                />
+                <div style={{ fontSize: '.75rem', color: '#3b82f6', marginTop: 4 }}>
+                  ⚠️ BẮT BUỘC: Đính kèm link folder ảnh ra quân, link tài liệu hoặc link tin bài của xã để Tỉnh thẩm định.
                 </div>
-              )}
+              </div>
+
+              {/* Khó khăn & Đề xuất */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16, marginBottom: 24 }}>
+                <div className="form-group">
+                  <label className="form-label" style={{ fontWeight: 600, fontSize: '.85rem' }}>⚠️ Khó khăn, vướng mắc (nếu có)</label>
+                  <textarea
+                    className="form-input"
+                    rows={2}
+                    placeholder="Những khó khăn tại địa bàn cơ sở..."
+                    value={extra.issues}
+                    onChange={e => setExtra({ ...extra, issues: e.target.value })}
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label" style={{ fontWeight: 600, fontSize: '.85rem' }}>💡 Đề xuất, kiến nghị với Tỉnh Đoàn</label>
+                  <textarea
+                    className="form-input"
+                    rows={2}
+                    placeholder="Kiến nghị hỗ trợ vật phẩm, kỹ thuật, tài liệu..."
+                    value={extra.proposals}
+                    onChange={e => setExtra({ ...extra, proposals: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                  disabled={loading}
+                  style={{ padding: '10px 28px', fontWeight: 700, borderRadius: 10, fontSize: '.95rem' }}
+                >
+                  {loading ? 'Đang gửi...' : '📤 Gửi báo cáo lên Tỉnh'}
+                </button>
+              </div>
+            </form>
+          )}
+        </>
+      )}
+
+      {/* ===== TAB 2: LỊCH SỬ BÁO CÁO CỦA ĐƠN VỊ ===== */}
+      {activeTab === 'HISTORY' && (
+        <div className="card" style={{ padding: 0, overflow: 'hidden', background: '#fff', border: '1px solid var(--border)' }}>
+          <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
+            <div>
+              <h3 style={{ margin: 0, fontSize: '1.1rem', color: 'var(--tx-1)' }}>
+                📜 Toàn bộ Lịch sử các ngày đã nộp báo cáo
+              </h3>
+              <p style={{ margin: '3px 0 0', color: 'var(--tx-3)', fontSize: '.82rem' }}>
+                Đơn vị: <strong>{agencyName}</strong> — Tổng cộng <strong>{historyList.length}</strong> ngày đã nộp
+              </p>
+            </div>
+            <button className="btn btn-ghost btn-sm" onClick={fetchHistory} title="Làm mới">
+              <RefreshCw size={15} />
+            </button>
+          </div>
+
+          {loadingHistory ? (
+            <div style={{ textAlign: 'center', padding: 60 }}>
+              <Loader2 size={32} className="spin" style={{ color: 'var(--primary)' }} />
+              <p style={{ marginTop: 10, color: '#64748b' }}>Đang tải lịch sử báo cáo...</p>
+            </div>
+          ) : historyList.length === 0 ? (
+            <div className="empty-state" style={{ padding: 50 }}>
+              <div className="empty-state-icon">📂</div>
+              <h4>Đơn vị chưa có lịch sử báo cáo nào</h4>
+              <p style={{ color: '#64748b' }}>Chuyển sang tab "Báo cáo theo ngày" để nộp báo cáo đầu tiên.</p>
+            </div>
+          ) : (
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '.88rem', textAlign: 'left' }}>
+                <thead>
+                  <tr style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0', color: '#475569', fontWeight: 700 }}>
+                    <th style={{ padding: '12px 14px', width: 50, textAlign: 'center' }}>STT</th>
+                    <th style={{ padding: '12px 16px', minWidth: 140 }}>Ngày báo cáo</th>
+                    <th style={{ padding: '12px 16px', minWidth: 120 }}>Kỹ năng số</th>
+                    <th style={{ padding: '12px 16px', minWidth: 110 }}>VNeID</th>
+                    <th style={{ padding: '12px 16px', minWidth: 110 }}>DVC TT</th>
+                    <th style={{ padding: '12px 16px', minWidth: 100 }}>QR Hộ KD</th>
+                    <th style={{ padding: '12px 16px', minWidth: 100 }}>Web TMĐT</th>
+                    <th style={{ padding: '12px 16px', minWidth: 150 }}>Minh chứng</th>
+                    <th style={{ padding: '12px 16px', minWidth: 150 }}>Thời gian nộp</th>
+                    <th style={{ padding: '12px 16px', width: 100, textAlign: 'center' }}>Thao tác</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {historyList.map((item, idx) => {
+                    const dStr = item.reportDate ? new Date(item.reportDate).toISOString().split('T')[0] : '';
+                    return (
+                      <tr key={item._id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                        <td style={{ padding: '12px 14px', textAlign: 'center', fontWeight: 700, color: '#94a3b8' }}>
+                          {idx + 1}
+                        </td>
+                        <td style={{ padding: '12px 16px', fontWeight: 700, color: '#1e293b' }}>
+                          📅 {item.reportDate ? new Date(item.reportDate).toLocaleDateString('vi-VN') : 'Không rõ'}
+                        </td>
+                        <td style={{ padding: '12px 16px', color: '#0284C7', fontWeight: 600 }}>
+                          {(item.digitalSkills || 0).toLocaleString('vi-VN')}
+                        </td>
+                        <td style={{ padding: '12px 16px', color: '#16A34A', fontWeight: 600 }}>
+                          {(item.vneidSupport || 0).toLocaleString('vi-VN')}
+                        </td>
+                        <td style={{ padding: '12px 16px', color: '#7C3AED', fontWeight: 600 }}>
+                          {(item.publicServices || 0).toLocaleString('vi-VN')}
+                        </td>
+                        <td style={{ padding: '12px 16px', color: '#D97706', fontWeight: 600 }}>
+                          {(item.qrSupport || 0).toLocaleString('vi-VN')}
+                        </td>
+                        <td style={{ padding: '12px 16px', color: '#1E40AF', fontWeight: 600 }}>
+                          {(item.smartwebCount || 0).toLocaleString('vi-VN')}
+                        </td>
+                        <td style={{ padding: '12px 16px' }}>
+                          {item.evidenceLinks ? (
+                            <a href={item.evidenceLinks} target="_blank" rel="noreferrer" style={{ color: '#2563eb', display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: '.8rem' }}>
+                              <ExternalLink size={13} /> Xem link
+                            </a>
+                          ) : <span style={{ color: '#94a3b8' }}>Không có</span>}
+                        </td>
+                        <td style={{ padding: '12px 16px', fontSize: '.8rem', color: '#64748b' }}>
+                          {item.updatedAt ? new Date(item.updatedAt).toLocaleString('vi-VN') : ''}
+                        </td>
+                        <td style={{ padding: '12px 16px', textAlign: 'center' }}>
+                          <button
+                            type="button"
+                            className="btn btn-sm btn-outline"
+                            style={{ padding: '4px 10px', fontSize: '.78rem' }}
+                            onClick={() => {
+                              if (dStr) setSelectedDate(dStr);
+                              setActiveTab('FORM');
+                            }}
+                          >
+                            <Eye size={13} style={{ marginRight: 4 }} /> Xem lại
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
           )}
         </div>
-      ) : (
-        <form onSubmit={handleSubmit}>
-          {/* BANNER KHI ĐANG CHỈNH SỬA */}
-          {existingReport && (
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#EFF6FF', border: '1px solid #BFDBFE', padding: '12px 18px', borderRadius: 12, marginBottom: 16, flexWrap: 'wrap', gap: 10 }}>
-              <div style={{ fontSize: '.88rem', color: '#1E40AF', fontWeight: 600 }}>
-                ✏️ Bạn đang ở chế độ <strong>Chỉnh sửa số liệu báo cáo đã nộp hôm nay</strong> (Cập nhật hợp lệ trước 18:30)
-              </div>
-              <button type="button" onClick={() => setIsEditing(false)} className="btn btn-ghost btn-sm" style={{ color: '#64748B', fontWeight: 600 }}>
-                Hủy chỉnh sửa
-              </button>
-            </div>
-          )}
-
-          {/* KHUNG NHẬP 11 CHỈ TIÊU CHÍNH THỨC */}
-          <div className="card" style={{ marginBottom: 20, borderTop: '4px solid var(--primary)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 10, marginBottom: 16 }}>
-              <div>
-                <h3 style={{ fontSize: '1.2rem', color: 'var(--primary-dark)', display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <Sparkles size={20} color="var(--primary)" /> 11 CHỈ TIÊU CHIẾN DỊCH CHUYỂN ĐỔI SỐ
-                </h3>
-                <p style={{ color: 'var(--tx-3)', fontSize: '.86rem', marginTop: 4 }}>
-                  Nhập số liệu <strong>lũy kế</strong> từ ngày đầu ra quân đến hôm nay. Điền số <strong>0</strong> nếu chưa triển khai.
-                </p>
-              </div>
-              <span style={{
-                background: 'var(--primary)', color: 'white', fontSize: '.75rem',
-                padding: '4px 12px', borderRadius: 20, fontWeight: 700
-              }}>
-                11 TIÊU CHÍ CHÍNH THỨC
-              </span>
-            </div>
-
-            {/* LƯỚI 11 CHỈ TIÊU - RESPONSIVE CHO PC & MOBILE */}
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
-              gap: 16
-            }}>
-              {CORE_CRITERIA.map((c) => {
-                return (
-                  <div 
-                    key={c.key} 
-                    style={{
-                      background: 'var(--surface-0)',
-                      border: `1.5px solid ${form[c.key] && Number(form[c.key]) > 0 ? c.color : 'var(--border)'}`,
-                      borderRadius: 14,
-                      padding: 16,
-                      transition: 'all .2s ease',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'space-between',
-                      position: 'relative'
-                    }}
-                  >
-                    <div>
-                      {/* Tiêu đề chỉ tiêu */}
-                      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8, marginBottom: 8 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                          <span style={{
-                            width: 32, height: 32, borderRadius: 8, background: c.bg,
-                            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem', flexShrink: 0
-                          }}>
-                            {c.icon}
-                          </span>
-                          <div>
-                            <span style={{ fontSize: '.9rem', fontWeight: 700, color: 'var(--tx-1)' }}>
-                              {c.label}
-                            </span>
-                          </div>
-                        </div>
-                        <span style={{
-                          fontSize: '.68rem', fontWeight: 700, padding: '2px 8px', borderRadius: 10,
-                          background: c.bg, color: c.color, flexShrink: 0
-                        }}>
-                          #{c.index}
-                        </span>
-                      </div>
-
-                      {/* Mô tả giải thích */}
-                      <p style={{ fontSize: '.78rem', color: 'var(--tx-3)', margin: '0 0 12px', lineHeight: 1.4 }}>
-                        {c.desc}
-                      </p>
-                    </div>
-
-                    {/* Ô nhập liệu và đơn vị */}
-                    <div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <input
-                          type="text"
-                          inputMode="numeric"
-                          pattern="[0-9]*"
-                          value={form[c.key]}
-                          onChange={e => handleChange(c.key, e.target.value)}
-                          placeholder="0"
-                          className="form-input"
-                          style={{
-                            fontSize: '1.15rem',
-                            fontWeight: 800,
-                            color: c.color,
-                            padding: '10px 14px',
-                            borderRadius: 10
-                          }}
-                        />
-                        <span style={{ fontSize: '.8rem', color: 'var(--tx-2)', fontWeight: 600, minWidth: 70, textAlign: 'right' }}>
-                          {c.unit}
-                        </span>
-                      </div>
-
-                      <div style={{ fontSize: '.7rem', color: 'var(--tx-3)', marginTop: 6, fontStyle: 'italic' }}>
-                        🎯 {c.targetHint}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* SỐ LIỆU BỔ TRỢ */}
-          <div className="card" style={{ marginBottom: 20 }}>
-            <h4 style={{ marginBottom: 14, color: 'var(--primary-dark)', display: 'flex', alignItems: 'center', gap: 8, fontSize: '1.05rem' }}>
-              <Award size={18} color="var(--amber-600)" /> Số liệu Bổ trợ & Hoạt động thực tế
-            </h4>
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
-              gap: 14
-            }}>
-              {AUX_FIELDS.map(f => (
-                <div key={f.key}>
-                  <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '.86rem', fontWeight: 600 }}>
-                    <span>{f.icon}</span> {f.label}
-                  </label>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      pattern="[0-9]*"
-                      value={form[f.key]}
-                      onChange={e => handleChange(f.key, e.target.value)}
-                      placeholder={f.placeholder}
-                      className="form-input"
-                      style={{ fontWeight: 700 }}
-                    />
-                    <span style={{ fontSize: '.78rem', color: 'var(--tx-3)', minWidth: 60 }}>{f.unit}</span>
-                  </div>
-                  <div style={{ fontSize: '.72rem', color: 'var(--tx-3)', marginTop: 3 }}>{f.hint}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* KHÓ KHĂN, ĐỀ XUẤT & MINH CHỨNG */}
-          <div className="card" style={{ marginBottom: 24 }}>
-            <h4 style={{ marginBottom: 14, color: 'var(--primary-dark)', fontSize: '1.05rem' }}>
-              📝 Minh chứng, Khó khăn & Đề xuất
-            </h4>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16 }}>
-              <div>
-                <label className="form-label">Khó khăn, vướng mắc trong ngày</label>
-                <textarea
-                  value={extra.issues}
-                  onChange={e => setExtra(x => ({ ...x, issues: e.target.value }))}
-                  className="form-input"
-                  rows={3}
-                  placeholder="Mô tả khó khăn về địa bàn, người dân, hạ tầng mạng, thiết bị..."
-                />
-              </div>
-              <div>
-                <label className="form-label">Đề xuất, kiến nghị gửi Tỉnh Đoàn</label>
-                <textarea
-                  value={extra.proposals}
-                  onChange={e => setExtra(x => ({ ...x, proposals: e.target.value }))}
-                  className="form-input"
-                  rows={3}
-                  placeholder="Đề xuất hỗ trợ tài liệu, tập huấn, nhân lực hỗ trợ..."
-                />
-              </div>
-            </div>
-            {/* KHUNG LINK MINH CHỨNG - BẮT BUỘC */}
-            <div style={{
-              marginTop: 18,
-              background: '#FEF2F2',
-              border: '1.5px solid #F87171',
-              borderRadius: 12,
-              padding: '16px 18px'
-            }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6, flexWrap: 'wrap', gap: 6 }}>
-                <label htmlFor="evidenceLinks-input" className="form-label" style={{ fontWeight: 800, color: '#991B1B', margin: 0, display: 'flex', alignItems: 'center', gap: 6, fontSize: '.92rem' }}>
-                  🔗 Link thư mục minh chứng hoạt động <span style={{ color: '#DC2626', fontWeight: 900 }}>(* BẮT BUỘC)</span>
-                </label>
-                <span style={{ fontSize: '.72rem', background: '#FEE2E2', color: '#B91C1C', padding: '3px 8px', borderRadius: 6, fontWeight: 800, border: '1px solid #FCA5A5' }}>
-                  YÊU CẦU BẮT BUỘC ĐỂ NGHIỆM THU
-                </span>
-              </div>
-              <input
-                id="evidenceLinks-input"
-                required
-                value={extra.evidenceLinks}
-                onChange={e => setExtra(x => ({ ...x, evidenceLinks: e.target.value }))}
-                className="form-input"
-                placeholder="https://drive.google.com/drive/folders/... hoặc https://facebook.com/..."
-                style={{
-                  background: '#FFFFFF',
-                  borderColor: !extra.evidenceLinks ? '#EF4444' : '#10B981',
-                  fontWeight: 600,
-                  fontSize: '.9rem'
-                }}
-              />
-              <div style={{ fontSize: '.76rem', color: '#7F1D1D', marginTop: 6, lineHeight: 1.4 }}>
-                📌 <strong>Quy định:</strong> Bắt buộc đính kèm đường dẫn Google Drive (chứa hình ảnh, video ra quân thực tế) hoặc link bài đăng Fanpage/báo chí của xã/phường để Tỉnh Đoàn kiểm tra và nghiệm thu chỉ tiêu.
-              </div>
-            </div>
-          </div>
-
-          {/* NÚT NỘP / CẬP NHẬT BÁO CÁO */}
-          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-            {existingReport && isEditing && (
-              <button
-                type="button"
-                onClick={() => setIsEditing(false)}
-                className="btn btn-outline"
-                style={{ padding: '16px 28px', borderRadius: 14, fontWeight: 700 }}
-              >
-                Hủy
-              </button>
-            )}
-            <button
-              type="submit"
-              disabled={loading || !isReportTime}
-              style={{
-                flex: 1,
-                minWidth: 260,
-                padding: '16px 24px',
-                borderRadius: 14,
-                border: 'none',
-                background: (!isReportTime) ? 'var(--border)' : loading ? 'var(--tx-3)' : 'linear-gradient(135deg, #1a3a6b 0%, #0ea5e9 100%)',
-                color: 'white',
-                fontWeight: 800,
-                fontSize: '1.08rem',
-                cursor: (!isReportTime || loading) ? 'not-allowed' : 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 10,
-                boxShadow: isReportTime ? '0 4px 14px rgba(14, 165, 233, 0.4)' : 'none',
-                transition: 'all .3s ease'
-              }}
-            >
-              {loading ? <Loader2 size={22} className="spin" /> : <Send size={22} />}
-              {loading ? 'Đang lưu báo cáo 11 chỉ tiêu...'
-                : !isReportTime ? `⏰ Cổng mở từ ${config.openTime || '13:00'} đến ${config.closeTime || '18:30'} hằng ngày`
-                : existingReport ? `💾 LƯU & CẬP NHẬT BÁO CÁO (${config.alwaysOpen ? 'CHẾ ĐỘ 24/7' : `TRƯỚC ${config.closeTime || '18:30'}`})`
-                : '📤 NỘP BÁO CÁO 11 CHỈ TIÊU CHIẾN DỊCH HÔM NAY'}
-            </button>
-          </div>
-        </form>
       )}
     </div>
   );
