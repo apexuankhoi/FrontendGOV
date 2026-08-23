@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import api from '../../lib/api';
 import { toast } from 'react-toastify';
-import { UserPlus, Trash2, RefreshCw, Building2 } from 'lucide-react';
+import { UserPlus, Trash2, RefreshCw, Building2, Wrench, Link2, AlertTriangle } from 'lucide-react';
 import Swal from 'sweetalert2';
 import { PROVINCES_DATA } from '../../constants/locations';
 
@@ -24,8 +24,9 @@ const UsersList = () => {
   const [users, setUsers] = useState([]);
   const [agencies, setAgencies] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [fixingAll, setFixingAll] = useState(false);
+  const [assignModal, setAssignModal] = useState({ open: false, user: null, agencyId: '' });
   const [form, setForm] = useState({ username: '', email: '', password: '', role: 'COMMUNE_ADMIN', province: 'Đắk Lắk', district: '', commune: '', agencyId: '' });
-  const token = localStorage.getItem('token');
 
   useEffect(() => {
     fetchUsers();
@@ -54,7 +55,6 @@ const UsersList = () => {
           return toast.error('Không tìm thấy Cơ quan cấp Tỉnh cho tỉnh này.');
         }
       }
-      
       await api.post('/users', payload);
       toast.success('✅ Cấp phát tài khoản thành công!');
       fetchUsers();
@@ -83,12 +83,68 @@ const UsersList = () => {
     });
   };
 
+  // Gán Agency thủ công cho user
+  const handleAssignAgency = async () => {
+    if (!assignModal.agencyId) return toast.error('Vui lòng chọn đơn vị');
+    try {
+      const res = await api.patch(`/users/${assignModal.user._id}/agency`, { agencyId: assignModal.agencyId });
+      toast.success(res.data.message || '✅ Gán đơn vị thành công!');
+      setAssignModal({ open: false, user: null, agencyId: '' });
+      fetchUsers();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Lỗi gán đơn vị');
+    }
+  };
+
+  // Tự động sửa tất cả user bị thiếu agencyId
+  const handleAutoFixAll = async () => {
+    setFixingAll(true);
+    try {
+      const res = await api.post('/users/auto-fix-agencies');
+      const { fixed, failed } = res.data;
+      if (fixed > 0) toast.success(`✅ Đã tự động gán đơn vị cho ${fixed} tài khoản!`);
+      if (failed?.length > 0) toast.warn(`⚠️ ${failed.length} tài khoản không tìm được đơn vị, cần gán tay.`);
+      if (fixed === 0 && !failed?.length) toast.info('Không có tài khoản nào cần sửa.');
+      fetchUsers();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Lỗi tự động sửa');
+    }
+    setFixingAll(false);
+  };
+
+  const orphanCount = users.filter(u => 
+    ['COMMUNE_ADMIN', 'PROVINCE_ADMIN'].includes(u.role) && !u.agencyId
+  ).length;
+
   return (
     <div className="animate-up">
       <div className="page-header">
         <h2>Quản lý Tài khoản Hệ thống</h2>
         <p>Cấp phát và quản lý quyền truy cập cho các cán bộ địa phương</p>
       </div>
+
+      {/* Cảnh báo + Auto Fix */}
+      {orphanCount > 0 && (
+        <div style={{
+          background: '#FEF3C7', border: '1.5px solid #F59E0B', borderRadius: 10,
+          padding: '14px 20px', marginBottom: 20, display: 'flex',
+          alignItems: 'center', gap: 12, flexWrap: 'wrap'
+        }}>
+          <AlertTriangle size={20} color="#D97706" />
+          <span style={{ flex: 1, fontWeight: 500, color: '#92400E' }}>
+            Có <strong>{orphanCount}</strong> tài khoản cán bộ chưa được gắn đơn vị → Họ sẽ không nộp được báo cáo!
+          </span>
+          <button
+            className="btn btn-warning btn-sm"
+            onClick={handleAutoFixAll}
+            disabled={fixingAll}
+            style={{ background: '#D97706', color: '#fff', border: 'none' }}
+          >
+            <Wrench size={14} />
+            {fixingAll ? 'Đang sửa...' : 'Tự động sửa tất cả'}
+          </button>
+        </div>
+      )}
 
       {/* Create Form */}
       <div className="card" style={{ marginBottom: 28 }}>
@@ -138,7 +194,7 @@ const UsersList = () => {
                   {agencies
                     .filter(a => {
                       if (!form.province) return true;
-                      if (a.level === 'PROVINCE') return false; // Hide province when selecting commune
+                      if (a.level === 'PROVINCE') return false;
                       return a.parentAgency?.name?.includes(form.province) || a.parentAgency?.name?.includes('Tỉnh ' + form.province) || a.name.includes(form.province);
                     })
                     .map(a => <option key={a._id} value={a._id}>{a.name}</option>)}
@@ -166,7 +222,7 @@ const UsersList = () => {
               <th>Tên người dùng</th>
               <th>Email</th>
               <th>Quyền (Role)</th>
-              <th>Cơ quan</th>
+              <th>Cơ quan / Đơn vị</th>
               <th>Địa bàn</th>
               <th>Thao tác</th>
             </tr>
@@ -174,31 +230,94 @@ const UsersList = () => {
           <tbody>
             {loading ? (
               <tr><td colSpan={6} style={{ textAlign: 'center', padding: 40 }}>Đang tải...</td></tr>
-            ) : users.map(u => (
-              <tr key={u._id}>
-                <td style={{ fontWeight: 600 }}>{u.username}</td>
-                <td style={{ color: 'var(--text-secondary)' }}>{u.email}</td>
-                <td><span className={`badge ${ROLE_BADGE[u.role] || 'badge-info'}`}>{u.role}</span></td>
-                <td style={{ fontSize: '0.85rem', color: 'var(--primary)' }}>
-                  {u.agencyId?.name || '—'}
-                </td>
-                <td style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-                  {u.locationContext?.commune || ''} {u.locationContext?.district || 'Đắk Lắk'}
-                </td>
-                <td>
-                  {u.role !== 'SENIOR_ADMIN' ? (
-                    <button className="btn btn-sm btn-danger" onClick={() => handleDelete(u._id, u.username)}>
-                      <Trash2 size={14} /> Xóa
-                    </button>
-                  ) : (
-                    <span style={{ color: 'var(--text-muted)', fontSize: '0.82rem' }}>Không thể xóa</span>
-                  )}
-                </td>
-              </tr>
-            ))}
+            ) : users.map(u => {
+              const isOrphan = ['COMMUNE_ADMIN', 'PROVINCE_ADMIN'].includes(u.role) && !u.agencyId;
+              return (
+                <tr key={u._id} style={isOrphan ? { background: '#FFF7ED' } : {}}>
+                  <td style={{ fontWeight: 600 }}>{u.username}</td>
+                  <td style={{ color: 'var(--text-secondary)' }}>{u.email}</td>
+                  <td><span className={`badge ${ROLE_BADGE[u.role] || 'badge-info'}`}>{u.role}</span></td>
+                  <td style={{ fontSize: '0.85rem' }}>
+                    {isOrphan ? (
+                      <span style={{ color: '#DC2626', fontWeight: 600 }}>⚠️ Chưa gán đơn vị</span>
+                    ) : (
+                      <span style={{ color: 'var(--primary)' }}>{u.agencyId?.name || '—'}</span>
+                    )}
+                  </td>
+                  <td style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+                    {u.locationContext?.commune || ''} {u.locationContext?.district || 'Đắk Lắk'}
+                  </td>
+                  <td style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                    {/* Nút gán đơn vị - hiển thị khi bị orphan hoặc muốn đổi */}
+                    {u.role !== 'SENIOR_ADMIN' && (
+                      <button
+                        className="btn btn-sm btn-outline"
+                        style={{ fontSize: '0.78rem', padding: '3px 8px' }}
+                        onClick={() => setAssignModal({ open: true, user: u, agencyId: u.agencyId?._id || '' })}
+                        title="Gán/đổi đơn vị"
+                      >
+                        <Link2 size={12} /> Đơn vị
+                      </button>
+                    )}
+                    {u.role !== 'SENIOR_ADMIN' ? (
+                      <button className="btn btn-sm btn-danger" onClick={() => handleDelete(u._id, u.username)}>
+                        <Trash2 size={14} /> Xóa
+                      </button>
+                    ) : (
+                      <span style={{ color: 'var(--text-muted)', fontSize: '0.82rem' }}>Không thể xóa</span>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
+
+      {/* Modal Gán Agency */}
+      {assignModal.open && (
+        <div style={{
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
+        }}>
+          <div style={{
+            background: '#fff', borderRadius: 14, padding: 28,
+            width: '100%', maxWidth: 480, boxShadow: '0 20px 60px rgba(0,0,0,0.2)'
+          }}>
+            <h3 style={{ marginBottom: 6 }}>
+              <Link2 size={18} style={{ verticalAlign: 'middle', marginRight: 8, color: 'var(--primary)' }} />
+              Gán Đơn vị cho tài khoản
+            </h3>
+            <p style={{ color: 'var(--text-secondary)', marginBottom: 20, fontSize: '0.9rem' }}>
+              Tài khoản: <strong>{assignModal.user?.username}</strong> ({assignModal.user?.email})
+            </p>
+
+            <label className="form-label" style={{ display: 'block', marginBottom: 8 }}>
+              Chọn Xã/Phường/Đơn vị <span className="required">*</span>
+            </label>
+            <select
+              className="form-input form-select"
+              value={assignModal.agencyId}
+              onChange={e => setAssignModal(m => ({ ...m, agencyId: e.target.value }))}
+              style={{ marginBottom: 20 }}
+            >
+              <option value="">-- Chọn đơn vị --</option>
+              {agencies
+                .sort((a, b) => a.name.localeCompare(b.name, 'vi'))
+                .map(a => <option key={a._id} value={a._id}>{a.name} ({a.level})</option>)}
+            </select>
+
+            <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+              <button className="btn btn-outline" onClick={() => setAssignModal({ open: false, user: null, agencyId: '' })}>
+                Hủy
+              </button>
+              <button className="btn btn-primary" onClick={handleAssignAgency}>
+                <Link2 size={14} /> Xác nhận gán
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
