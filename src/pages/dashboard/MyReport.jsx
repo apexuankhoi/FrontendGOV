@@ -311,12 +311,14 @@ const MyReport = () => {
 
     setLoading(true);
     try {
+      const commune = localStorage.getItem('commune') || '';
       const body = {
         reportDate: selectedDate,
         ...Object.fromEntries(ALL_FIELDS.map(f => [f.key, Number(form[f.key]) || 0])),
         issues: extra.issues,
         proposals: extra.proposals,
-        evidenceLinks: cleanLinks
+        evidenceLinks: cleanLinks,
+        ...(commune && { commune }) // Gửi kèm commune để backend fallback nếu JWT thiếu agencyId
       };
 
       await api.post('/campaign/report', body);

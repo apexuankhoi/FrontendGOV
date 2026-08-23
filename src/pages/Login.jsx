@@ -47,9 +47,12 @@ const Login = () => {
       localStorage.setItem('refreshToken', r.data.refreshToken);
       localStorage.setItem('role', r.data.role);
       localStorage.setItem('username', r.data.username);
+      localStorage.setItem('email', form.email); // Lưu email để fallback tự login lại
       if (r.data.agency) {
         localStorage.setItem('agency', JSON.stringify(r.data.agency));
         localStorage.setItem('agencyName', r.data.agency.name);
+        // Lưu commune để fallback khi backend cần tìm agencyId
+        if (r.data.agency.name) localStorage.setItem('commune', r.data.agency.name);
       }
       if (ADMIN_ROLES.includes(r.data.role)) {
         navigate('/dashboard');
