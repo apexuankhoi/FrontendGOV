@@ -23,16 +23,21 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    // ── Xử lý 401 (token hết hạn hoặc server restart) ─────────────────────
+    // ── Xử lý 401 (token hết hạn hoặc server restart hoặc zombie token) ──────
     if (error.response?.status === 401 && !originalRequest._retry) {
-      // Nếu server vừa restart → xóa hết, về login ngay, không refresh
-      if (error.response?.data?.code === 'SERVER_RESTARTED') {
+      const code = error.response?.data?.code;
+
+      // Zombie token (user bị xóa) hoặc server restart → về login ngay
+      if (code === 'SERVER_RESTARTED' || code === 'USER_NOT_FOUND') {
         localStorage.clear();
-        // Lưu thông báo để hiện ở trang login
-        sessionStorage.setItem('loginNotice', '🔄 Hệ thống vừa được cập nhật. Vui lòng đăng nhập lại.');
+        const msg = code === 'USER_NOT_FOUND'
+          ? '⚠️ Tài khoản không còn tồn tại. Vui lòng đăng ký lại hoặc liên hệ Admin.'
+          : '🔄 Hệ thống vừa được cập nhật. Vui lòng đăng nhập lại.';
+        sessionStorage.setItem('loginNotice', msg);
         window.location.href = '/login';
         return Promise.reject(error);
       }
+
 
       originalRequest._retry = true;
       try {
