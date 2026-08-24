@@ -6,7 +6,7 @@ import {
   Sparkles, Award, CheckCircle2, ChevronRight, Filter,
   Clock, Settings, X, Save, CheckCircle, AlertCircle, Zap, Moon, Trash2,
   Eye, LayoutGrid, Table as TableIcon, ExternalLink, MessageSquare,
-  Building2, Search, Check
+  Building2, Search, Check, SlidersHorizontal, Download, Link
 } from 'lucide-react';
 
 const CampaignAdmin = () => {
@@ -15,8 +15,19 @@ const CampaignAdmin = () => {
   const [exporting, setExporting] = useState(false);
   const [filterDate, setFilterDate] = useState(new Date().toISOString().split('T')[0]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [viewMode, setViewMode] = useState('TABLE'); // 'TABLE' | 'CARDS'
-  const [selectedReport, setSelectedReport] = useState(null); // Detail modal
+  const [viewMode, setViewMode] = useState('TABLE');
+  const [selectedReport, setSelectedReport] = useState(null);
+  // Export modal state
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [exportOpts, setExportOpts] = useState({
+    filterStatus: 'reported',
+    includeEvidence: true,
+    includeDifficulties: true,
+    includeProposals: true,
+    dateMode: 'day',     // 'day' | 'range' | 'all'
+    startDate: new Date().toISOString().split('T')[0],
+    endDate: new Date().toISOString().split('T')[0],
+  });
 
   // Gán đơn vị xã/phường cho báo cáo (Dành cho Super Admin)
   const [agenciesList, setAgenciesList] = useState([]);
@@ -166,21 +177,29 @@ const CampaignAdmin = () => {
     }
   };
 
-  // Xuất Excel thật — gọi endpoint backend
+  // Xuất Excel — gọi backend với các tùy chọn
   const handleExportExcel = async () => {
     setExporting(true);
     try {
-      const res = await api.get('/campaign/export-excel', {
-        params: { date: filterDate },
-        responseType: 'blob'
-      });
+      const params = {
+        filterStatus: exportOpts.filterStatus,
+        includeEvidence: String(exportOpts.includeEvidence),
+        includeDifficulties: String(exportOpts.includeDifficulties),
+        includeProposals: String(exportOpts.includeProposals),
+      };
+      if (exportOpts.dateMode === 'day') params.date = filterDate;
+      else if (exportOpts.dateMode === 'range') { params.startDate = exportOpts.startDate; params.endDate = exportOpts.endDate; }
+      // 'all' → không truyền date
+
+      const res = await api.get('/campaign/export-excel', { params, responseType: 'blob' });
       const url = window.URL.createObjectURL(new Blob([res.data]));
       const a = document.createElement('a');
       a.href = url;
-      a.download = `bao_cao_11_chi_tieu_${filterDate}.xlsx`;
+      a.download = `bao_cao_chien_dich_${exportOpts.dateMode === 'day' ? filterDate : exportOpts.dateMode === 'range' ? `${exportOpts.startDate}_${exportOpts.endDate}` : 'tat_ca'}.xlsx`;
       a.click();
       window.URL.revokeObjectURL(url);
-      toast.success('✅ Xuất Excel 11 chỉ tiêu thành công!');
+      toast.success('✅ Xuất Excel thành công!');
+      setShowExportModal(false);
     } catch (err) {
       toast.error('Lỗi xuất Excel: ' + (err.response?.data?.message || err.message));
     } finally {
@@ -321,13 +340,13 @@ const CampaignAdmin = () => {
           </button>
           <button 
             className="btn btn-primary btn-sm" 
-            onClick={handleExportExcel} 
-            disabled={exporting || filteredReports.length === 0}
+            onClick={() => setShowExportModal(true)} 
             style={{ display: 'flex', alignItems: 'center', gap: 4 }}
           >
-            {exporting ? <Loader2 size={14} className="spin" /> : <FileSpreadsheet size={14} />}
-            {exporting ? 'Xuất...' : 'Xuất Excel'}
+            <SlidersHorizontal size={14} />
+            Xuất Excel
           </button>
+
         </div>
       </div>
 
@@ -1309,6 +1328,176 @@ const CampaignAdmin = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}{/* end config modal */}
+
+      {/* ═══════════════════════════════════════════════════════════ */}
+      {/* MODAL XUẤT EXCEL — TÙY CHỌN NÂNG CAO                      */}
+      {/* ═══════════════════════════════════════════════════════════ */}
+      {showExportModal && (
+        <div style={{
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          zIndex: 1100, padding: 16
+        }}>
+          <div style={{
+            background: '#fff', borderRadius: 18, padding: 28,
+            width: '100%', maxWidth: 520,
+            boxShadow: '0 28px 70px rgba(0,0,0,0.3)',
+            maxHeight: '90vh', overflowY: 'auto'
+          }}>
+            {/* Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <FileSpreadsheet size={20} color="#059669" /> Tùy chọn Xuất Excel
+                </h3>
+                <p style={{ margin: '4px 0 0', fontSize: '0.83rem', color: '#6B7280' }}>
+                  Chọn nội dung và phạm vi muốn xuất ra file Excel
+                </p>
+              </div>
+              <button onClick={() => setShowExportModal(false)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6B7280' }}>
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* ── 1. Phạm vi ngày ── */}
+            <div style={{ background: '#F8FAFC', borderRadius: 12, padding: '14px 16px', marginBottom: 14 }}>
+              <div style={{ fontWeight: 700, color: '#1E3A8A', marginBottom: 10, fontSize: '0.9rem' }}>
+                📅 Phạm vi thời gian
+              </div>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                {[
+                  { key: 'day', label: 'Theo ngày đang xem' },
+                  { key: 'range', label: 'Khoảng ngày' },
+                  { key: 'all', label: 'Tất cả dữ liệu' },
+                ].map(opt => (
+                  <button key={opt.key} type="button"
+                    onClick={() => setExportOpts(o => ({ ...o, dateMode: opt.key }))}
+                    style={{
+                      padding: '6px 14px', borderRadius: 20, border: '1.5px solid',
+                      borderColor: exportOpts.dateMode === opt.key ? '#2563EB' : '#D1D5DB',
+                      background: exportOpts.dateMode === opt.key ? '#EFF6FF' : '#fff',
+                      color: exportOpts.dateMode === opt.key ? '#1D4ED8' : '#374151',
+                      fontWeight: exportOpts.dateMode === opt.key ? 700 : 400,
+                      cursor: 'pointer', fontSize: '0.83rem'
+                    }}>{opt.label}</button>
+                ))}
+              </div>
+              {exportOpts.dateMode === 'day' && (
+                <div style={{ marginTop: 10, fontSize: '0.83rem', color: '#374151' }}>
+                  Ngày: <strong>{filterDate}</strong> (ngày đang lọc trên màn hình)
+                </div>
+              )}
+              {exportOpts.dateMode === 'range' && (
+                <div style={{ display: 'flex', gap: 8, marginTop: 10, alignItems: 'center' }}>
+                  <input type="date" className="form-input" value={exportOpts.startDate}
+                    onChange={e => setExportOpts(o => ({ ...o, startDate: e.target.value }))}
+                    style={{ flex: 1, height: 36 }} />
+                  <span style={{ color: '#6B7280' }}>→</span>
+                  <input type="date" className="form-input" value={exportOpts.endDate}
+                    onChange={e => setExportOpts(o => ({ ...o, endDate: e.target.value }))}
+                    style={{ flex: 1, height: 36 }} />
+                </div>
+              )}
+              {exportOpts.dateMode === 'all' && (
+                <div style={{ marginTop: 8, fontSize: '0.82rem', color: '#059669', fontWeight: 600 }}>
+                  ✅ Xuất toàn bộ dữ liệu chiến dịch
+                </div>
+              )}
+            </div>
+
+            {/* ── 2. Lọc trạng thái báo cáo ── */}
+            <div style={{ background: '#F8FAFC', borderRadius: 12, padding: '14px 16px', marginBottom: 14 }}>
+              <div style={{ fontWeight: 700, color: '#1E3A8A', marginBottom: 10, fontSize: '0.9rem' }}>
+                🗂️ Loại đơn vị xuất ra
+              </div>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                {[
+                  { key: 'reported', label: '✅ Đã báo cáo', color: '#059669' },
+                  { key: 'not_reported', label: '❌ Chưa báo cáo', color: '#DC2626' },
+                  { key: 'all', label: '📋 Tất cả (2 sheet)', color: '#7C3AED' },
+                ].map(opt => (
+                  <button key={opt.key} type="button"
+                    onClick={() => setExportOpts(o => ({ ...o, filterStatus: opt.key }))}
+                    style={{
+                      padding: '7px 14px', borderRadius: 20, border: '1.5px solid',
+                      borderColor: exportOpts.filterStatus === opt.key ? opt.color : '#D1D5DB',
+                      background: exportOpts.filterStatus === opt.key ? `${opt.color}15` : '#fff',
+                      color: exportOpts.filterStatus === opt.key ? opt.color : '#374151',
+                      fontWeight: exportOpts.filterStatus === opt.key ? 700 : 400,
+                      cursor: 'pointer', fontSize: '0.83rem'
+                    }}>{opt.label}</button>
+                ))}
+              </div>
+              {exportOpts.filterStatus === 'all' && (
+                <div style={{ marginTop: 8, fontSize: '0.8rem', color: '#7C3AED' }}>
+                  Sheet 1: Đã báo cáo &nbsp;|&nbsp; Sheet 2: Chưa báo cáo
+                </div>
+              )}
+            </div>
+
+            {/* ── 3. Cột bổ sung ── */}
+            <div style={{ background: '#F8FAFC', borderRadius: 12, padding: '14px 16px', marginBottom: 20 }}>
+              <div style={{ fontWeight: 700, color: '#1E3A8A', marginBottom: 12, fontSize: '0.9rem' }}>
+                📊 Cột nội dung thêm vào Excel
+              </div>
+              {[
+                { key: 'includeEvidence', label: '🔗 Link Minh chứng', sub: 'Link Google Drive, hình ảnh ra quân' },
+                { key: 'includeDifficulties', label: '⚠️ Khó khăn', sub: 'Nội dung khó khăn đơn vị ghi nhận' },
+                { key: 'includeProposals', label: '💡 Đề xuất / Kiến nghị', sub: 'Đề xuất của đơn vị gửi lên Tỉnh' },
+              ].map(opt => (
+                <label key={opt.key} style={{
+                  display: 'flex', alignItems: 'center', gap: 12,
+                  padding: '10px 12px', borderRadius: 8, cursor: 'pointer',
+                  background: exportOpts[opt.key] ? '#EFF6FF' : '#fff',
+                  border: '1px solid', borderColor: exportOpts[opt.key] ? '#93C5FD' : '#E5E7EB',
+                  marginBottom: 6
+                }}>
+                  <input type="checkbox" checked={exportOpts[opt.key]}
+                    onChange={e => setExportOpts(o => ({ ...o, [opt.key]: e.target.checked }))}
+                    style={{ width: 16, height: 16, accentColor: '#2563EB' }} />
+                  <div>
+                    <div style={{ fontWeight: 600, fontSize: '0.88rem', color: '#1E293B' }}>{opt.label}</div>
+                    <div style={{ fontSize: '0.77rem', color: '#6B7280' }}>{opt.sub}</div>
+                  </div>
+                </label>
+              ))}
+            </div>
+
+            {/* Preview */}
+            <div style={{
+              background: '#F0FDF4', border: '1px solid #86EFAC', borderRadius: 10,
+              padding: '10px 14px', marginBottom: 18, fontSize: '0.83rem', color: '#166534'
+            }}>
+              <strong>📁 File sẽ tải:</strong> {
+                exportOpts.filterStatus === 'all' ? '2 sheet (Đã BC + Chưa BC)' :
+                exportOpts.filterStatus === 'reported' ? '1 sheet (Đã báo cáo)' : '1 sheet (Chưa báo cáo)'
+              } &nbsp;·&nbsp;
+              {[
+                exportOpts.includeEvidence && 'Link MC',
+                exportOpts.includeDifficulties && 'Khó khăn',
+                exportOpts.includeProposals && 'Đề xuất',
+              ].filter(Boolean).join(', ') || 'Chỉ số liệu'}
+            </div>
+
+            {/* Buttons */}
+            <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+              <button className="btn btn-outline" onClick={() => setShowExportModal(false)}>
+                Hủy
+              </button>
+              <button
+                className="btn btn-primary"
+                onClick={handleExportExcel}
+                disabled={exporting}
+                style={{ background: '#059669', border: 'none', display: 'flex', alignItems: 'center', gap: 8 }}
+              >
+                {exporting ? <Loader2 size={16} className="spin" /> : <Download size={16} />}
+                {exporting ? 'Đang xuất...' : 'Tải về Excel'}
+              </button>
+            </div>
           </div>
         </div>
       )}
