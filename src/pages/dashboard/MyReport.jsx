@@ -187,6 +187,7 @@ const MyReport = () => {
     closeTime: '18:30', 
     editDeadline: '19:00', 
     alwaysOpen: false, 
+    allowLateDate: null,
     customNotice: '', 
     isOpenNow: true, 
     canEditNow: true 
@@ -199,10 +200,19 @@ const MyReport = () => {
 
   const isToday = selectedDate === new Date().toISOString().split('T')[0];
 
+  // Kiểm tra ngày có được Admin mở cổng nộp muộn không
+  const isLateAllowed = (() => {
+    if (!config.allowLateDate || !selectedDate) return false;
+    // So sánh ngày (bỏ phần giờ)
+    const late = new Date(config.allowLateDate).toISOString().split('T')[0];
+    return late === selectedDate;
+  })();
+
   // Kiểm tra giờ nộp mới hôm nay
   const isReportTime = (() => {
     if (config.alwaysOpen) return true;
-    if (!isToday) return false; // Không nộp mới cho ngày cũ
+    if (isLateAllowed) return true; // Admin mở cổng nộp muộn cho ngày này
+    if (!isToday) return false;
     const now = new Date();
     const curMin = now.getHours() * 60 + now.getMinutes();
     const [oh, om] = (config.openTime || '13:00').split(':').map(Number);
@@ -215,7 +225,8 @@ const MyReport = () => {
   // Kiểm tra giờ chỉnh sửa hôm nay
   const isEditTime = (() => {
     if (config.alwaysOpen) return true;
-    if (!isToday) return false; // Ngày cũ là chế độ xem lại (Read-only)
+    if (isLateAllowed) return true; // Admin mở cổng nộp muộn cho ngày này
+    if (!isToday) return false;
     const now = new Date();
     const curMin = now.getHours() * 60 + now.getMinutes();
     const [oh, om] = (config.openTime || '13:00').split(':').map(Number);
@@ -224,6 +235,7 @@ const MyReport = () => {
     const editMin = (isNaN(eh) ? 19 : eh) * 60 + (isNaN(em) ? 0 : em);
     return curMin >= openMin && curMin <= editMin;
   })();
+
 
   // Tải báo cáo của ngày được chọn
   const fetchReportByDate = async (dateStr) => {
