@@ -1264,6 +1264,44 @@ const Overview = () => {
                 </div>
               </div>
 
+              {/* ── Mở cổng nộp muộn cho ngày cụ thể ─────────────────────────────── */}
+              <div style={{
+                background: '#FFF7ED', border: '1.5px solid #FB923C',
+                borderRadius: 12, padding: '16px 18px', marginTop: 4
+              }}>
+                <div style={{ fontWeight: 700, color: '#C2410C', marginBottom: 8, fontSize: '0.92rem' }}>
+                  📅 Mở cổng nộp báo cáo muộn
+                </div>
+                <div style={{ fontSize: '0.82rem', color: '#6D28D9', marginBottom: 10 }}>
+                  Chọn ngày quá khứ → các xã được nộp/sửa báo cáo cho ngày đó bất kể giờ. Xóa trắng để tắt.
+                </div>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                  <input
+                    type="date"
+                    className="form-input"
+                    value={config.allowLateDate || ''}
+                    max={new Date().toISOString().split('T')[0]}
+                    onChange={e => setConfig(c => ({ ...c, allowLateDate: e.target.value || null }))}
+                    style={{ maxWidth: 190, borderColor: '#FB923C', height: 38 }}
+                  />
+                  {config.allowLateDate && (
+                    <button
+                      type="button"
+                      onClick={() => setConfig(c => ({ ...c, allowLateDate: null }))}
+                      style={{
+                        background: '#FEE2E2', color: '#DC2626', border: '1px solid #FCA5A5',
+                        borderRadius: 8, padding: '6px 12px', fontWeight: 600, cursor: 'pointer', fontSize: '0.82rem'
+                      }}
+                    >✕ Tắt</button>
+                  )}
+                  <span style={{ fontSize: '0.78rem', color: '#92400E' }}>
+                    {config.allowLateDate
+                      ? `✅ Mở cho ${new Date(config.allowLateDate).toLocaleDateString('vi-VN')}`
+                      : '⬜ Tắt'}
+                  </span>
+                </div>
+              </div>
+
               {/* Action Buttons */}
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, borderTop: '1px solid #E2E8F0', paddingTop: 16 }}>
                 <button 
