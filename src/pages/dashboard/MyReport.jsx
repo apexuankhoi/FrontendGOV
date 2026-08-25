@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../lib/api';
 import { toast } from 'react-toastify';
+import { todayVN, toVNDateStr, formatDateVN } from '../../utils/dateVN';
 import {
   Send, CheckCircle, Loader2, ClipboardList,
   AlertCircle, Clock, Info, Globe, Smartphone, Landmark,
@@ -167,7 +168,7 @@ const emptyForm = () => Object.fromEntries(ALL_FIELDS.map(f => [f.key, '']));
 
 const MyReport = () => {
   const [activeTab, setActiveTab] = useState('FORM'); // 'FORM' | 'HISTORY'
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [selectedDate, setSelectedDate] = useState(todayVN());
   
   const [form, setForm] = useState(emptyForm());
   const [extra, setExtra] = useState({ issues: '', proposals: '', evidenceLinks: '' });
@@ -198,13 +199,13 @@ const MyReport = () => {
     catch { return 'Đơn vị của bạn'; }
   })();
 
-  const isToday = selectedDate === new Date().toISOString().split('T')[0];
+  const isToday = selectedDate === todayVN();
 
   // Kiểm tra ngày có được Admin mở cổng nộp muộn không
   const isLateAllowed = (() => {
     if (!config.allowLateDate || !selectedDate) return false;
     // So sánh ngày (bỏ phần giờ)
-    const late = new Date(config.allowLateDate).toISOString().split('T')[0];
+    const late = toVNDateStr(config.allowLateDate);
     return late === selectedDate;
   })();
 
@@ -300,8 +301,8 @@ const MyReport = () => {
 
   // Đổi ngày nhanh
   const handleShiftDate = (days) => {
-    const current = new Date(selectedDate);
-    current.setDate(current.getDate() + days);
+    const current = new Date(selectedDate + 'T07:00:00Z'); // noon VN time, tránh lệch ngày
+    current.setUTCDate(current.getUTCDate() + days);
     const newDateStr = current.toISOString().split('T')[0];
     setSelectedDate(newDateStr);
   };
@@ -414,7 +415,7 @@ const MyReport = () => {
                   style={{ height: 36, width: 'auto', fontWeight: 700, fontSize: '.9rem', color: 'var(--primary)' }}
                   value={selectedDate}
                   onChange={e => setSelectedDate(e.target.value)}
-                  max={new Date().toISOString().split('T')[0]}
+                  max={todayVN()}
                 />
 
                 <button
@@ -433,7 +434,7 @@ const MyReport = () => {
                 <button
                   type="button"
                   className="btn btn-outline btn-sm"
-                  onClick={() => setSelectedDate(new Date().toISOString().split('T')[0])}
+                  onClick={() => setSelectedDate(todayVN())}
                   style={{ fontSize: '.8rem', padding: '4px 10px' }}
                 >
                   ⚡ Về Hôm nay
@@ -811,14 +812,14 @@ const MyReport = () => {
                 </thead>
                 <tbody>
                   {historyList.map((item, idx) => {
-                    const dStr = item.reportDate ? new Date(item.reportDate).toISOString().split('T')[0] : '';
+                    const dStr = toVNDateStr(item.reportDate);
                     return (
                       <tr key={item._id} style={{ borderBottom: '1px solid #f1f5f9' }}>
                         <td style={{ padding: '12px 14px', textAlign: 'center', fontWeight: 700, color: '#94a3b8' }}>
                           {idx + 1}
                         </td>
                         <td style={{ padding: '12px 16px', fontWeight: 700, color: '#1e293b' }}>
-                          📅 {item.reportDate ? new Date(item.reportDate).toLocaleDateString('vi-VN') : 'Không rõ'}
+                          📅 {formatDateVN(item.reportDate)}
                         </td>
                         <td style={{ padding: '12px 16px', color: '#0284C7', fontWeight: 600 }}>
                           {(item.digitalSkills || 0).toLocaleString('vi-VN')}

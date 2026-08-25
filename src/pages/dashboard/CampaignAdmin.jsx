@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import api from '../../lib/api';
+import { todayVN, toVNDateStr, formatDateVN } from '../../utils/dateVN';
 import { 
   Map, FileSpreadsheet, RefreshCw, Loader2, TrendingUp, Globe, 
   Sparkles, Award, CheckCircle2, ChevronRight, Filter,
@@ -13,7 +14,7 @@ const CampaignAdmin = () => {
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
-  const [filterDate, setFilterDate] = useState(new Date().toISOString().split('T')[0]);
+  const [filterDate, setFilterDate] = useState(todayVN());
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState('TABLE');
   const [selectedReport, setSelectedReport] = useState(null);
@@ -25,8 +26,8 @@ const CampaignAdmin = () => {
     includeDifficulties: true,
     includeProposals: true,
     dateMode: 'day',     // 'day' | 'range' | 'all'
-    startDate: new Date().toISOString().split('T')[0],
-    endDate: new Date().toISOString().split('T')[0],
+    startDate: todayVN(),
+    endDate: todayVN(),
   });
 
   // Gán đơn vị xã/phường cho báo cáo (Dành cho Super Admin)
@@ -774,7 +775,7 @@ const CampaignAdmin = () => {
                   📊 Chi tiết Báo cáo: {selectedReport.agencyId?.name || selectedReport.reporterId?.locationContext?.commune || 'Xã/Phường'}
                 </h3>
                 <div style={{ fontSize: '.8rem', color: 'var(--tx-3)', marginTop: 2 }}>
-                  👤 Người nộp: <strong>{selectedReport.reporterId?.username || selectedReport.reporterName || 'Ẩn danh'}</strong> • {new Date(selectedReport.reportDate).toLocaleDateString('vi-VN')}
+                  👤 Người nộp: <strong>{selectedReport.reporterId?.username || selectedReport.reporterName || 'Ẩn danh'}</strong> • {formatDateVN(selectedReport.reportDate)}
                 </div>
               </div>
               <button 
@@ -895,7 +896,7 @@ const CampaignAdmin = () => {
                     🏢 Gán Đơn vị cho Báo cáo
                   </h3>
                   <div style={{ fontSize: '.78rem', color: 'var(--tx-3)', marginTop: 2 }}>
-                    Người nộp: <strong>{assignModal.report?.reporterId?.username || assignModal.report?.reporterName || 'Chưa rõ'}</strong> • {new Date(assignModal.report?.reportDate || filterDate).toLocaleDateString('vi-VN')}
+                    Người nộp: <strong>{assignModal.report?.reporterId?.username || assignModal.report?.reporterName || 'Chưa rõ'}</strong> • {formatDateVN(assignModal.report?.reportDate || filterDate)}
                   </div>
                 </div>
               </div>
@@ -1283,7 +1284,7 @@ const CampaignAdmin = () => {
                     type="date"
                     className="form-input"
                     value={config.allowLateDate || ''}
-                    max={new Date().toISOString().split('T')[0]}
+                    max={todayVN()}
                     onChange={e => setConfig(c => ({ ...c, allowLateDate: e.target.value || null }))}
                     style={{ maxWidth: 200, borderColor: '#FB923C' }}
                   />

@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import api from '../../lib/api';
 import { toast } from 'react-toastify';
+import { todayVN } from '../../utils/dateVN';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend
@@ -75,7 +76,7 @@ const Overview = () => {
   // Tab lọc danh sách 102 Xã
   const [communeTab, setCommuneTab] = useState('ALL'); // 'ALL' | 'REPORTED' | 'UNREPORTED'
   const [communeSearch, setCommuneSearch] = useState('');
-  const [filterDate, setFilterDate] = useState(new Date().toISOString().split('T')[0]);
+  const [filterDate, setFilterDate] = useState(todayVN());
 
   // Cấu hình thời gian Chiến dịch
   const [config, setConfig] = useState({
@@ -1280,7 +1281,7 @@ const Overview = () => {
                     type="date"
                     className="form-input"
                     value={config.allowLateDate || ''}
-                    max={new Date().toISOString().split('T')[0]}
+                    max={todayVN()}
                     onChange={e => setConfig(c => ({ ...c, allowLateDate: e.target.value || null }))}
                     style={{ maxWidth: 190, borderColor: '#FB923C', height: 38 }}
                   />
