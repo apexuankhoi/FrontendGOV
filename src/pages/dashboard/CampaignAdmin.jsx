@@ -7,7 +7,7 @@ import {
   Sparkles, Award, CheckCircle2, ChevronRight, Filter,
   Clock, Settings, X, Save, CheckCircle, AlertCircle, Zap, Moon, Trash2,
   Eye, LayoutGrid, Table as TableIcon, ExternalLink, MessageSquare,
-  Building2, Search, Check, SlidersHorizontal, Download, Link
+  Building2, Search, Check, SlidersHorizontal, Download, Link, Edit3
 } from 'lucide-react';
 
 const CampaignAdmin = () => {
@@ -34,6 +34,14 @@ const CampaignAdmin = () => {
   const [agenciesList, setAgenciesList] = useState([]);
   const [assignModal, setAssignModal] = useState({ open: false, report: null, selectedAgencyId: '', searchAgency: '' });
   const [assigning, setAssigning] = useState(false);
+
+  // Modal chỉnh sửa số liệu 11 chỉ tiêu (Dành cho Quản trị viên Tỉnh)
+  const [editModal, setEditModal] = useState({
+    open: false,
+    report: null,
+    formData: {}
+  });
+  const [savingEdit, setSavingEdit] = useState(false);
 
   // Cấu hình khung giờ báo cáo
   const [showConfigModal, setShowConfigModal] = useState(false);
@@ -111,6 +119,56 @@ const CampaignAdmin = () => {
     fetchConfig();
     fetchAgencies();
   }, [filterDate]);
+
+  // Mở modal chỉnh sửa số liệu báo cáo
+  const handleOpenEditModal = (report) => {
+    setEditModal({
+      open: true,
+      report,
+      formData: {
+        digitalSkills: report.digitalSkills || 0,
+        vneidSupport: report.vneidSupport || 0,
+        publicServices: report.publicServices || 0,
+        qrSupport: report.qrSupport || 0,
+        activeTeams: report.activeTeams || 0,
+        trainingClasses: report.trainingClasses || 0,
+        digitalModels: report.digitalModels || 0,
+        digitalProducts: report.digitalProducts || 0,
+        youthTrained: report.youthTrained || 0,
+        youthProjects: report.youthProjects || 0,
+        smartwebCount: report.smartwebCount || 0,
+        volunteers: report.volunteers || 0,
+        safetyCampaigns: report.safetyCampaigns || 0,
+        mediaPosts: report.mediaPosts || 0,
+        evidenceLinks: report.evidenceLinks || '',
+        issues: report.issues || '',
+        proposals: report.proposals || '',
+        reporterName: report.reporterName || report.reporterId?.username || ''
+      }
+    });
+  };
+
+  // Lưu chỉnh sửa số liệu từ Quản trị viên
+  const handleSaveEditReport = async (e) => {
+    if (e) e.preventDefault();
+    setSavingEdit(true);
+    try {
+      const res = await api.put(`/campaign/report/${editModal.report._id}`, editModal.formData);
+      toast.success(res.data.message || '✅ Đã cập nhật số liệu báo cáo thành công!');
+      const updated = res.data.report || { ...editModal.report, ...editModal.formData };
+
+      // Cập nhật state danh sách ngay lập tức
+      setReports(prev => prev.map(r => r._id === editModal.report._id ? updated : r));
+      if (selectedReport?._id === editModal.report._id) {
+        setSelectedReport(updated);
+      }
+      setEditModal({ open: false, report: null, formData: {} });
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Lỗi khi cập nhật số liệu báo cáo');
+    } finally {
+      setSavingEdit(false);
+    }
+  };
 
   // Mở modal gán đơn vị
   const handleOpenAssignModal = (report) => {
@@ -560,6 +618,15 @@ const CampaignAdmin = () => {
                             <>
                               <button
                                 type="button"
+                                onClick={() => handleOpenEditModal(r)}
+                                className="btn btn-ghost btn-sm"
+                                style={{ padding: '4px 6px', color: '#0284C7', background: '#E0F2FE', borderRadius: 6 }}
+                                title="Chỉnh sửa 11 chỉ tiêu & số liệu báo cáo"
+                              >
+                                <Edit3 size={13} />
+                              </button>
+                              <button
+                                type="button"
                                 onClick={() => handleOpenAssignModal(r)}
                                 className="btn btn-ghost btn-sm"
                                 style={{ padding: '4px 6px', color: '#1D4ED8', background: '#EFF6FF', borderRadius: 6 }}
@@ -730,15 +797,26 @@ const CampaignAdmin = () => {
                       </a>
                     )}
                     {canConfig && (
-                      <button
-                        type="button"
-                        onClick={() => handleOpenAssignModal(r)}
-                        className="btn btn-outline btn-sm"
-                        style={{ fontSize: '.76rem', borderColor: '#93C5FD', color: '#1D4ED8', background: '#EFF6FF', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}
-                        title="Gán hoặc đổi đơn vị"
-                      >
-                        <Building2 size={12} /> {isOrphan ? 'Gán ĐV' : 'Đổi ĐV'}
-                      </button>
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => handleOpenEditModal(r)}
+                          className="btn btn-outline btn-sm"
+                          style={{ fontSize: '.76rem', borderColor: '#7DD3FC', color: '#0369A1', background: '#F0F9FF', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}
+                          title="Chỉnh sửa 11 chỉ tiêu"
+                        >
+                          <Edit3 size={12} /> Sửa
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleOpenAssignModal(r)}
+                          className="btn btn-outline btn-sm"
+                          style={{ fontSize: '.76rem', borderColor: '#93C5FD', color: '#1D4ED8', background: '#EFF6FF', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}
+                          title="Gán hoặc đổi đơn vị"
+                        >
+                          <Building2 size={12} /> {isOrphan ? 'Gán ĐV' : 'Đổi ĐV'}
+                        </button>
+                      </>
                     )}
                     <button
                       type="button"
@@ -835,9 +913,21 @@ const CampaignAdmin = () => {
             )}
 
             {/* Action buttons in modal */}
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 16 }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 16, flexWrap: 'wrap' }}>
               {canConfig && (
                 <>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const rep = selectedReport;
+                      setSelectedReport(null);
+                      handleOpenEditModal(rep);
+                    }}
+                    className="btn btn-primary"
+                    style={{ background: '#0284C7', borderColor: '#0284C7', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}
+                  >
+                    <Edit3 size={15} /> Chỉnh sửa số liệu
+                  </button>
                   <button
                     type="button"
                     onClick={() => {
@@ -855,14 +945,14 @@ const CampaignAdmin = () => {
                     className="btn btn-outline"
                     style={{ borderColor: '#DC2626', color: '#DC2626', background: '#FEE2E2', fontWeight: 700 }}
                   >
-                    <Trash2 size={15} /> Xóa báo cáo này
+                    <Trash2 size={15} /> Xóa báo cáo
                   </button>
                 </>
               )}
               <button
                 type="button"
                 onClick={() => setSelectedReport(null)}
-                className="btn btn-primary"
+                className="btn btn-outline"
                 style={{ padding: '8px 20px', fontWeight: 700 }}
               >
                 Đóng
@@ -1499,6 +1589,243 @@ const CampaignAdmin = () => {
                 {exporting ? 'Đang xuất...' : 'Tải về Excel'}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+      {/* MODAL CHỈNH SỬA SỐ LIỆU 11 CHỈ TIÊU (ADMIN EDIT MODAL) */}
+      {editModal.open && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(15, 23, 42, 0.75)', backdropFilter: 'blur(6px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          zIndex: 10000, padding: 16
+        }}>
+          <div className="animate-up" style={{
+            background: 'var(--bg-card)', borderRadius: 20, padding: '20px 24px',
+            maxWidth: 780, width: '100%', maxHeight: '92vh', display: 'flex', flexDirection: 'column',
+            border: '1px solid var(--border)', boxShadow: '0 25px 60px rgba(0,0,0,0.3)'
+          }}>
+            {/* Modal Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14, borderBottom: '1px solid var(--border)', paddingBottom: 12 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ width: 40, height: 40, borderRadius: 12, background: '#E0F2FE', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0284C7' }}>
+                  <Edit3 size={22} />
+                </div>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '1.2rem', color: 'var(--primary-dark)', fontWeight: 800 }}>
+                    ✏️ Chỉnh sửa Báo cáo 11 Chỉ tiêu
+                  </h3>
+                  <div style={{ fontSize: '.8rem', color: 'var(--tx-3)', marginTop: 2 }}>
+                    Đơn vị: <strong style={{ color: 'var(--primary)' }}>{editModal.report?.agencyId?.name || editModal.report?.reporterId?.locationContext?.commune || 'Xã/Phường'}</strong> • Ngày {formatDateVN(editModal.report?.reportDate || filterDate)}
+                  </div>
+                </div>
+              </div>
+              <button 
+                type="button" 
+                onClick={() => setEditModal({ open: false, report: null, formData: {} })}
+                style={{ border: 'none', background: 'var(--bg-main)', borderRadius: '50%', width: 32, height: 32, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Modal Form Scrollable Body */}
+            <form onSubmit={handleSaveEditReport} style={{ display: 'flex', flexDirection: 'column', flex: 1, overflowY: 'hidden' }}>
+              <div style={{ flex: 1, overflowY: 'auto', paddingRight: 6, marginBottom: 14 }}>
+                
+                {/* 11 CHỈ TIÊU CHÍNH THỨC */}
+                <div style={{ marginBottom: 18 }}>
+                  <div style={{ fontSize: '.86rem', fontWeight: 800, color: 'var(--primary)', display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
+                    <span>🎯</span> 11 CHỈ TIÊU CHÍNH THỨC CỦA CHIẾN DỊCH:
+                  </div>
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
+                    gap: 10
+                  }}>
+                    {[
+                      { key: 'digitalSkills', label: '1. Tiếp cận kỹ năng số', unit: 'lượt người', icon: '💻', color: '#0284C7' },
+                      { key: 'vneidSupport', label: '2. VNeID mức 2 & tiện ích', unit: 'lượt người', icon: '🪪', color: '#16A34A' },
+                      { key: 'publicServices', label: '3. Hỗ trợ DVC trực tuyến', unit: 'lượt / hồ sơ', icon: '🏛️', color: '#7C3AED' },
+                      { key: 'qrSupport', label: '4. Hộ KD / Tiểu thương QR', unit: 'hộ kinh doanh', icon: '📱', color: '#D97706' },
+                      { key: 'activeTeams', label: '5. Đội hình Thanh niên số', unit: 'đội hình', icon: '🏃', color: '#2563EB' },
+                      { key: 'trainingClasses', label: '6. Lớp/Điểm tập huấn', unit: 'lớp / điểm', icon: '📚', color: '#0D9488' },
+                      { key: 'digitalModels', label: '7. Mô hình điểm CĐS', unit: 'mô hình', icon: '🏪', color: '#E11D48' },
+                      { key: 'digitalProducts', label: '8. SP OCOP / Địa phương', unit: 'sản phẩm', icon: '🛒', color: '#EA580C' },
+                      { key: 'youthTrained', label: '9. Đoàn viên TN học AI', unit: 'đoàn viên', icon: '🤖', color: '#4F46E5' },
+                      { key: 'youthProjects', label: '10. Công trình thanh niên', unit: 'công trình', icon: '⚡', color: '#9333EA' },
+                      { key: 'smartwebCount', label: '11. Website SmartWeb', unit: 'website', icon: '🌐', color: '#1E40AF' },
+                    ].map(field => (
+                      <div 
+                        key={field.key} 
+                        style={{ 
+                          background: 'var(--bg-main)', 
+                          padding: '10px 12px', 
+                          borderRadius: 10, 
+                          border: '1px solid var(--border)' 
+                        }}
+                      >
+                        <label style={{ display: 'block', fontSize: '.78rem', fontWeight: 700, color: 'var(--tx-1)', marginBottom: 4 }}>
+                          <span style={{ marginRight: 4 }}>{field.icon}</span> {field.label}
+                        </label>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <input 
+                            type="number"
+                            min="0"
+                            className="form-input"
+                            value={editModal.formData[field.key] ?? 0}
+                            onChange={e => {
+                              const val = e.target.value === '' ? '' : Math.max(0, parseInt(e.target.value) || 0);
+                              setEditModal(m => ({ ...m, formData: { ...m.formData, [field.key]: val } }));
+                            }}
+                            style={{ flex: 1, padding: '6px 10px', height: 36, fontSize: '.9rem', fontWeight: 800, color: field.color }}
+                          />
+                          <span style={{ fontSize: '.72rem', color: 'var(--tx-3)', fontWeight: 600, minWidth: 55, textAlign: 'right' }}>
+                            {field.unit}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* SỐ LIỆU BỔ TRỢ */}
+                <div style={{ marginBottom: 18 }}>
+                  <div style={{ fontSize: '.86rem', fontWeight: 800, color: '#475569', display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
+                    <span>👥</span> SỐ LIỆU BỔ TRỢ KHÁC:
+                  </div>
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
+                    gap: 10
+                  }}>
+                    {[
+                      { key: 'volunteers', label: 'Tình nguyện viên ra quân', unit: 'lượt ĐVTN', icon: '🤝' },
+                      { key: 'safetyCampaigns', label: 'Chiến dịch an toàn số', unit: 'buổi', icon: '🛡️' },
+                      { key: 'mediaPosts', label: 'Tin bài truyền thông', unit: 'tin bài', icon: '📢' },
+                    ].map(field => (
+                      <div 
+                        key={field.key} 
+                        style={{ 
+                          background: 'var(--bg-main)', 
+                          padding: '10px 12px', 
+                          borderRadius: 10, 
+                          border: '1px solid var(--border)' 
+                        }}
+                      >
+                        <label style={{ display: 'block', fontSize: '.78rem', fontWeight: 700, color: 'var(--tx-1)', marginBottom: 4 }}>
+                          <span style={{ marginRight: 4 }}>{field.icon}</span> {field.label}
+                        </label>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <input 
+                            type="number"
+                            min="0"
+                            className="form-input"
+                            value={editModal.formData[field.key] ?? 0}
+                            onChange={e => {
+                              const val = e.target.value === '' ? '' : Math.max(0, parseInt(e.target.value) || 0);
+                              setEditModal(m => ({ ...m, formData: { ...m.formData, [field.key]: val } }));
+                            }}
+                            style={{ flex: 1, padding: '6px 10px', height: 36, fontSize: '.9rem', fontWeight: 800 }}
+                          />
+                          <span style={{ fontSize: '.72rem', color: 'var(--tx-3)', fontWeight: 600, minWidth: 55, textAlign: 'right' }}>
+                            {field.unit}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* THÔNG TIN MINH CHỨNG & VƯỚNG MẮC */}
+                <div>
+                  <div style={{ fontSize: '.86rem', fontWeight: 800, color: '#0369A1', display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
+                    <span>📝</span> MINH CHỨNG & THÔNG TIN BỔ SUNG:
+                  </div>
+
+                  <div style={{ marginBottom: 10 }}>
+                    <label style={{ display: 'block', fontSize: '.78rem', fontWeight: 700, color: 'var(--tx-2)', marginBottom: 3 }}>
+                      🔗 Link thư mục minh chứng (Google Drive / Bài viết):
+                    </label>
+                    <input 
+                      type="url"
+                      className="form-input"
+                      placeholder="https://drive.google.com/..."
+                      value={editModal.formData.evidenceLinks || ''}
+                      onChange={e => setEditModal(m => ({ ...m, formData: { ...m.formData, evidenceLinks: e.target.value } }))}
+                      style={{ width: '100%', padding: '8px 12px', height: 38, fontSize: '.85rem' }}
+                    />
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 10, marginBottom: 10 }}>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '.78rem', fontWeight: 700, color: '#991B1B', marginBottom: 3 }}>
+                        🔴 Khó khăn, vướng mắc tại địa phương:
+                      </label>
+                      <textarea 
+                        className="form-input"
+                        rows="2"
+                        placeholder="Ghi nhận các khó khăn..."
+                        value={editModal.formData.issues || ''}
+                        onChange={e => setEditModal(m => ({ ...m, formData: { ...m.formData, issues: e.target.value } }))}
+                        style={{ width: '100%', padding: '8px 10px', fontSize: '.85rem', resize: 'vertical' }}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '.78rem', fontWeight: 700, color: '#5B21B6', marginBottom: 3 }}>
+                        💡 Đề xuất, kiến nghị gửi Tỉnh Đoàn:
+                      </label>
+                      <textarea 
+                        className="form-input"
+                        rows="2"
+                        placeholder="Các đề xuất, giải pháp..."
+                        value={editModal.formData.proposals || ''}
+                        onChange={e => setEditModal(m => ({ ...m, formData: { ...m.formData, proposals: e.target.value } }))}
+                        style={{ width: '100%', padding: '8px 10px', fontSize: '.85rem', resize: 'vertical' }}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '.78rem', fontWeight: 700, color: 'var(--tx-2)', marginBottom: 3 }}>
+                      👤 Tên cán bộ nộp / phụ trách báo cáo:
+                    </label>
+                    <input 
+                      type="text"
+                      className="form-input"
+                      placeholder="Cán bộ Đoàn..."
+                      value={editModal.formData.reporterName || ''}
+                      onChange={e => setEditModal(m => ({ ...m, formData: { ...m.formData, reporterName: e.target.value } }))}
+                      style={{ width: '100%', padding: '6px 10px', height: 36, fontSize: '.85rem' }}
+                    />
+                  </div>
+                </div>
+
+              </div>
+
+              {/* Bottom Buttons */}
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, borderTop: '1px solid var(--border)', paddingTop: 12 }}>
+                <button 
+                  type="button" 
+                  className="btn btn-outline" 
+                  onClick={() => setEditModal({ open: false, report: null, formData: {} })}
+                  disabled={savingEdit}
+                  style={{ padding: '8px 18px', fontWeight: 600 }}
+                >
+                  Hủy
+                </button>
+                <button 
+                  type="submit" 
+                  className="btn btn-primary"
+                  disabled={savingEdit}
+                  style={{ background: '#0284C7', border: 'none', padding: '8px 22px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}
+                >
+                  {savingEdit ? <Loader2 size={16} className="spin" /> : <Save size={16} />}
+                  {savingEdit ? 'Đang lưu...' : 'Lưu cập nhật'}
+                </button>
+              </div>
+            </form>
+
           </div>
         </div>
       )}
