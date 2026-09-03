@@ -1,0 +1,179 @@
+/* ===================================================
+   GOV DAK LAK - PREMIUM DIALOG SYSTEM (SWEETALERT2 THEME)
+   Hỗ trợ hoàn hảo Desktop & Mobile theo tiêu chuẩn UI hiện đại
+   =================================================== */
+
+.gov-dialog-popup {
+  border-radius: 20px !important;
+  padding: 28px 24px !important;
+  box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25), 0 0 0 1px rgba(226, 232, 240, 0.8) !important;
+  font-family: inherit !important;
+  background: #ffffff !important;
+  max-width: 440px !important;
+  width: 90% !important;
+}
+
+/* Backdrop mờ chuẩn Glassmorphism */
+.gov-dialog-backdrop {
+  background: rgba(15, 23, 42, 0.6) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+}
+
+/* Tiêu đề */
+.gov-dialog-title {
+  font-size: 1.25rem !important;
+  font-weight: 800 !important;
+  color: #1a3a6b !important;
+  padding: 0 !important;
+  margin-top: 14px !important;
+  margin-bottom: 8px !important;
+  line-height: 1.4 !important;
+}
+
+/* Nội dung thông báo */
+.gov-dialog-content {
+  font-size: 0.95rem !important;
+  color: #475569 !important;
+  line-height: 1.6 !important;
+  margin: 0 !important;
+  padding: 0 4px !important;
+  word-break: break-word !important;
+}
+
+/* Container chứa các nút */
+.gov-dialog-actions {
+  display: flex !important;
+  gap: 12px !important;
+  margin-top: 24px !important;
+  width: 100% !important;
+  justify-content: center !important;
+}
+
+/* Nút xác nhận / chính */
+.gov-dialog-confirm-btn {
+  background: linear-gradient(135deg, #1a3a6b 0%, #0ea5e9 100%) !important;
+  color: #ffffff !important;
+  border-radius: 12px !important;
+  padding: 12px 26px !important;
+  font-size: 0.95rem !important;
+  font-weight: 700 !important;
+  border: none !important;
+  box-shadow: 0 4px 14px rgba(14, 165, 233, 0.35) !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  outline: none !important;
+  cursor: pointer !important;
+}
+
+.gov-dialog-confirm-btn:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 6px 20px rgba(14, 165, 233, 0.45) !important;
+  filter: brightness(1.05) !important;
+}
+
+.gov-dialog-confirm-btn:active {
+  transform: translateY(1px) scale(0.98) !important;
+}
+
+/* Nút nguy hiểm (Xóa, Hủy vĩnh viễn) */
+.gov-dialog-danger-btn {
+  background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%) !important;
+  box-shadow: 0 4px 14px rgba(239, 68, 68, 0.35) !important;
+}
+
+.gov-dialog-danger-btn:hover {
+  box-shadow: 0 6px 20px rgba(239, 68, 68, 0.45) !important;
+}
+
+/* Nút Hủy / Đóng */
+.gov-dialog-cancel-btn {
+  background: #f1f5f9 !important;
+  color: #475569 !important;
+  border-radius: 12px !important;
+  padding: 12px 24px !important;
+  font-size: 0.95rem !important;
+  font-weight: 600 !important;
+  border: 1px solid #e2e8f0 !important;
+  transition: all 0.2s ease !important;
+  outline: none !important;
+  cursor: pointer !important;
+}
+
+.gov-dialog-cancel-btn:hover {
+  background: #e2e8f0 !important;
+  color: #1e293b !important;
+}
+
+.gov-dialog-cancel-btn:active {
+  transform: translateY(1px) scale(0.98) !important;
+}
+
+/* Chỉnh lại icon của SweetAlert2 */
+.gov-dialog-popup .swal2-icon {
+  margin: 8px auto 12px !important;
+  border-width: 3px !important;
+  transform: scale(0.95);
+}
+
+/* Animation mở hộp thoại mượt mà */
+.gov-dialog-show {
+  animation: govDialogIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+}
+
+.gov-dialog-hide {
+  animation: govDialogOut 0.15s cubic-bezier(0.4, 0, 1, 1) forwards !important;
+}
+
+@keyframes govDialogIn {
+  from {
+    opacity: 0;
+    transform: scale(0.92) translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes govDialogOut {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+
+/* ===================================================
+   RESPONSIVE CHO MOBILE (< 640px)
+   =================================================== */
+@media (max-width: 640px) {
+  .gov-dialog-popup {
+    padding: 24px 18px !important;
+    border-radius: 18px !important;
+    width: 92% !important;
+  }
+
+  .gov-dialog-title {
+    font-size: 1.15rem !important;
+  }
+
+  .gov-dialog-content {
+    font-size: 0.9rem !important;
+  }
+
+  .gov-dialog-actions {
+    flex-direction: column-reverse !important;
+    gap: 10px !important;
+    margin-top: 20px !important;
+  }
+
+  .gov-dialog-confirm-btn,
+  .gov-dialog-cancel-btn {
+    width: 100% !important;
+    padding: 13px !important;
+    text-align: center !important;
+  }
+}

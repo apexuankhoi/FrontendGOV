@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../lib/api';
+import { showError } from '../utils/dialog';
 import {
   Send, MapPin, Phone, User, FileText, AlertTriangle,
   ChevronDown, Camera, CheckCircle, Search, Clock,
@@ -90,7 +91,7 @@ const SupportRequest = () => {
       setSuccess(res.data);
       setForm({ senderName: '', senderPhone: '', senderAddress: '', category: '', content: '', urgency: 'MEDIUM', agencyId: '' });
     } catch (err) {
-      alert(err.response?.data?.message || 'Có lỗi xảy ra');
+      showError(err.response?.data?.message || 'Có lỗi xảy ra', 'Gửi yêu cầu chưa thành công');
     } finally {
       setLoading(false);
     }

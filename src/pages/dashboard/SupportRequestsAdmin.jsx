@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import api from '../../lib/api';
+import { showError } from '../../utils/dialog';
 import {
   Heart, Search, Filter, ChevronDown, ChevronRight,
   CheckCircle, Clock, User, Phone, MapPin, FileText,
@@ -81,7 +82,7 @@ const SupportRequestsAdmin = () => {
       setActionModal(null);
       setActionForm({ assignedTo: '', assignedPhone: '', resolution: '', rejectionReason: '', volunteersCount: '', hoursWorked: '', materialsUsed: '', beneficiariesCount: '', satisfactionRating: 5, reportNotes: '' });
     } catch (err) {
-      alert(err.response?.data?.message || 'Lỗi cập nhật');
+      showError(err.response?.data?.message || 'Lỗi cập nhật', 'Không thể cập nhật yêu cầu');
     } finally {
       setUpdating(false);
     }

@@ -4,6 +4,9 @@ import { MemoryRouter } from 'react-router-dom'
 import './index.css'
 import './citizen.css'
 import App from './App.jsx'
+import { initGlobalDialog } from './utils/dialog.js'
+
+initGlobalDialog();
 
 const initialPath = sessionStorage.getItem('currentPath') || '/';
 

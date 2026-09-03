@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import api from '../lib/api';
+import { showError } from '../utils/dialog';
 import {
   Globe, Phone, User, Store, MapPin, CheckCircle,
   Search, Loader2, ArrowRight, QrCode, ShieldCheck, Sparkles
@@ -66,7 +67,7 @@ const SmartwebRegister = () => {
       setSuccess(res.data);
     } catch (err) {
       const msg = err.response?.data?.message || 'Lỗi khi đăng ký';
-      alert(msg);
+      showError(msg, 'Đăng ký chưa thành công');
     } finally {
       setLoading(false);
     }

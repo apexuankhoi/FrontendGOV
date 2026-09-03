@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import api from '../../lib/api';
+import { showConfirm } from '../../utils/dialog';
 import { todayVN, toVNDateStr, formatDateVN } from '../../utils/dateVN';
 import { 
   Map, FileSpreadsheet, RefreshCw, Loader2, TrendingUp, Globe, 
@@ -60,7 +61,16 @@ const CampaignAdmin = () => {
   const canConfig = ['SENIOR_ADMIN', 'ADMIN', 'PROVINCE_ADMIN'].includes(role);
 
   const handleDeleteReport = async (reportId, agencyName) => {
-    if (!window.confirm(`Bạn có chắc chắn muốn xóa bản ghi báo cáo của "${agencyName || 'đơn vị này'}" không? Thao tác này không thể hoàn tác.`)) {
+    const confirmed = await showConfirm(
+      `Bạn có chắc chắn muốn xóa bản ghi báo cáo của <strong>"${agencyName || 'đơn vị này'}"</strong> không?<br/><span style="color:#ef4444;font-size:0.85rem">⚠️ Thao tác này không thể hoàn tác.</span>`,
+      {
+        title: 'Xóa bản ghi báo cáo?',
+        confirmText: 'Xóa vĩnh viễn',
+        cancelText: 'Hủy bỏ',
+        isDanger: true,
+      }
+    );
+    if (!confirmed) {
       return;
     }
     try {
