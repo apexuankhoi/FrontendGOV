@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import api from '../../lib/api';
 import { toast } from 'react-toastify';
 import { todayVN } from '../../utils/dateVN';
@@ -395,9 +395,47 @@ const Overview = () => {
       const communes  = (communesStatus.communes || []).sort((a, b) => (b.hasReported ? 1 : 0) - (a.hasReported ? 1 : 0));
       const chuaList  = communes.filter(c => !c.hasReported).map(c => c.agencyName).filter(Boolean);
 
+      // ── Tính điểm & phân loại từng xã/phường ──
+      // Mỗi xã có dữ liệu chỉ tiêu riêng từ backend (digitalSkills, vneidSupport, publicServices, qrSupport...)
+      const COMMUNE_TARGETS = {
+        digitalSkills: 980,   // ~100000/102
+        vneidSupport: 490,    // ~50000/102
+        publicServices: 294,  // ~30000/102
+        qrSupport: 98,        // ~10000/102
+        activeTeams: 1,
+        trainingClasses: 5,   // ~500/102
+        digitalModels: 1,
+        digitalProducts: 10,  // ~1000/102
+        youthTrained: 196,    // ~20000/102
+        youthProjects: 1,
+        smartwebCount: 1,
+      };
+      const scoredCommunes = communes.map(c => {
+        if (!c.hasReported) return { ...c, score: 0, group: 'CHUA' };
+        // Tính điểm % trung bình theo các chỉ tiêu có dữ liệu
+        const fields = [
+          { key: 'digitalSkills',   val: c.digitalSkills   || 0, target: COMMUNE_TARGETS.digitalSkills },
+          { key: 'vneidSupport',    val: c.vneidSupport    || 0, target: COMMUNE_TARGETS.vneidSupport },
+          { key: 'publicServices',  val: c.publicServices  || 0, target: COMMUNE_TARGETS.publicServices },
+          { key: 'qrSupport',       val: c.qrSupport       || 0, target: COMMUNE_TARGETS.qrSupport },
+          { key: 'trainingClasses', val: c.trainingClasses || 0, target: COMMUNE_TARGETS.trainingClasses },
+          { key: 'youthTrained',    val: c.youthTrained    || 0, target: COMMUNE_TARGETS.youthTrained },
+        ];
+        const total = fields.reduce((s, f) => s + Math.min(100, f.target > 0 ? Math.round(f.val / f.target * 100) : 0), 0);
+        const score = Math.round(total / fields.length);
+        const group = score >= 70 ? 'TOT' : score >= 40 ? 'CHAM' : 'YEU';
+        return { ...c, score, group };
+      });
+
+      const groupTot  = scoredCommunes.filter(c => c.group === 'TOT');
+      const groupCham = scoredCommunes.filter(c => c.group === 'CHAM');
+      const groupYeu  = scoredCommunes.filter(c => c.group === 'YEU');
+      const groupChua = scoredCommunes.filter(c => c.group === 'CHUA');
+
       // Lấy top 3 chỉ tiêu nổi bật và yếu nhất
       const topRows  = [...rows].sort((a, b) => b.pct - a.pct).slice(0, 3);
       const weakRows = [...rows].filter(r => r.pct < 70).sort((a, b) => a.pct - b.pct);
+
 
       // Trợ giúp tạo đoạn văn
       const P = (children, opts = {}) => new Paragraph({
@@ -549,6 +587,41 @@ const Overview = () => {
             P([T('3. ', { bold: true }), T('Tổ chức sơ kết, đánh giá kết quả từng giai đoạn, kịp thời biểu dương các tập thể và cá nhân có thành tích xuất sắc trong chiến dịch.')], { indent: true, afterSpacing: 120 }),
             P([T('4. ', { bold: true }), T('Đảm bảo số liệu báo cáo chính xác, kịp thời, phản ánh đúng thực tế triển khai tại cơ sở.')], { indent: true, afterSpacing: 300 }),
 
+            // ═══ V. PHÂN LOẠI ĐƠN VỊ ═══
+            P([], { afterSpacing: 200 }),
+            P([T('V. PHÂN LOẠI ĐƠN VỊ THEO MỨC ĐỘ THỰC HIỆN CHIẾN DỊCH', { bold: true, underline: true })], { afterSpacing: 120 }),
+            P([
+              T(`Căn cứ kết quả số liệu các chỉ tiêu do từng xã/phường báo cáo trong ngày ${printDate}, Ban Chấp hành Tỉnh Đoàn tổng hợp và phân loại mức độ thực hiện chiến dịch của các đơn vị như sau:`),
+            ], { indent: true }),
+
+            // Nhóm 1: Làm tốt
+            P([T(`1. Nhóm đơn vị thực hiện tốt (điểm ≥ 70%): `, { bold: true, color: '15803D' }), T(`${groupTot.length} đơn vị`, { bold: true, color: '15803D' })], { afterSpacing: 80 }),
+            groupTot.length > 0
+              ? P([T(groupTot.map((c, i) => `${i+1}. ${c.agencyName}${c.district ? ` (${c.district})` : ''} — điểm: ${c.score}%`).join('\n'), { size: 22, color: '166534' })], { indent: true, afterSpacing: 160 })
+              : P([T('(Không có đơn vị nào trong nhóm này)', { italic: true, size: 22, color: '888888' })], { indent: true, afterSpacing: 160 }),
+
+            // Nhóm 2: Làm chậm
+            P([T(`2. Nhóm đơn vị thực hiện chậm (điểm 40–69%): `, { bold: true, color: 'B45309' }), T(`${groupCham.length} đơn vị`, { bold: true, color: 'B45309' })], { afterSpacing: 80 }),
+            groupCham.length > 0
+              ? P([T(groupCham.map((c, i) => `${i+1}. ${c.agencyName}${c.district ? ` (${c.district})` : ''} — điểm: ${c.score}%`).join('\n'), { size: 22, color: '92400E' })], { indent: true, afterSpacing: 160 })
+              : P([T('(Không có đơn vị nào trong nhóm này)', { italic: true, size: 22, color: '888888' })], { indent: true, afterSpacing: 160 }),
+
+            // Nhóm 3: Chưa tốt (đã báo cáo nhưng điểm thấp)
+            P([T(`3. Nhóm đơn vị cần tăng cường, đôn đốc (điểm < 40%): `, { bold: true, color: 'B91C1C' }), T(`${groupYeu.length} đơn vị`, { bold: true, color: 'B91C1C' })], { afterSpacing: 80 }),
+            groupYeu.length > 0
+              ? P([T(groupYeu.map((c, i) => `${i+1}. ${c.agencyName}${c.district ? ` (${c.district})` : ''} — điểm: ${c.score}%`).join('\n'), { size: 22, color: '991B1B' })], { indent: true, afterSpacing: 160 })
+              : P([T('(Không có đơn vị nào trong nhóm này)', { italic: true, size: 22, color: '888888' })], { indent: true, afterSpacing: 160 }),
+
+            // Nhóm 4: Chưa báo cáo
+            P([T(`4. Nhóm đơn vị chưa nộp báo cáo trong ngày: `, { bold: true, color: '6B21A8' }), T(`${groupChua.length} đơn vị`, { bold: true, color: '6B21A8' })], { afterSpacing: 80 }),
+            groupChua.length > 0
+              ? P([T(groupChua.map((c, i) => `${i+1}. ${c.agencyName}${c.district ? ` (${c.district})` : ''}`).join('\n'), { size: 22, color: '7E22CE' })], { indent: true, afterSpacing: 200 })
+              : P([T('Tất cả các đơn vị đã nộp báo cáo trong ngày.', { bold: true, color: '15803D' })], { indent: true, afterSpacing: 200 }),
+
+            P([
+              T('Ban Chấp hành Tỉnh Đoàn yêu cầu Ban Thường vụ các huyện/thị đoàn chỉ đạo, đôn đốc các đơn vị thuộc nhóm chậm và chưa báo cáo khẩn trương triển khai, bổ sung số liệu và nộp báo cáo theo đúng thời hạn quy định.'),
+            ], { indent: true }),
+
             HR(),
 
             // ═══ CHỮ KÝ ═══
@@ -561,6 +634,7 @@ const Overview = () => {
             P([T('────────────────────────────────', { color: 'CCCCCC', size: 20 })], { right: true, afterSpacing: 300 }),
 
             P([T(`Báo cáo được tạo tự động từ Hệ thống Webgov Đắk Lắk — gov.daklak.site`, { size: 18, italic: true, color: '999999' })], { center: true }),
+
           ].filter(Boolean)
         }]
       });

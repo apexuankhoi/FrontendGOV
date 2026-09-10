@@ -35,6 +35,7 @@ const MyReport      = lazy(() => import('./pages/dashboard/MyReport'));
 const QRManager     = lazy(() => import('./pages/dashboard/QRManager'));
 const DtiReport     = lazy(() => import('./pages/dashboard/DtiReport'));
 const TinhDoanReport = lazy(() => import('./pages/dashboard/TinhDoanReport'));
+const AgencyReport  = lazy(() => import('./pages/dashboard/AgencyReport'));
 
 // eOffice Pages - Tính năng nâng cao, chỉ tải khi vào eOffice
 const EofficeDashboard  = lazy(() => import('./pages/dashboard/eoffice/EofficeDashboard'));
@@ -113,6 +114,7 @@ function App() {
             <Route path="campaigns" element={<ProtectedRoute allowedRoles={['PROVINCE_ADMIN', 'ADMIN', 'SENIOR_ADMIN']}><CampaignAdmin /></ProtectedRoute>} />
             <Route path="dti-report" element={<ProtectedRoute allowedRoles={['PROVINCE_ADMIN', 'ADMIN', 'SENIOR_ADMIN']}><DtiReport /></ProtectedRoute>} />
             <Route path="tinh-doan-report" element={<ProtectedRoute allowedRoles={['PROVINCE_ADMIN', 'ADMIN', 'SENIOR_ADMIN']}><TinhDoanReport /></ProtectedRoute>} />
+            <Route path="agency-report" element={<ProtectedRoute allowedRoles={['PROVINCE_ADMIN', 'ADMIN', 'SENIOR_ADMIN']}><AgencyReport /></ProtectedRoute>} />
             <Route path="my-report" element={<ProtectedRoute allowedRoles={['COMMUNE_ADMIN']}><MyReport /></ProtectedRoute>} />
             <Route path="smartweb" element={<ProtectedRoute allowedRoles={['COMMUNE_ADMIN', 'PROVINCE_ADMIN', 'ADMIN', 'SENIOR_ADMIN']}><SmartwebAdmin /></ProtectedRoute>} />
             <Route path="qr-manager" element={<ProtectedRoute allowedRoles={['PROVINCE_ADMIN', 'ADMIN', 'SENIOR_ADMIN']}><QRManager /></ProtectedRoute>} />
