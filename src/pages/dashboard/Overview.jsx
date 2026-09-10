@@ -2,6 +2,12 @@ import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import api from '../../lib/api';
 import { toast } from 'react-toastify';
 import { todayVN } from '../../utils/dateVN';
+import { saveAs } from 'file-saver';
+import {
+  Document, Packer, Paragraph, Table, TableRow, TableCell,
+  TextRun, HeadingLevel, AlignmentType, WidthType, BorderStyle,
+  ShadingType, VerticalAlign, TableBorders
+} from 'docx';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend
@@ -358,103 +364,170 @@ const Overview = () => {
     return true;
   });
 
-  // ─── IN BÁO CÁO CHUYÊN NGHIỆP ───────────────────────────────
-  const printReport = () => {
-    const printDate = new Date().toLocaleDateString('vi-VN', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' });
-    const printTime = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
-    const dayNum = countdownData.elapsed || 0;
-    const totalDays = countdownData.totalDays || 44;
-    const progressPct = countdownData.progress || 0;
+  // ─── XUẤT BÁO CÁO WORD (.docx) ───────────────────────────────
+  const exportWord = async () => {
+    toast.info('Đang tạo file Word, vui lòng chờ...');
+    try {
+      const now = new Date();
+      const printDate = now.toLocaleDateString('vi-VN', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' });
+      const printTime = now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+      const dayNum = countdownData.elapsed || 0;
+      const totalDays = countdownData.totalDays || 44;
+      const progressPct = countdownData.progress || 0;
+      const reportedCount = communesStatus.reportedCount || 0;
+      const unreportedCount = communesStatus.unreportedCount || 0;
+      const totalCommunes = communesStatus.totalCount || 102;
+      const username = localStorage.getItem('username') || '';
 
-    const rows = CORE_TARGET_LIST.map(t => {
-      const val = (isDaily ? (daily[t.key] || 0) : (cum[t.key] || (t.key === 'smartwebCount' ? (sw.total || 0) : 0)));
-      const pct = t.max > 0 ? Math.min(100, Math.round((val / t.max) * 100)) : 0;
-      const status = pct >= 100 ? '✅ Đạt' : pct >= 70 ? '🔶 Tốt' : pct >= 40 ? '🔵 Khá' : '⚠️ Cần đẩy';
-      return { ...t, val, pct, status };
-    });
+      const rows = CORE_TARGET_LIST.map(t => {
+        const val = isDaily ? (daily[t.key] || 0) : (cum[t.key] || (t.key === 'smartwebCount' ? (sw.total || 0) : 0));
+        const pct = t.max > 0 ? Math.min(100, Math.round((val / t.max) * 100)) : 0;
+        const status = pct >= 100 ? 'Dat' : pct >= 70 ? 'Tot' : pct >= 40 ? 'Kha' : 'Can day';
+        return { ...t, val, pct, status };
+      });
+      const overallPct = rows.length > 0 ? Math.round(rows.reduce((s, r) => s + r.pct, 0) / rows.length) : 0;
+      const communes = (communesStatus.communes || []).sort((a, b) => (b.hasReported ? 1 : 0) - (a.hasReported ? 1 : 0));
 
-    const communeRows = (communesStatus.communes || [])
-      .sort((a, b) => (b.hasReported ? 1 : 0) - (a.hasReported ? 1 : 0))
-      .map((c, i) => `
-        <tr style="background:${i % 2 === 0 ? '#F8FAFC' : '#fff'}">
-          <td style="padding:7px 10px;border:1px solid #E2E8F0;text-align:center;font-size:12px">${i + 1}</td>
-          <td style="padding:7px 10px;border:1px solid #E2E8F0;font-weight:600;font-size:12px">${c.agencyName || '—'}</td>
-          <td style="padding:7px 10px;border:1px solid #E2E8F0;font-size:12px">${c.district || '—'}</td>
-          <td style="padding:7px 10px;border:1px solid #E2E8F0;text-align:center;font-size:13px">${c.hasReported ? '<span style="color:#16A34A;font-weight:700">✅ Đã báo cáo</span>' : '<span style="color:#DC2626;font-weight:700">❌ Chưa</span>'}</td>
-          <td style="padding:7px 10px;border:1px solid #E2E8F0;font-size:12px;color:#64748B">${c.reporterName || '—'}</td>
-        </tr>
-      `).join('');
+      const BORDER = { style: BorderStyle.SINGLE, size: 6, color: '1E3A8A' };
+      const BORDER_LIGHT = { style: BorderStyle.SINGLE, size: 4, color: 'BFDBFE' };
+      const cellBorder = { top: BORDER_LIGHT, bottom: BORDER_LIGHT, left: BORDER_LIGHT, right: BORDER_LIGHT };
+      const headerShade = { type: ShadingType.SOLID, fill: '1E3A8A' };
+      const evenShade   = { type: ShadingType.SOLID, fill: 'EFF6FF' };
 
-    const targetRows = rows.map(r => `
-      <tr>
-        <td style="padding:8px 12px;border:1px solid #E2E8F0;font-size:12px">${r.icon} ${r.label}</td>
-        <td style="padding:8px 12px;border:1px solid #E2E8F0;text-align:right;font-weight:700;font-size:13px;color:#1E3A8A">${Number(r.val).toLocaleString('vi-VN')}</td>
-        <td style="padding:8px 12px;border:1px solid #E2E8F0;text-align:right;font-size:12px;color:#64748B">${Number(r.max).toLocaleString('vi-VN')} ${r.unit}</td>
-        <td style="padding:8px 12px;border:1px solid #E2E8F0;text-align:center">
-          <div style="background:#E2E8F0;border-radius:4px;height:8px;width:100%;min-width:80px;overflow:hidden">
-            <div style="height:8px;width:${r.pct}%;background:${r.pct>=100?'#16A34A':r.pct>=70?'#F59E0B':'#2563EB'};border-radius:4px"></div>
-          </div>
-          <span style="font-size:11px;font-weight:700;color:${r.pct>=100?'#16A34A':r.pct>=70?'#D97706':'#2563EB'}">${r.pct}%</span>
-        </td>
-        <td style="padding:8px 12px;border:1px solid #E2E8F0;text-align:center;font-size:12px;font-weight:600">${r.status}</td>
-      </tr>
-    `).join('');
+      const hCell = (text) => new TableCell({
+        shading: headerShade,
+        borders: cellBorder,
+        verticalAlign: VerticalAlign.CENTER,
+        children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text, bold: true, color: 'FFFFFF', size: 20, font: 'Times New Roman' })] })]
+      });
+      const dCell = (text, opts = {}) => new TableCell({
+        shading: opts.shade || undefined,
+        borders: cellBorder,
+        verticalAlign: VerticalAlign.CENTER,
+        children: [new Paragraph({
+          alignment: opts.center ? AlignmentType.CENTER : (opts.right ? AlignmentType.RIGHT : AlignmentType.LEFT),
+          children: [new TextRun({ text: String(text ?? ''), bold: opts.bold || false, color: opts.color || '1E293B', size: 19, font: 'Times New Roman' })]
+        })]
+      });
 
-    const reportedCount = communesStatus.reportedCount || 0;
-    const unreportedCount = communesStatus.unreportedCount || 0;
-    const totalCommunes = communesStatus.totalCount || 102;
-    const overallPct = rows.length > 0 ? Math.round(rows.reduce((s, r) => s + r.pct, 0) / rows.length) : 0;
+      // ── Bảng 11 chỉ tiêu ──
+      const targetTableRows = [
+        new TableRow({
+          tableHeader: true,
+          children: [
+            hCell('STT'), hCell('Chi tieu'), hCell('Luy ke'), hCell('Muc tieu'), hCell('Tien do (%)'), hCell('Danh gia')
+          ]
+        }),
+        ...rows.map((r, i) => new TableRow({
+          children: [
+            dCell(String(i + 1), { center: true, shade: i % 2 === 0 ? evenShade : undefined }),
+            dCell(r.label.replace(/[\u{1F300}-\u{1FFFF}]/gu, '').trim(), { shade: i % 2 === 0 ? evenShade : undefined }),
+            dCell(Number(r.val).toLocaleString('vi-VN'), { right: true, bold: true, color: '1E3A8A', shade: i % 2 === 0 ? evenShade : undefined }),
+            dCell(`${Number(r.max).toLocaleString('vi-VN')} ${r.unit}`, { center: true, shade: i % 2 === 0 ? evenShade : undefined }),
+            dCell(`${r.pct}%`, { center: true, bold: true, color: r.pct >= 100 ? '16A34A' : r.pct >= 70 ? 'D97706' : '2563EB', shade: i % 2 === 0 ? evenShade : undefined }),
+            dCell(r.pct >= 100 ? 'DAT' : r.pct >= 70 ? 'Tot' : r.pct >= 40 ? 'Kha' : 'Can day', { center: true, bold: true, color: r.pct >= 100 ? '16A34A' : r.pct >= 70 ? 'D97706' : r.pct >= 40 ? '2563EB' : 'DC2626', shade: i % 2 === 0 ? evenShade : undefined })
+          ]
+        }))
+      ];
 
-    const html = `<!DOCTYPE html>
-<html lang="vi">
-<head>
-<meta charset="UTF-8"/>
-<title>Báo cáo Chiến dịch 44 Ngày Đêm — Webgov Đắk Lắk</title>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap');
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Be Vietnam Pro', sans-serif; color: #1E293B; background: #fff; font-size: 13px; line-height: 1.5; }
-  .page { max-width: 900px; margin: 0 auto; padding: 24px 32px; }
-  .header { display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 16px; border-bottom: 3px solid #1E3A8A; margin-bottom: 20px; }
-  .header-left .org { font-size: 10px; font-weight: 700; color: #64748B; text-transform: uppercase; letter-spacing: .08em; }
-  .header-left .title { font-size: 20px; font-weight: 800; color: #1E3A8A; margin: 4px 0 2px; }
-  .header-left .sub { font-size: 12px; color: #475569; }
-  .header-right { text-align: right; font-size: 11px; color: #64748B; }
-  .header-right .date { font-weight: 700; color: #1E3A8A; font-size: 13px; }
-  .stamp { display: inline-block; background: #1E3A8A; color: #fff; font-size: 10px; font-weight: 700; padding: 3px 10px; border-radius: 20px; margin-top: 4px; }
+      // ── Bảng 102 xã ──
+      const communeTableRows = [
+        new TableRow({
+          tableHeader: true,
+          children: [hCell('STT'), hCell('Xa / Phuong'), hCell('Huyen / Thi xa'), hCell('Trang thai'), hCell('Nguoi nop bao cao')]
+        }),
+        ...communes.map((c, i) => new TableRow({
+          children: [
+            dCell(String(i + 1), { center: true, shade: i % 2 === 0 ? evenShade : undefined }),
+            dCell(c.agencyName || '—', { bold: true, shade: i % 2 === 0 ? evenShade : undefined }),
+            dCell(c.district || '—', { shade: i % 2 === 0 ? evenShade : undefined }),
+            dCell(c.hasReported ? 'DA BAO CAO' : 'CHUA BAO CAO', { center: true, bold: true, color: c.hasReported ? '16A34A' : 'DC2626', shade: i % 2 === 0 ? evenShade : undefined }),
+            dCell(c.reporterName || '—', { shade: i % 2 === 0 ? evenShade : undefined })
+          ]
+        }))
+      ];
 
-  .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
-  .summary-box { background: linear-gradient(135deg, #EFF6FF, #DBEAFE); border: 1.5px solid #BFDBFE; border-radius: 10px; padding: 12px 14px; }
-  .summary-box.green { background: linear-gradient(135deg, #F0FDF4, #DCFCE7); border-color: #BBF7D0; }
-  .summary-box.amber { background: linear-gradient(135deg, #FFFBEB, #FEF3C7); border-color: #FDE68A; }
-  .summary-box.red   { background: linear-gradient(135deg, #FFF1F2, #FFE4E6); border-color: #FECDD3; }
-  .summary-box .val { font-size: 22px; font-weight: 800; color: #1E3A8A; line-height: 1; }
-  .summary-box.green .val { color: #15803D; }
-  .summary-box.amber .val { color: #B45309; }
-  .summary-box.red   .val { color: #B91C1C; }
-  .summary-box .lbl { font-size: 10px; font-weight: 600; color: #64748B; margin-top: 3px; text-transform: uppercase; letter-spacing: .05em; }
+      const doc = new Document({
+        styles: {
+          default: {
+            document: {
+              run: { font: 'Times New Roman', size: 24, color: '1E293B' },
+            }
+          }
+        },
+        sections: [{
+          properties: {
+            page: {
+              margin: { top: 1134, bottom: 1134, left: 1701, right: 1134 } // 2cm top/bot, 3cm left, 2cm right
+            }
+          },
+          children: [
+            // ── TIÊU ĐỀ CƠ QUAN ──
+            new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 0 }, children: [new TextRun({ text: 'DOAN TNCS HO CHI MINH TINH DAK LAK', bold: true, size: 22, font: 'Times New Roman', allCaps: true })] }),
+            new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 200 }, children: [new TextRun({ text: 'BAN CHAP HANH TINH DOAN', bold: true, size: 22, font: 'Times New Roman' })] }),
 
-  .progress-banner { background: linear-gradient(135deg, #1E3A8A 0%, #0284C7 100%); border-radius: 10px; padding: 14px 20px; color: #fff; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
-  .progress-banner .prog-label { font-size: 11px; font-weight: 700; opacity: .8; text-transform: uppercase; letter-spacing: .06em; }
-  .progress-banner .prog-val { font-size: 28px; font-weight: 900; }
-  .progress-track { background: rgba(255,255,255,0.2); border-radius: 6px; height: 10px; width: 300px; overflow: hidden; margin-top: 6px; }
-  .progress-fill { height: 10px; background: #34D399; border-radius: 6px; }
+            // ── TIÊU ĐỀ BÁO CÁO ──
+            new Paragraph({ alignment: AlignmentType.CENTER, spacing: { before: 200, after: 100 }, children: [new TextRun({ text: 'CONG HOA XA HOI CHU NGHIA VIET NAM', bold: true, size: 24, font: 'Times New Roman', allCaps: true })] }),
+            new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 400 }, children: [new TextRun({ text: 'Doc lap - Tu do - Hanh phuc', bold: true, size: 24, font: 'Times New Roman' })] }),
+            new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 200 }, children: [new TextRun({ text: '---oOo---', size: 22, font: 'Times New Roman' })] }),
 
-  .section-title { font-size: 13px; font-weight: 800; color: #1E3A8A; text-transform: uppercase; letter-spacing: .06em; padding: 0 0 6px; border-bottom: 2px solid #BFDBFE; margin-bottom: 12px; margin-top: 24px; }
-  table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
-  th { background: #1E3A8A; color: #fff; padding: 8px 12px; text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; }
-  th:not(:first-child) { text-align: center; }
+            new Paragraph({ alignment: AlignmentType.CENTER, spacing: { before: 300, after: 100 }, children: [new TextRun({ text: 'BAO CAO TIEN DO CHIEN DICH 44 NGAY DEM', bold: true, size: 30, font: 'Times New Roman', allCaps: true })] }),
+            new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 100 }, children: [new TextRun({ text: 'Chuyen doi so - Dak Lak 2026', bold: true, size: 24, font: 'Times New Roman', italics: true })] }),
+            new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 400 }, children: [new TextRun({ text: `Ngay ${dayNum}/${totalDays} chien dich | ${printDate} | ${printTime}`, size: 22, color: '64748B', font: 'Times New Roman' })] }),
 
-  .footer { margin-top: 32px; padding-top: 16px; border-top: 1.5px solid #E2E8F0; display: flex; justify-content: space-between; font-size: 10px; color: #94A3B8; }
-  .sig-box { text-align: center; }
-  .sig-box .sig-role { font-size: 10px; font-weight: 700; color: #475569; text-transform: uppercase; }
-  .sig-box .sig-name { margin-top: 40px; font-weight: 700; border-top: 1px solid #CBD5E1; padding-top: 4px; display: inline-block; min-width: 120px; font-size: 11px; }
+            // ── I. TỔNG QUAN ──
+            new Paragraph({ heading: HeadingLevel.HEADING_1, spacing: { before: 300, after: 120 }, children: [new TextRun({ text: 'I. TONG QUAN TIEN DO CHIEN DICH', bold: true, size: 26, font: 'Times New Roman', color: '1E3A8A' })] }),
 
-  .evaluation { background: #FFFBEB; border: 1.5px solid #FDE68A; border-radius: 10px; padding: 14px 18px; margin-bottom: 20px; }
-  .evaluation h4 { font-size: 12px; font-weight: 800; color: #92400E; margin-bottom: 8px; }
-  .eval-row { display: flex; gap: 20px; flex-wrap: wrap; }
-  .eval-item { font-size: 11px; color: #78350F; }
-  .eval-item strong { color: #1E3A8A; font-weight: 800; }
+            new Paragraph({ spacing: { after: 80 }, children: [new TextRun({ text: `- Tien do thoi gian: `, bold: true, size: 24, font: 'Times New Roman' }), new TextRun({ text: `${progressPct}% (Ngay ${dayNum}/${totalDays})`, size: 24, font: 'Times New Roman' })] }),
+            new Paragraph({ spacing: { after: 80 }, children: [new TextRun({ text: `- Tien do trung binh 11 chi tieu: `, bold: true, size: 24, font: 'Times New Roman' }), new TextRun({ text: `${overallPct}%`, size: 24, font: 'Times New Roman', bold: true, color: overallPct >= 80 ? '16A34A' : '2563EB' })] }),
+            new Paragraph({ spacing: { after: 80 }, children: [new TextRun({ text: `- Xa/Phuong da nop bao cao trong ngay: `, bold: true, size: 24, font: 'Times New Roman' }), new TextRun({ text: `${reportedCount}/${totalCommunes} xa phuong`, size: 24, font: 'Times New Roman' })] }),
+            new Paragraph({ spacing: { after: 80 }, children: [new TextRun({ text: `- Xa/Phuong chua bao cao: `, bold: true, size: 24, font: 'Times New Roman' }), new TextRun({ text: `${unreportedCount} xa phuong`, size: 24, font: 'Times New Roman', color: unreportedCount > 0 ? 'DC2626' : '16A34A' })] }),
+            new Paragraph({ spacing: { after: 80 }, children: [new TextRun({ text: `- Trang thai chien dich: `, bold: true, size: 24, font: 'Times New Roman' }), new TextRun({ text: countdownData.status === 'ENDED' ? 'Da ket thuc' : countdownData.status === 'UPCOMING' ? 'Sap bat dau' : 'Dang dien ra', size: 24, font: 'Times New Roman', bold: true })] }),
+
+            // ── II. ĐÁNH GIÁ ──
+            new Paragraph({ heading: HeadingLevel.HEADING_1, spacing: { before: 300, after: 120 }, children: [new TextRun({ text: 'II. DANH GIA TONG QUAT', bold: true, size: 26, font: 'Times New Roman', color: '1E3A8A' })] }),
+            new Paragraph({ spacing: { after: 80 }, children: [new TextRun({ text: `- Chi tieu dat muc (>= 100%): `, bold: true, size: 24, font: 'Times New Roman' }), new TextRun({ text: `${rows.filter(r=>r.pct>=100).length}/${rows.length} chi tieu`, size: 24, font: 'Times New Roman', bold: true, color: '16A34A' })] }),
+            new Paragraph({ spacing: { after: 80 }, children: [new TextRun({ text: `- Chi tieu dat tot (70-99%): `, bold: true, size: 24, font: 'Times New Roman' }), new TextRun({ text: `${rows.filter(r=>r.pct>=70&&r.pct<100).length} chi tieu`, size: 24, font: 'Times New Roman' })] }),
+            new Paragraph({ spacing: { after: 80 }, children: [new TextRun({ text: `- Chi tieu dat kha (40-69%): `, bold: true, size: 24, font: 'Times New Roman' }), new TextRun({ text: `${rows.filter(r=>r.pct>=40&&r.pct<70).length} chi tieu`, size: 24, font: 'Times New Roman' })] }),
+            new Paragraph({ spacing: { after: 80 }, children: [new TextRun({ text: `- Can day manh them (< 40%): `, bold: true, size: 24, font: 'Times New Roman' }), new TextRun({ text: `${rows.filter(r=>r.pct<40).length} chi tieu`, size: 24, font: 'Times New Roman', bold: true, color: 'DC2626' })] }),
+
+            // ── III. BẢNG 11 CHỈ TIÊU ──
+            new Paragraph({ heading: HeadingLevel.HEADING_1, spacing: { before: 300, after: 120 }, children: [new TextRun({ text: 'III. CHI TIET 11 CHI TIEU CHIEN DICH', bold: true, size: 26, font: 'Times New Roman', color: '1E3A8A' })] }),
+            new Table({
+              width: { size: 100, type: WidthType.PERCENTAGE },
+              borders: { top: BORDER, bottom: BORDER, left: BORDER, right: BORDER, insideH: BORDER_LIGHT, insideV: BORDER_LIGHT },
+              rows: targetTableRows
+            }),
+
+            // ── IV. BẢNG XÃ/PHƯỜNG ──
+            new Paragraph({ heading: HeadingLevel.HEADING_1, spacing: { before: 300, after: 120 }, children: [new TextRun({ text: `IV. TINH HINH NOP BAO CAO 102 XA/PHUONG (${formattedFilterDate})`, bold: true, size: 26, font: 'Times New Roman', color: '1E3A8A' })] }),
+            new Table({
+              width: { size: 100, type: WidthType.PERCENTAGE },
+              borders: { top: BORDER, bottom: BORDER, left: BORDER, right: BORDER, insideH: BORDER_LIGHT, insideV: BORDER_LIGHT },
+              rows: communeTableRows
+            }),
+
+            // ── CHỮ KÝ ──
+            new Paragraph({ spacing: { before: 600, after: 100 }, alignment: AlignmentType.RIGHT, children: [new TextRun({ text: `Dak Lak, ${printDate}`, italics: true, size: 24, font: 'Times New Roman' })] }),
+            new Paragraph({ spacing: { after: 100 }, alignment: AlignmentType.RIGHT, children: [new TextRun({ text: 'NGUOI LAP BAO CAO', bold: true, size: 24, font: 'Times New Roman' })] }),
+            new Paragraph({ spacing: { after: 600 }, alignment: AlignmentType.RIGHT, children: [new TextRun({ text: '(Ky, ghi ro ho ten)', italics: true, size: 22, color: '94A3B8', font: 'Times New Roman' })] }),
+            new Paragraph({ spacing: { after: 100 }, alignment: AlignmentType.RIGHT, children: [new TextRun({ text: username || '________________________________', bold: true, size: 24, font: 'Times New Roman' })] }),
+
+            // ── GHI CHÚ ──
+            new Paragraph({ spacing: { before: 400, after: 0 }, border: { top: { style: BorderStyle.SINGLE, size: 4, color: 'E2E8F0' } }, children: [new TextRun({ text: `He thong Webgov Dak Lak — gov.daklak.site | Xuat bao cao luc ${printTime} ngay ${printDate}`, size: 18, color: '94A3B8', font: 'Times New Roman' })] }),
+          ]
+        }]
+      });
+
+      const blob = await Packer.toBlob(doc);
+      const filename = `BaoCao_ChienDich44NgayDem_${now.toISOString().slice(0,10)}.docx`;
+      saveAs(blob, filename);
+      toast.success(`Da tai xuong: ${filename}`);
+    } catch (err) {
+      console.error(err);
+      toast.error('Loi khi tao file Word: ' + (err.message || ''));
+    }
+  };
 
   @media print {
     body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -614,8 +687,8 @@ const Overview = () => {
           <button className="btn btn-outline" onClick={fetchAll} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <RefreshCw size={15} /> Làm mới
           </button>
-          <button className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: 6 }} onClick={printReport}>
-            <Printer size={16} /> In Báo cáo
+          <button className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: 6 }} onClick={exportWord}>
+            <FileSpreadsheet size={16} /> Xuất Word (.docx)
           </button>
         </div>
       </div>
