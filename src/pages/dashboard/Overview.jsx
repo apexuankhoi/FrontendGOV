@@ -17,7 +17,7 @@ import {
   Globe, QrCode, Smartphone, Shield, TrendingUp, Zap, RefreshCw, Landmark,
   Settings, X, Save, Calendar, ExternalLink, AlertCircle, Search, Filter,
   CheckCircle2, XCircle, FileSpreadsheet, Eye, ChevronRight, Info,
-  Copy, Check, Share2, FileText, Sparkles, Layers
+  Copy, Check, Share2, FileText, Sparkles, Layers, BarChart3
 } from 'lucide-react';
 
 const COLORS = ['#10B981', '#F59E0B', '#1a3a6b', '#9333EA', '#EF4444'];
@@ -649,6 +649,200 @@ const Overview = () => {
     }
   };
 
+  // ─── XUẤT BẢNG XẾP HẠNG 102 ĐƠN VỊ (.docx) ───────────────────
+  const exportRankingWord = async () => {
+    toast.info('Đang tạo bảng xếp hạng 102 đơn vị...');
+    try {
+      const now = new Date();
+      const ngay = now.getDate(), thang = now.getMonth() + 1, nam = now.getFullYear();
+      const printDate = `ngày ${String(ngay).padStart(2,'0')} tháng ${String(thang).padStart(2,'0')} năm ${nam}`;
+      const printTime = now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+
+      const COMMUNE_TARGETS = {
+        digitalSkills: 980, vneidSupport: 490, publicServices: 294,
+        qrSupport: 98, trainingClasses: 5, youthTrained: 196,
+      };
+      const communes = (communesStatus.communes || []).map(c => {
+        if (!c.hasReported) return { ...c, score: 0, group: 'CHUA', pcts: {} };
+        const pcts = {};
+        let total = 0, count = 0;
+        Object.entries(COMMUNE_TARGETS).forEach(([k, target]) => {
+          const pct = target > 0 ? Math.min(100, Math.round((c[k] || 0) / target * 100)) : 0;
+          pcts[k] = pct;
+          total += pct; count++;
+        });
+        const score = count > 0 ? Math.round(total / count) : 0;
+        const group = score >= 70 ? 'TOT' : score >= 40 ? 'CHAM' : 'YEU';
+        return { ...c, score, group, pcts };
+      });
+
+      // Sắp xếp: đã báo cáo theo điểm giảm dần, chưa báo cáo cuối
+      const sorted = [
+        ...communes.filter(c => c.group === 'TOT').sort((a, b) => b.score - a.score),
+        ...communes.filter(c => c.group === 'CHAM').sort((a, b) => b.score - a.score),
+        ...communes.filter(c => c.group === 'YEU').sort((a, b) => b.score - a.score),
+        ...communes.filter(c => c.group === 'CHUA'),
+      ];
+
+      const totCount  = communes.filter(c => c.group === 'TOT').length;
+      const chamCount = communes.filter(c => c.group === 'CHAM').length;
+      const yeuCount  = communes.filter(c => c.group === 'YEU').length;
+      const chuaCount = communes.filter(c => c.group === 'CHUA').length;
+
+      // ── Helpers ──
+      const P = (children, opts = {}) => new Paragraph({
+        alignment: opts.center ? AlignmentType.CENTER : opts.right ? AlignmentType.RIGHT : AlignmentType.JUSTIFIED,
+        spacing: { after: opts.after ?? 200, line: 360, lineRule: 'auto' },
+        indent: opts.indent ? { firstLine: 720 } : undefined,
+        children,
+      });
+      const T = (text, opts = {}) => new TextRun({
+        text: String(text ?? ''), bold: opts.bold || false, italics: opts.italic || false,
+        size: opts.size || 24, font: 'Times New Roman', color: opts.color || '000000',
+        underline: opts.underline ? {} : undefined,
+      });
+      const HR = () => new Paragraph({ border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: '1E3A8A' } }, spacing: { after: 200 }, children: [] });
+
+      const bL = { style: BorderStyle.SINGLE, size: 4, color: 'BFDBFE' };
+      const bD = { style: BorderStyle.SINGLE, size: 6, color: '1E3A8A' };
+      const cBdr = { top: bL, bottom: bL, left: bL, right: bL };
+
+      const groupColor = (g) => g === 'TOT' ? '15803D' : g === 'CHAM' ? 'B45309' : g === 'YEU' ? 'B91C1C' : '6B21A8';
+      const groupLabel = (g) => g === 'TOT' ? 'TỐT' : g === 'CHAM' ? 'CHẬM' : g === 'YEU' ? 'CẦN ĐÔN ĐỐC' : 'CHƯA BÁO CÁO';
+      const groupShade = (g) => ({
+        type: ShadingType.SOLID,
+        fill: g === 'TOT' ? 'F0FDF4' : g === 'CHAM' ? 'FFFBEB' : g === 'YEU' ? 'FFF1F2' : 'F5F3FF',
+      });
+
+      const hCell = (text, w) => new TableCell({
+        shading: { type: ShadingType.SOLID, fill: '1E3A8A' },
+        borders: cBdr, verticalAlign: VerticalAlign.CENTER,
+        width: w ? { size: w, type: WidthType.PERCENTAGE } : undefined,
+        children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [T(text, { bold: true, color: 'FFFFFF', size: 18 })] })],
+      });
+      const dCell = (text, opts = {}) => new TableCell({
+        shading: opts.shade, borders: cBdr, verticalAlign: VerticalAlign.CENTER,
+        width: opts.w ? { size: opts.w, type: WidthType.PERCENTAGE } : undefined,
+        children: [new Paragraph({ alignment: opts.center ? AlignmentType.CENTER : opts.right ? AlignmentType.RIGHT : AlignmentType.LEFT, children: [T(text, opts)] })],
+      });
+
+      // ── Bảng tổng hợp (header) ──
+      const summaryRows = [
+        new TableRow({ tableHeader: true, children: [hCell('Nhóm', 30), hCell('Số đơn vị', 15), hCell('Tỷ lệ', 15), hCell('Tiêu chí', 40)] }),
+        new TableRow({ children: [
+          dCell('✅ Tốt (≥ 70 điểm)', { bold: true, color: '15803D', shade: { type: ShadingType.SOLID, fill: 'F0FDF4' } }),
+          dCell(String(totCount), { center: true, bold: true, color: '15803D', shade: { type: ShadingType.SOLID, fill: 'F0FDF4' } }),
+          dCell(`${communes.length > 0 ? Math.round(totCount / communes.length * 100) : 0}%`, { center: true, bold: true, color: '15803D', shade: { type: ShadingType.SOLID, fill: 'F0FDF4' } }),
+          dCell('Đã báo cáo, điểm trung bình ≥ 70%', { shade: { type: ShadingType.SOLID, fill: 'F0FDF4' } }),
+        ]}),
+        new TableRow({ children: [
+          dCell('⚠️ Chậm (40–69 điểm)', { bold: true, color: 'B45309', shade: { type: ShadingType.SOLID, fill: 'FFFBEB' } }),
+          dCell(String(chamCount), { center: true, bold: true, color: 'B45309', shade: { type: ShadingType.SOLID, fill: 'FFFBEB' } }),
+          dCell(`${communes.length > 0 ? Math.round(chamCount / communes.length * 100) : 0}%`, { center: true, bold: true, color: 'B45309', shade: { type: ShadingType.SOLID, fill: 'FFFBEB' } }),
+          dCell('Đã báo cáo, điểm trung bình 40–69%', { shade: { type: ShadingType.SOLID, fill: 'FFFBEB' } }),
+        ]}),
+        new TableRow({ children: [
+          dCell('❌ Cần đôn đốc (< 40 điểm)', { bold: true, color: 'B91C1C', shade: { type: ShadingType.SOLID, fill: 'FFF1F2' } }),
+          dCell(String(yeuCount), { center: true, bold: true, color: 'B91C1C', shade: { type: ShadingType.SOLID, fill: 'FFF1F2' } }),
+          dCell(`${communes.length > 0 ? Math.round(yeuCount / communes.length * 100) : 0}%`, { center: true, bold: true, color: 'B91C1C', shade: { type: ShadingType.SOLID, fill: 'FFF1F2' } }),
+          dCell('Đã báo cáo nhưng điểm < 40%', { shade: { type: ShadingType.SOLID, fill: 'FFF1F2' } }),
+        ]}),
+        new TableRow({ children: [
+          dCell('🔴 Chưa báo cáo', { bold: true, color: '6B21A8', shade: { type: ShadingType.SOLID, fill: 'F5F3FF' } }),
+          dCell(String(chuaCount), { center: true, bold: true, color: '6B21A8', shade: { type: ShadingType.SOLID, fill: 'F5F3FF' } }),
+          dCell(`${communes.length > 0 ? Math.round(chuaCount / communes.length * 100) : 0}%`, { center: true, bold: true, color: '6B21A8', shade: { type: ShadingType.SOLID, fill: 'F5F3FF' } }),
+          dCell('Chưa nộp báo cáo trong ngày', { shade: { type: ShadingType.SOLID, fill: 'F5F3FF' } }),
+        ]}),
+      ];
+
+      // ── Bảng chi tiết 102 đơn vị ──
+      const detailRows = [
+        new TableRow({
+          tableHeader: true,
+          children: [
+            hCell('STT', 5), hCell('Đơn vị', 24), hCell('Huyện/TX', 14),
+            hCell('KNS', 6), hCell('VNeID', 6), hCell('DVC', 6),
+            hCell('QR', 6), hCell('Lớp', 6), hCell('AI', 6),
+            hCell('Điểm', 7), hCell('Xếp loại', 10),
+          ],
+        }),
+        ...sorted.map((c, i) => {
+          const shade = groupShade(c.group);
+          const color = groupColor(c.group);
+          return new TableRow({
+            children: [
+              dCell(String(i + 1), { center: true, shade, size: 18 }),
+              dCell(c.agencyName || '—', { bold: true, shade, size: 18 }),
+              dCell(c.district || '—', { shade, size: 18 }),
+              dCell(c.hasReported ? String(c.digitalSkills || 0) : '—', { center: true, shade, size: 18 }),
+              dCell(c.hasReported ? String(c.vneidSupport || 0) : '—', { center: true, shade, size: 18 }),
+              dCell(c.hasReported ? String(c.publicServices || 0) : '—', { center: true, shade, size: 18 }),
+              dCell(c.hasReported ? String(c.qrSupport || 0) : '—', { center: true, shade, size: 18 }),
+              dCell(c.hasReported ? String(c.trainingClasses || 0) : '—', { center: true, shade, size: 18 }),
+              dCell(c.hasReported ? String(c.youthTrained || 0) : '—', { center: true, shade, size: 18 }),
+              dCell(c.hasReported ? `${c.score}%` : '—', { center: true, bold: true, color, shade, size: 18 }),
+              dCell(groupLabel(c.group), { center: true, bold: true, color, shade, size: 18 }),
+            ],
+          });
+        }),
+      ];
+
+      const doc = new Document({
+        styles: { default: { document: { run: { font: 'Times New Roman', size: 24 } } } },
+        sections: [{
+          properties: { page: { margin: { top: 1134, bottom: 1134, left: 1134, right: 851 }, orientation: 'landscape' } },
+          children: [
+            P([T('ĐOÀN TNCS HỒ CHÍ MINH TỈNH ĐẮK LẮK', { bold: true, size: 22 })], { center: true, after: 0 }),
+            P([T('BAN CHẤP HÀNH TỈNH ĐOÀN', { bold: true, size: 22 })], { center: true, after: 0 }),
+            P([T('─────────────────', { size: 20, color: '1E3A8A' })], { center: true, after: 120 }),
+            P([T('CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM', { bold: true, size: 22 })], { center: true, after: 0 }),
+            P([T('Độc lập – Tự do – Hạnh phúc', { bold: true, size: 22 })], { center: true, after: 0 }),
+            P([T('────────────────────', { size: 20, color: '1E3A8A' })], { center: true, after: 120 }),
+            P([T(`Đắk Lắk, ${printDate}`, { italic: true })], { right: true, after: 300 }),
+
+            P([T('BẢNG XẾP HẠNG', { bold: true, size: 28 })], { center: true, after: 80 }),
+            P([T('Mức độ thực hiện Chiến dịch "44 Ngày Đêm" Chuyển đổi số', { bold: true, size: 26 })], { center: true, after: 80 }),
+            P([T(`102 Xã/Phường/Thị trấn — Đắk Lắk 2026`, { bold: true, size: 24 })], { center: true, after: 80 }),
+            P([T(`Thời điểm: ${printTime}, ${printDate}`, { italic: true, size: 22, color: '555555' })], { center: true, after: 400 }),
+            HR(),
+
+            P([T('I. TỔNG HỢP THEO NHÓM', { bold: true, underline: true })], { after: 120 }),
+            new Table({ width: { size: 100, type: WidthType.PERCENTAGE }, borders: { top: bD, bottom: bD, left: bD, right: bD, insideH: bL, insideV: bL }, rows: summaryRows }),
+
+            P([T('II. BẢNG CHI TIẾT 102 ĐƠN VỊ', { bold: true, underline: true })], { after: 120 }),
+            P([
+              T('Ghi chú: '),
+              T('KNS', { bold: true }), T(' = Kỹ năng số; '),
+              T('VNeID', { bold: true }), T(' = Kích hoạt VNeID mức 2; '),
+              T('DVC', { bold: true }), T(' = Dịch vụ công trực tuyến; '),
+              T('QR', { bold: true }), T(' = QR thanh toán; '),
+              T('Lớp', { bold: true }), T(' = Lớp tập huấn; '),
+              T('AI', { bold: true }), T(' = Đoàn viên tập huấn AI.'),
+            ], { after: 120 }),
+            new Table({ width: { size: 100, type: WidthType.PERCENTAGE }, borders: { top: bD, bottom: bD, left: bD, right: bD, insideH: bL, insideV: bL }, rows: detailRows }),
+
+            P([], { after: 300 }),
+            HR(),
+            P([T(`Nơi nhận:\n– Ban Thường vụ Tỉnh Đoàn;\n– Các huyện/thị đoàn;\n– Lưu VT.`, { size: 22, italic: true })], { after: 0 }),
+            P([T('TM. BAN CHẤP HÀNH TỈNH ĐOÀN', { bold: true })], { right: true, after: 80 }),
+            P([T('BÍ THƯ', { bold: true })], { right: true, after: 0 }),
+            P([T('(Ký, đóng dấu)', { italic: true, size: 22, color: '888888' })], { right: true, after: 600 }),
+            P([T(localStorage.getItem('username') || '________________________________', { bold: true })], { right: true, after: 300 }),
+            P([T(`Xuất lúc ${printTime} — Webgov Đắk Lắk — gov.daklak.site`, { size: 18, italic: true, color: '999999' })], { center: true }),
+          ],
+        }],
+      });
+
+      const blob = await Packer.toBlob(doc);
+      const filename = `BangXepHang_102DonVi_${now.toISOString().slice(0, 10)}.docx`;
+      saveAs(blob, filename);
+      toast.success(`✅ Đã tải xuống: ${filename}`);
+    } catch (err) {
+      console.error(err);
+      toast.error('Lỗi tạo bảng xếp hạng: ' + (err.message || ''));
+    }
+  };
+
   return (
 
     <div className="animate-up" style={{ paddingBottom: 40 }}>
@@ -678,6 +872,14 @@ const Overview = () => {
           </button>
           <button className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: 6 }} onClick={exportWord}>
             <FileSpreadsheet size={16} /> Xuất Word (.docx)
+          </button>
+          <button
+            className="btn btn-outline"
+            style={{ display: 'flex', alignItems: 'center', gap: 6, borderColor: '#16A34A', color: '#16A34A', background: '#F0FDF4', fontWeight: 700 }}
+            onClick={exportRankingWord}
+            title="Xuất bảng xếp hạng 102 xã/phường dạng Word"
+          >
+            <BarChart3 size={16} /> Bảng 102 Đơn vị
           </button>
         </div>
       </div>
