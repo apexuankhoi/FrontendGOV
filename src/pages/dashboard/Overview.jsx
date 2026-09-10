@@ -358,7 +358,237 @@ const Overview = () => {
     return true;
   });
 
+  // ─── IN BÁO CÁO CHUYÊN NGHIỆP ───────────────────────────────
+  const printReport = () => {
+    const printDate = new Date().toLocaleDateString('vi-VN', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' });
+    const printTime = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+    const dayNum = countdownData.elapsed || 0;
+    const totalDays = countdownData.totalDays || 44;
+    const progressPct = countdownData.progress || 0;
+
+    const rows = CORE_TARGET_LIST.map(t => {
+      const val = (isDaily ? (daily[t.key] || 0) : (cum[t.key] || (t.key === 'smartwebCount' ? (sw.total || 0) : 0)));
+      const pct = t.max > 0 ? Math.min(100, Math.round((val / t.max) * 100)) : 0;
+      const status = pct >= 100 ? '✅ Đạt' : pct >= 70 ? '🔶 Tốt' : pct >= 40 ? '🔵 Khá' : '⚠️ Cần đẩy';
+      return { ...t, val, pct, status };
+    });
+
+    const communeRows = (communesStatus.communes || [])
+      .sort((a, b) => (b.hasReported ? 1 : 0) - (a.hasReported ? 1 : 0))
+      .map((c, i) => `
+        <tr style="background:${i % 2 === 0 ? '#F8FAFC' : '#fff'}">
+          <td style="padding:7px 10px;border:1px solid #E2E8F0;text-align:center;font-size:12px">${i + 1}</td>
+          <td style="padding:7px 10px;border:1px solid #E2E8F0;font-weight:600;font-size:12px">${c.agencyName || '—'}</td>
+          <td style="padding:7px 10px;border:1px solid #E2E8F0;font-size:12px">${c.district || '—'}</td>
+          <td style="padding:7px 10px;border:1px solid #E2E8F0;text-align:center;font-size:13px">${c.hasReported ? '<span style="color:#16A34A;font-weight:700">✅ Đã báo cáo</span>' : '<span style="color:#DC2626;font-weight:700">❌ Chưa</span>'}</td>
+          <td style="padding:7px 10px;border:1px solid #E2E8F0;font-size:12px;color:#64748B">${c.reporterName || '—'}</td>
+        </tr>
+      `).join('');
+
+    const targetRows = rows.map(r => `
+      <tr>
+        <td style="padding:8px 12px;border:1px solid #E2E8F0;font-size:12px">${r.icon} ${r.label}</td>
+        <td style="padding:8px 12px;border:1px solid #E2E8F0;text-align:right;font-weight:700;font-size:13px;color:#1E3A8A">${Number(r.val).toLocaleString('vi-VN')}</td>
+        <td style="padding:8px 12px;border:1px solid #E2E8F0;text-align:right;font-size:12px;color:#64748B">${Number(r.max).toLocaleString('vi-VN')} ${r.unit}</td>
+        <td style="padding:8px 12px;border:1px solid #E2E8F0;text-align:center">
+          <div style="background:#E2E8F0;border-radius:4px;height:8px;width:100%;min-width:80px;overflow:hidden">
+            <div style="height:8px;width:${r.pct}%;background:${r.pct>=100?'#16A34A':r.pct>=70?'#F59E0B':'#2563EB'};border-radius:4px"></div>
+          </div>
+          <span style="font-size:11px;font-weight:700;color:${r.pct>=100?'#16A34A':r.pct>=70?'#D97706':'#2563EB'}">${r.pct}%</span>
+        </td>
+        <td style="padding:8px 12px;border:1px solid #E2E8F0;text-align:center;font-size:12px;font-weight:600">${r.status}</td>
+      </tr>
+    `).join('');
+
+    const reportedCount = communesStatus.reportedCount || 0;
+    const unreportedCount = communesStatus.unreportedCount || 0;
+    const totalCommunes = communesStatus.totalCount || 102;
+    const overallPct = rows.length > 0 ? Math.round(rows.reduce((s, r) => s + r.pct, 0) / rows.length) : 0;
+
+    const html = `<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8"/>
+<title>Báo cáo Chiến dịch 44 Ngày Đêm — Webgov Đắk Lắk</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap');
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Be Vietnam Pro', sans-serif; color: #1E293B; background: #fff; font-size: 13px; line-height: 1.5; }
+  .page { max-width: 900px; margin: 0 auto; padding: 24px 32px; }
+  .header { display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 16px; border-bottom: 3px solid #1E3A8A; margin-bottom: 20px; }
+  .header-left .org { font-size: 10px; font-weight: 700; color: #64748B; text-transform: uppercase; letter-spacing: .08em; }
+  .header-left .title { font-size: 20px; font-weight: 800; color: #1E3A8A; margin: 4px 0 2px; }
+  .header-left .sub { font-size: 12px; color: #475569; }
+  .header-right { text-align: right; font-size: 11px; color: #64748B; }
+  .header-right .date { font-weight: 700; color: #1E3A8A; font-size: 13px; }
+  .stamp { display: inline-block; background: #1E3A8A; color: #fff; font-size: 10px; font-weight: 700; padding: 3px 10px; border-radius: 20px; margin-top: 4px; }
+
+  .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+  .summary-box { background: linear-gradient(135deg, #EFF6FF, #DBEAFE); border: 1.5px solid #BFDBFE; border-radius: 10px; padding: 12px 14px; }
+  .summary-box.green { background: linear-gradient(135deg, #F0FDF4, #DCFCE7); border-color: #BBF7D0; }
+  .summary-box.amber { background: linear-gradient(135deg, #FFFBEB, #FEF3C7); border-color: #FDE68A; }
+  .summary-box.red   { background: linear-gradient(135deg, #FFF1F2, #FFE4E6); border-color: #FECDD3; }
+  .summary-box .val { font-size: 22px; font-weight: 800; color: #1E3A8A; line-height: 1; }
+  .summary-box.green .val { color: #15803D; }
+  .summary-box.amber .val { color: #B45309; }
+  .summary-box.red   .val { color: #B91C1C; }
+  .summary-box .lbl { font-size: 10px; font-weight: 600; color: #64748B; margin-top: 3px; text-transform: uppercase; letter-spacing: .05em; }
+
+  .progress-banner { background: linear-gradient(135deg, #1E3A8A 0%, #0284C7 100%); border-radius: 10px; padding: 14px 20px; color: #fff; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+  .progress-banner .prog-label { font-size: 11px; font-weight: 700; opacity: .8; text-transform: uppercase; letter-spacing: .06em; }
+  .progress-banner .prog-val { font-size: 28px; font-weight: 900; }
+  .progress-track { background: rgba(255,255,255,0.2); border-radius: 6px; height: 10px; width: 300px; overflow: hidden; margin-top: 6px; }
+  .progress-fill { height: 10px; background: #34D399; border-radius: 6px; }
+
+  .section-title { font-size: 13px; font-weight: 800; color: #1E3A8A; text-transform: uppercase; letter-spacing: .06em; padding: 0 0 6px; border-bottom: 2px solid #BFDBFE; margin-bottom: 12px; margin-top: 24px; }
+  table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
+  th { background: #1E3A8A; color: #fff; padding: 8px 12px; text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; }
+  th:not(:first-child) { text-align: center; }
+
+  .footer { margin-top: 32px; padding-top: 16px; border-top: 1.5px solid #E2E8F0; display: flex; justify-content: space-between; font-size: 10px; color: #94A3B8; }
+  .sig-box { text-align: center; }
+  .sig-box .sig-role { font-size: 10px; font-weight: 700; color: #475569; text-transform: uppercase; }
+  .sig-box .sig-name { margin-top: 40px; font-weight: 700; border-top: 1px solid #CBD5E1; padding-top: 4px; display: inline-block; min-width: 120px; font-size: 11px; }
+
+  .evaluation { background: #FFFBEB; border: 1.5px solid #FDE68A; border-radius: 10px; padding: 14px 18px; margin-bottom: 20px; }
+  .evaluation h4 { font-size: 12px; font-weight: 800; color: #92400E; margin-bottom: 8px; }
+  .eval-row { display: flex; gap: 20px; flex-wrap: wrap; }
+  .eval-item { font-size: 11px; color: #78350F; }
+  .eval-item strong { color: #1E3A8A; font-weight: 800; }
+
+  @media print {
+    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .page { padding: 16px 20px; }
+    .section-title { margin-top: 16px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-left">
+      <div class="org">🏛️ ĐẢNG BỘ ĐOÀN TNCS HỒ CHÍ MINH TỈNH ĐẮK LẮK</div>
+      <div class="title">📊 Báo cáo Tiến độ Chiến dịch 44 Ngày Đêm</div>
+      <div class="sub">${config.campaignName || 'Chiến dịch Chuyển đổi số — Đắk Lắk 2026'}</div>
+    </div>
+    <div class="header-right">
+      <div class="date">📅 ${printDate}</div>
+      <div style="margin-top:2px">⏰ ${printTime}</div>
+      <div class="stamp">Ngày ${dayNum}/${totalDays} Chiến dịch</div>
+      <div style="margin-top:4px;font-size:10px">Webgov Đắk Lắk — gov.daklak.site</div>
+    </div>
+  </div>
+
+  <!-- TỔNG QUAN NHANH -->
+  <div class="summary-grid">
+    <div class="summary-box">
+      <div class="val">${progressPct}%</div>
+      <div class="lbl">⏱ Tiến độ thời gian</div>
+    </div>
+    <div class="summary-box green">
+      <div class="val">${overallPct}%</div>
+      <div class="lbl">📈 Tiến độ trung bình 11 chỉ tiêu</div>
+    </div>
+    <div class="summary-box amber">
+      <div class="val">${reportedCount}/${totalCommunes}</div>
+      <div class="lbl">🏘️ Xã/Phường đã báo cáo hôm nay</div>
+    </div>
+    <div class="summary-box ${unreportedCount > 0 ? 'red' : 'green'}">
+      <div class="val">${unreportedCount}</div>
+      <div class="lbl">⚠️ Xã/Phường chưa báo cáo</div>
+    </div>
+  </div>
+
+  <!-- TIẾN ĐỘ CHIẾN DỊCH -->
+  <div class="progress-banner">
+    <div>
+      <div class="prog-label">⏳ Tiến độ thời gian chiến dịch</div>
+      <div class="prog-val">${progressPct}% <span style="font-size:14px;font-weight:600;opacity:.8">hoàn thành</span></div>
+      <div style="font-size:11px;opacity:.75;margin-top:2px">Ngày ${dayNum} / ${totalDays} ngày — ${countdownData.status === 'ENDED' ? '🏆 Đã kết thúc' : countdownData.status === 'UPCOMING' ? '⏳ Sắp bắt đầu' : '🔥 Đang diễn ra'}</div>
+    </div>
+    <div>
+      <div class="prog-label">Thời gian còn lại</div>
+      ${countdownData.status === 'RUNNING' ? `<div style="font-size:22px;font-weight:900">${countdownData.days}n ${countdownData.hours}h ${countdownData.minutes}ph</div>` : `<div style="font-size:18px;font-weight:800">${countdownData.status === 'ENDED' ? '🎉 Kết thúc' : '⏳ Chưa bắt đầu'}</div>`}
+      <div class="progress-track"><div class="progress-fill" style="width:${progressPct}%"></div></div>
+    </div>
+  </div>
+
+  <!-- ĐÁNH GIÁ TỔNG QUÁT -->
+  <div class="evaluation">
+    <h4>🔍 Đánh giá tổng quát</h4>
+    <div class="eval-row">
+      <div class="eval-item">Đạt chỉ tiêu (≥100%): <strong>${rows.filter(r=>r.pct>=100).length}/${rows.length} chỉ tiêu</strong></div>
+      <div class="eval-item">Tốt (70–99%): <strong>${rows.filter(r=>r.pct>=70&&r.pct<100).length} chỉ tiêu</strong></div>
+      <div class="eval-item">Khá (40–69%): <strong>${rows.filter(r=>r.pct>=40&&r.pct<70).length} chỉ tiêu</strong></div>
+      <div class="eval-item">Cần đẩy mạnh (&lt;40%): <strong style="color:#B91C1C">${rows.filter(r=>r.pct<40).length} chỉ tiêu</strong></div>
+      <div class="eval-item">Xã đã nộp báo cáo: <strong>${reportedCount}/${totalCommunes} (${totalCommunes>0?Math.round(reportedCount/totalCommunes*100):0}%)</strong></div>
+    </div>
+  </div>
+
+  <!-- BẢNG 11 CHỈ TIÊU -->
+  <div class="section-title">📋 Chi tiết 11 Chỉ tiêu Chiến dịch</div>
+  <table>
+    <thead>
+      <tr>
+        <th style="width:40%">Chỉ tiêu</th>
+        <th style="width:15%">Lũy kế</th>
+        <th style="width:15%">Mục tiêu</th>
+        <th style="width:20%">Tiến độ</th>
+        <th style="width:10%">Đánh giá</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${targetRows}
+    </tbody>
+  </table>
+
+  <!-- BẢNG XÃ/PHƯỜNG -->
+  <div class="section-title">🏘️ Tình hình nộp báo cáo 102 Xã/Phường — ${formattedFilterDate}</div>
+  <table>
+    <thead>
+      <tr>
+        <th style="width:5%;text-align:center">#</th>
+        <th style="width:30%">Xã / Phường</th>
+        <th style="width:20%">Huyện / Thị xã</th>
+        <th style="width:20%;text-align:center">Trạng thái</th>
+        <th style="width:25%">Người nộp</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${communeRows || '<tr><td colspan="5" style="text-align:center;padding:16px;color:#94A3B8">Không có dữ liệu</td></tr>'}
+    </tbody>
+  </table>
+
+  <!-- FOOTER / CHỮ KÝ -->
+  <div class="footer">
+    <div>
+      <div>🖨️ In lúc ${printTime} ngày ${printDate}</div>
+      <div>🌐 Hệ thống Webgov Đắk Lắk — gov.daklak.site</div>
+    </div>
+    <div style="display:flex;gap:60px">
+      <div class="sig-box">
+        <div class="sig-role">Người lập báo cáo</div>
+        <div class="sig-name">${localStorage.getItem('username') || '____________________'}</div>
+      </div>
+      <div class="sig-box">
+        <div class="sig-role">Lãnh đạo phê duyệt</div>
+        <div class="sig-name">____________________</div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>window.onload = () => { window.print(); setTimeout(() => window.close(), 1000); }</script>
+</body>
+</html>`;
+
+    const w = window.open('', '_blank', 'width=960,height=750,scrollbars=yes');
+    w.document.write(html);
+    w.document.close();
+  };
+
   return (
+
     <div className="animate-up" style={{ paddingBottom: 40 }}>
       {/* ════ PAGE HEADER ════ */}
       <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
@@ -384,7 +614,7 @@ const Overview = () => {
           <button className="btn btn-outline" onClick={fetchAll} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <RefreshCw size={15} /> Làm mới
           </button>
-          <button className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: 6 }} onClick={() => window.print()}>
+          <button className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: 6 }} onClick={printReport}>
             <Printer size={16} /> In Báo cáo
           </button>
         </div>
