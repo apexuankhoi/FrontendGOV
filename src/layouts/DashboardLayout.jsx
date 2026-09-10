@@ -6,7 +6,7 @@ import {
   Globe, Menu, X, ChevronRight, UserCircle, Settings, Bot,
   FileInput, FileOutput, CheckSquare, Activity, Briefcase, Bell, Zap, Database, Heart, 
   BarChart3, ClipboardList, QrCode, Target, Sparkles, Folder, ChevronsUpDown, ShieldCheck,
-  Monitor, Wifi, Clock, Eye, Shield
+  Monitor, Wifi, Clock, Eye, Shield, ClipboardCheck
 } from 'lucide-react';
 import api, { API_URL } from '../lib/api';
 import { io } from 'socket.io-client';
@@ -31,6 +31,7 @@ const PAGE_LABEL = (p) => {
   if (p.includes('campaigns'))       return '📊 Tiến độ 102 Xã';
   if (p.includes('my-report'))       return '📝 Báo cáo 11 chỉ tiêu';
   if (p.includes('dti-report'))      return '📈 Báo cáo DTI';
+  if (p.includes('tinh-doan-report')) return '📋 Báo cáo Tổng quát AI';
   if (p.includes('map'))             return '🗺️ Đội hình bản đồ';
   if (p.includes('qr-manager'))      return '📱 QR Điểm hỗ trợ';
   if (p.includes('smartweb'))        return '🌐 SmartWeb';
@@ -314,6 +315,7 @@ const DashboardLayout = () => {
               <>
                 <SLink to="/dashboard/campaigns" icon={CheckSquare} label="Tiến độ 102 Xã/Phường"/>
                 <SLink to="/dashboard/dti-report" icon={Target} label="Báo cáo Tổng kết DTI"/>
+                <SLink to="/dashboard/tinh-doan-report" icon={ClipboardCheck} label="Báo cáo Tổng quát AI"/>
                 {can('ADMIN', 'SENIOR_ADMIN') && <SLink to="/dashboard/map" icon={Map} label="Quản lý Đội hình"/>}
                 <SLink to="/dashboard/qr-manager" icon={QrCode} label="QR Điểm Hỗ trợ"/>
               </>
