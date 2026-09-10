@@ -756,14 +756,44 @@ const Overview = () => {
       ];
 
       // ── Bảng chi tiết 102 đơn vị ──
+      // Dùng width tuyệt đối (twips, 1 inch = 1440 twips)
+      // Khổ A4 landscape ~ 12240 twips ngang; trừ lề 2*1134 = 9972 twips nội dung
+      const COL = [560, 2600, 1500, 650, 650, 650, 650, 650, 650, 750, 1100]; // tổng ~9960 twips
+      const mkCell = (text, opts = {}, colIdx) => new TableCell({
+        shading: opts.shade,
+        borders: cBdr,
+        verticalAlign: VerticalAlign.CENTER,
+        width: { size: COL[colIdx], type: WidthType.DXA },
+        children: [new Paragraph({
+          alignment: opts.center ? AlignmentType.CENTER : opts.right ? AlignmentType.RIGHT : AlignmentType.LEFT,
+          children: [new TextRun({
+            text: String(text ?? ''),
+            bold: opts.bold || false,
+            size: opts.size || 18,
+            font: 'Times New Roman',
+            color: opts.color || '1E293B',
+          })],
+        })],
+      });
+      const mkHeader = (text, colIdx) => new TableCell({
+        shading: { type: ShadingType.SOLID, fill: '1E3A8A' },
+        borders: cBdr,
+        verticalAlign: VerticalAlign.CENTER,
+        width: { size: COL[colIdx], type: WidthType.DXA },
+        children: [new Paragraph({
+          alignment: AlignmentType.CENTER,
+          children: [new TextRun({ text, bold: true, color: 'FFFFFF', size: 17, font: 'Times New Roman' })],
+        })],
+      });
+
       const detailRows = [
         new TableRow({
           tableHeader: true,
           children: [
-            hCell('STT', 5), hCell('Đơn vị', 24), hCell('Huyện/TX', 14),
-            hCell('KNS', 6), hCell('VNeID', 6), hCell('DVC', 6),
-            hCell('QR', 6), hCell('Lớp', 6), hCell('AI', 6),
-            hCell('Điểm', 7), hCell('Xếp loại', 10),
+            mkHeader('STT', 0), mkHeader('Đơn vị', 1), mkHeader('Huyện/TX', 2),
+            mkHeader('KNS', 3), mkHeader('VNeID', 4), mkHeader('DVC', 5),
+            mkHeader('QR', 6), mkHeader('Lớp', 7), mkHeader('AI', 8),
+            mkHeader('Điểm TB', 9), mkHeader('Xếp loại', 10),
           ],
         }),
         ...sorted.map((c, i) => {
@@ -771,17 +801,17 @@ const Overview = () => {
           const color = groupColor(c.group);
           return new TableRow({
             children: [
-              dCell(String(i + 1), { center: true, shade, size: 18 }),
-              dCell(c.agencyName || '—', { bold: true, shade, size: 18 }),
-              dCell(c.district || '—', { shade, size: 18 }),
-              dCell(c.hasReported ? String(c.digitalSkills || 0) : '—', { center: true, shade, size: 18 }),
-              dCell(c.hasReported ? String(c.vneidSupport || 0) : '—', { center: true, shade, size: 18 }),
-              dCell(c.hasReported ? String(c.publicServices || 0) : '—', { center: true, shade, size: 18 }),
-              dCell(c.hasReported ? String(c.qrSupport || 0) : '—', { center: true, shade, size: 18 }),
-              dCell(c.hasReported ? String(c.trainingClasses || 0) : '—', { center: true, shade, size: 18 }),
-              dCell(c.hasReported ? String(c.youthTrained || 0) : '—', { center: true, shade, size: 18 }),
-              dCell(c.hasReported ? `${c.score}%` : '—', { center: true, bold: true, color, shade, size: 18 }),
-              dCell(groupLabel(c.group), { center: true, bold: true, color, shade, size: 18 }),
+              mkCell(String(i + 1), { center: true, shade, bold: true }, 0),
+              mkCell(c.agencyName || '(Không rõ)', { shade, bold: true }, 1),
+              mkCell(c.district || '—', { shade }, 2),
+              mkCell(c.hasReported ? String(c.digitalSkills || 0) : '—', { center: true, shade }, 3),
+              mkCell(c.hasReported ? String(c.vneidSupport || 0) : '—', { center: true, shade }, 4),
+              mkCell(c.hasReported ? String(c.publicServices || 0) : '—', { center: true, shade }, 5),
+              mkCell(c.hasReported ? String(c.qrSupport || 0) : '—', { center: true, shade }, 6),
+              mkCell(c.hasReported ? String(c.trainingClasses || 0) : '—', { center: true, shade }, 7),
+              mkCell(c.hasReported ? String(c.youthTrained || 0) : '—', { center: true, shade }, 8),
+              mkCell(c.hasReported ? `${c.score}%` : '—', { center: true, bold: true, color, shade }, 9),
+              mkCell(groupLabel(c.group), { center: true, bold: true, color, shade }, 10),
             ],
           });
         }),
